@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-species Comparison - AHormoneDB</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 引入PhyloCanvas for tree visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/phylocanvas@2.8.1/dist/phylocanvas.min.js"></script>
+    
+    <style>
+        :root {
+            --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+            --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+            --text-color: white;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            margin-right: 2rem;
+        }
+
+        .logo a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--logo-bg);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            line-height: 1;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-subtext {
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1;
+            margin-top: 0.2rem;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.6px;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left ul, .nav-right ul {
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-left a, .nav-right a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+
+        .nav-left a:hover, .nav-right a:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .nav-right {
+            margin-left: auto;
+        }
+
+        .nav-icon {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        .tree-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
+        }
+        
+        .stat-card {
+            @apply bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg border-l-4;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">
+                            <div class="logo-icon">
+                                <span class="logo-text">AH</span>
+                                <span class="logo-subtext">Animal Hormone</span>
+                            </div>
+                        </a>
+                    </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- 页面标题 -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fa fa-sitemap text-indigo-600 mr-3"></i>
+                        Cross-species Comparison
+                    </h1>
+                    <p class="text-gray-600 mt-2">Phylogenetic analysis and sequence conservation across different species</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showBuildModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center">
+                        <i class="fa fa-plus-circle mr-2"></i>Build New Tree
+                    </button>
+                    <button onclick="refreshData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                        <i class="fa fa-refresh mr-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="stats-container">
+                <div class="stat-card border-l-4 border-indigo-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Trees</p>
+                            <p class="text-3xl font-bold text-gray-800" id="total-trees">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <i class="fa fa-tree text-indigo-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card border-l-4 border-green-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Hormone Families</p>
+                            <p class="text-3xl font-bold text-gray-800" id="total-families">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fa fa-flask text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Conservation Records</p>
+                            <p class="text-3xl font-bold text-gray-800" id="total-conservation">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fa fa-bar-chart text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 两列布局 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 左侧：系统发育树列表 -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fa fa-list mr-2 text-indigo-600"></i>
+                            Available Trees
+                        </h2>
+                        <div class="space-y-3 max-h-[600px] overflow-y-auto" id="tree-list">
+                            <div class="text-center text-gray-500 py-4">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：树可视化 -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold flex items-center">
+                                <i class="fa fa-eye mr-2 text-indigo-600"></i>
+                                Tree Visualization
+                            </h2>
+                            <div class="flex gap-2">
+                                <button onclick="downloadCurrentTree()" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                                    <i class="fa fa-download mr-1"></i>Download Newick
+                                </button>
+                                <select id="tree-layout" onchange="changeTreeLayout(this.value)" class="text-sm border rounded px-2 py-1">
+                                    <option value="rectangular">Rectangular</option>
+                                    <option value="circular">Circular</option>
+                                    <option value="radial">Radial</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="tree-container" class="tree-container"></div>
+                        <div id="tree-info" class="mt-4 text-sm text-gray-600 text-center">
+                            Select a tree from the list to visualize
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 保守性分析表格 -->
+            <div class="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-lg font-semibold">Sequence Conservation Analysis</h2>
+                    <div class="flex gap-2">
+                        <button onclick="downloadConservationCSV()" class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
+                            <i class="fa fa-download mr-1"></i>Download CSV
+                        </button>
+                        <button onclick="downloadHeatmap()" class="px-3 py-1 text-sm bg-orange-600 text-white rounded hover:bg-orange-700">
+                            <i class="fa fa-image mr-1"></i>Heatmap
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hormone</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Species</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Similarity Score</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alignment Length</th>
+                            </tr>
+                        </thead>
+                        <tbody id="conservation-table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 构建树模态框 -->
+    <div id="build-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Build Phylogenetic Tree</h2>
+                <button onclick="closeBuildModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Hormone Family</label>
+                    <select id="build-family" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select a family...</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600" id="family-sequence-count">Select a family to see sequence count</p>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeBuildModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button onclick="buildTree()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        Build Tree
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let phylocanvas = null;
+        let currentTrees = [];
+        let currentConservation = [];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrees();
+            loadConservation();
+            loadFamilies();
+            updateStats();
+        });
+
+        // 加载树列表
+        async function loadTrees() {
+            try {
+                const response = await fetch('/hormone_app/api/phylogeny/trees/');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentTrees = data.trees || [];
+                    renderTreeList(currentTrees);
+                }
+            } catch (error) {
+                console.error('Error loading trees:', error);
+                showNotification('Failed to load trees', 'error');
+            }
+        }
+
+        // 渲染树列表
+        function renderTreeList(trees) {
+            const container = document.getElementById('tree-list');
+            
+            if (!trees || trees.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-4">No trees available</div>';
+                return;
+            }
+            
+            let html = '';
+            trees.forEach(tree => {
+                html += `
+                    <div onclick="loadTree('${tree.id}')" class="p-4 border rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors">
+                        <h3 class="font-semibold text-gray-800">${tree.hormone_family}</h3>
+                        <p class="text-sm text-gray-600 mt-1">${tree.species_count} species</p>
+                        <p class="text-xs text-gray-500 mt-1">${new Date(tree.created_at).toLocaleDateString()}</p>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 加载树
+        async function loadTree(treeId) {
+            try {
+                const response = await fetch(`/hormone_app/api/phylogeny/trees/${treeId}/`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderTree(data.tree);
+                }
+            } catch (error) {
+                console.error('Error loading tree:', error);
+                showNotification('Failed to load tree', 'error');
+            }
+        }
+
+        // 渲染树
+        function renderTree(treeData) {
+            const container = document.getElementById('tree-container');
+            
+            // 清除旧内容
+            container.innerHTML = '';
+            
+            try {
+                // 使用PhyloCanvas渲染树
+                phylocanvas = new PhyloCanvas(
+                    container,
+                    {
+                        newick: treeData.tree_newick,
+                        method: document.getElementById('tree-layout').value,
+                        showLabels: true,
+                        nodeSize: 8,
+                        fontSize: 12
+                    }
+                );
+                
+                document.getElementById('tree-info').innerHTML = `
+                    <span class="font-medium">${treeData.hormone_family}</span> | 
+                    ${treeData.species_count} species | 
+                    Created: ${new Date(treeData.created_at).toLocaleString()}
+                `;
+                
+                // 保存当前树ID
+                window.currentTreeId = treeData.id;
+                
+            } catch (error) {
+                console.error('Error rendering tree:', error);
+                container.innerHTML = '<div class="text-red-500 p-4">Error rendering tree</div>';
+            }
+        }
+
+        // 改变树布局
+        function changeTreeLayout(layout) {
+            if (phylocanvas) {
+                phylocanvas.setTreeType(layout);
+            }
+        }
+
+        // 下载当前树
+        function downloadCurrentTree() {
+            if (window.currentTreeId) {
+                window.location.href = `/hormone_app/api/phylogeny/trees/${window.currentTreeId}/download/`;
+            } else {
+                showNotification('No tree selected', 'warning');
+            }
+        }
+
+        // 加载保守性数据
+        async function loadConservation() {
+            try {
+                const response = await fetch('/hormone_app/api/phylogeny/conservation/');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentConservation = data.conservation || [];
+                    renderConservationTable(currentConservation);
+                }
+            } catch (error) {
+                console.error('Error loading conservation:', error);
+            }
+        }
+
+        // 渲染保守性表格
+        function renderConservationTable(conservation) {
+            const tbody = document.getElementById('conservation-table-body');
+            
+            if (!conservation || conservation.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No conservation data available</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            conservation.forEach(item => {
+                const scorePercent = (item.similarity_score * 100).toFixed(1);
+                const scoreColor = 
+                    item.similarity_score > 0.8 ? 'text-green-600' :
+                    item.similarity_score > 0.5 ? 'text-yellow-600' : 'text-red-600';
+                
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">${item.hormone.name}</td>
+                        <td class="px-6 py-4">${item.species}</td>
+                        <td class="px-6 py-4">
+                            <span class="${scoreColor} font-bold">${scorePercent}%</span>
+                        </td>
+                        <td class="px-6 py-4">${item.alignment_length} bp</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // 更新统计
+            document.getElementById('total-conservation').textContent = conservation.length;
+        }
+
+        // 加载家族列表
+        async function loadFamilies() {
+            try {
+                const response = await fetch('/hormone_app/api/phylogeny/families/');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('build-family');
+                    const families = data.families || [];
+                    
+                    families.forEach(family => {
+                        select.innerHTML += `<option value="${family.name}" data-count="${family.count}">${family.name} (${family.count} sequences)</option>`;
+                    });
+                    
+                    document.getElementById('total-families').textContent = families.length;
+                    
+                    // 添加change事件
+                    select.addEventListener('change', function() {
+                        const selected = this.options[this.selectedIndex];
+                        const count = selected.dataset.count || 0;
+                        document.getElementById('family-sequence-count').innerHTML = 
+                            `This family has <span class="font-bold">${count}</span> sequences available.`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading families:', error);
+            }
+        }
+
+        // 更新统计
+        async function updateStats() {
+            try {
+                const treesResponse = await fetch('/hormone_app/api/phylogeny/trees/');
+                const treesData = await treesResponse.json();
+                
+                const conservationResponse = await fetch('/hormone_app/api/phylogeny/conservation/');
+                const conservationData = await conservationResponse.json();
+                
+                document.getElementById('total-trees').textContent = treesData.success ? (treesData.trees?.length || 0) : 0;
+                document.getElementById('total-conservation').textContent = conservationData.success ? (conservationData.conservation?.length || 0) : 0;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        // 显示构建树模态框
+        function showBuildModal() {
+            document.getElementById('build-modal').classList.remove('hidden');
+            document.getElementById('build-modal').classList.add('flex');
+        }
+
+        // 关闭构建树模态框
+        function closeBuildModal() {
+            document.getElementById('build-modal').classList.add('hidden');
+            document.getElementById('build-modal').classList.remove('flex');
+        }
+
+        // 构建树
+        async function buildTree() {
+            const family = document.getElementById('build-family').value;
+            
+            if (!family) {
+                showNotification('Please select a hormone family', 'warning');
+                return;
+            }
+            
+            closeBuildModal();
+            showNotification('Building tree... This may take a moment', 'info');
+            
+            try {
+                const response = await fetch('/hormone_app/api/phylogeny/build-tree/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ family_name: family })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`Tree built successfully for ${family}`, 'success');
+                    loadTrees();  // 刷新树列表
+                    loadConservation();  // 刷新保守性数据
+                } else {
+                    showNotification(data.error || 'Failed to build tree', 'error');
+                }
+            } catch (error) {
+                console.error('Error building tree:', error);
+                showNotification('Failed to build tree', 'error');
+            }
+        }
+
+        // 下载保守性CSV
+        function downloadConservationCSV() {
+            window.location.href = '/hormone_app/api/phylogeny/download/conservation-csv/';
+        }
+
+        // 下载热力图
+        function downloadHeatmap() {
+            window.location.href = '/hormone_app/api/phylogeny/download/heatmap/';
+        }
+
+        // 刷新数据
+        function refreshData() {
+            loadTrees();
+            loadConservation();
+            loadFamilies();
+            updateStats();
+            showNotification('Data refreshed', 'success');
+        }
+
+        // 获取CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            // 简单的alert替代，实际项目中可以用更好的通知组件
+            alert(`[${type.toUpperCase()}] ${message}`);
+        }
+    </script>
+</body>
+</html>

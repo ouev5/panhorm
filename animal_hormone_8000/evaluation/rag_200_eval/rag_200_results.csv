@@ -1,0 +1,201 @@
+id,type,question,overall,relevance,completeness,accuracy,f1,traceability,rag_hallucination,direct_hallucination,passed,rag_context_type,rag_seconds,direct_seconds
+1,factual,Which gene is associated with the hormone Prepro-gonadotropin-releasing hormone-like protein in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,28.867,11.426
+2,factual,Which gene is associated with the hormone Putative gonadotropin-releasing hormone II receptor in the database?,1.0,1.0,1.0,1.0,1.0,0.4,0.0,1.0,True,hybrid,7.596,4.14
+3,factual,Which gene is associated with the hormone Lutropin/choriogonadotropin subunit beta in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,48.592,11.737
+4,factual,Which gene is associated with the hormone Pachytene checkpoint protein 2 homolog in the database?,0.4,1.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,30.689,6.323
+5,factual,Which gene is associated with the hormone Zinc finger protein 335 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,21.732,12.04
+6,factual,Which gene is associated with the hormone RNA-binding protein 20 in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,13.196,8.042
+7,factual,Which gene is associated with the hormone Endothelin-3 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,29.077,2.138
+8,factual,Which gene is associated with the hormone Vitamin D3 receptor A in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,51.511,3.47
+9,factual,Which gene is associated with the hormone G-protein coupled receptor 54 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,22.396,5.936
+10,factual,Which gene is associated with the hormone Interferon tau in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,13.414,4.17
+11,factual,Which gene is associated with the hormone Cholecystokinin A in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,42.653,6.547
+12,factual,Which gene is associated with the hormone Parathyroid hormone in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,33.874,2.358
+13,factual,Which gene is associated with the hormone Prolactin in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,24.316,2.981
+14,factual,Which gene is associated with the hormone Relaxin in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,28.442,6.334
+15,factual,Which gene is associated with the hormone Adropin in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,14.845,2.749
+16,factual,Which gene is associated with the hormone Cholecystokinin B in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,15.404,11.702
+17,factual,Which gene is associated with the hormone Gastrin/cholecystokinin type B receptor in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,35.529,3.139
+18,factual,Which gene is associated with the hormone Protein ADM2 in the database?,0.4,1.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,27.415,3.333
+19,factual,Which gene is associated with the hormone Metastasis-suppressor KiSS-1 in the database?,0.4,1.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,11.928,3.217
+20,factual,Which gene is associated with the hormone Nuclear receptor subfamily 1 group I member 3 in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,21.426,3.34
+21,factual,Which gene is associated with the hormone Early growth response protein 1 in the database?,1.0,1.0,1.0,1.0,0.0,0.8,0.0,1.0,True,hybrid,8.495,8.29
+22,factual,Which gene is associated with the hormone ATPase family AAA domain-containing protein 3A in the database?,1.0,1.0,1.0,1.0,1.0,0.8,0.0,1.0,True,hybrid,6.616,3.133
+23,factual,Which gene is associated with the hormone Neurotensin/neuromedin N in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,20.915,3.1
+24,factual,Which gene is associated with the hormone Adiponectin in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,12.975,1.983
+25,factual,Which gene is associated with the hormone Humanin in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,11.15,4.094
+26,factual,Which gene is associated with the hormone Choriogonadotropin subunit beta 3 in the database?,0.4,1.0,0.0,0.0,0.0,0.4,1.0,1.0,False,hybrid,25.167,3.966
+27,factual,Which gene is associated with the hormone Somatotropin in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,26.905,4.49
+28,factual,Which gene is associated with the hormone Prepronociceptin in the database?,0.0,0.0,0.0,0.0,0.0,0.65,1.0,1.0,False,hybrid,9.136,2.757
+29,factual,Which gene is associated with the hormone Ras-related protein Rab-1A in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,12.842,2.829
+30,factual,Which gene is associated with the hormone Vasopressin-neurophysin 2 in the database?,0.4,1.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.391,3.725
+31,factual,Which gene is associated with the hormone Extracellular calcium-sensing receptor in the database?,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,32.591,6.085
+32,factual,Which gene is associated with the hormone Mediator of RNA polymerase II transcription subunit 12 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,41.153,10.202
+33,factual,Which gene is associated with the hormone Nuclear receptor subfamily 4 group A member 1 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.989,3.801
+34,factual,Which gene is associated with the hormone CCN family member 3 in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,17.565,3.254
+35,factual,Which gene is associated with the hormone Aldo-keto reductase family 1 member D1 in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,22.88,6.302
+36,factual,Which gene is associated with the hormone Anti-Muellerian hormone in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,15.355,2.508
+37,factual,Which gene is associated with the hormone Insulin-like growth factor 1.S in the database?,0.4,1.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,6.744,10.39
+38,factual,Which gene is associated with the hormone Bile acid receptor in the database?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,55.568,2.936
+39,factual,Which gene is associated with the hormone KiSS-1 receptor in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.332,2.926
+40,factual,Which gene is associated with the hormone E3 SUMO-protein ligase PIAS4 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,15.335,24.023
+41,factual,Which gene is associated with the hormone E3 SUMO-protein ligase PIAS3 in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,13.305,3.886
+42,factual,Which gene is associated with the hormone Glucocorticoid receptor in the database?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,19.926,3.784
+43,factual,Which gene is associated with the hormone Protein NDNF in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,11.747,4.631
+44,factual,Which gene is associated with the hormone Retinoic acid receptor beta in the database?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,23.073,4.891
+45,factual,Which gene is associated with the hormone Adipolin in the database?,0.4,1.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,16.122,5.342
+46,factual,Which gene is associated with the hormone Estrogen receptor beta in the database?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,22.391,2.646
+47,factual,Which gene is associated with the hormone Parathyroid hormone/parathyroid hormone-related peptide receptor in the database?,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,13.308,3.169
+48,factual,Which gene is associated with the hormone Glucagon-like peptide in the database?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,11.395,3.306
+49,factual,Which gene is associated with the hormone Protachykinin-1 in the database?,0.4,1.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.707,2.311
+50,factual,Which gene is associated with the hormone Insulin in the database?,0.2,0.5,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,28.342,2.18
+51,species_specific,"For Rat, what gene information is recorded for the hormone Prepro-gonadotropin-releasing hormone-like protein?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,19.157,22.144
+52,species_specific,"For Human, what gene information is recorded for the hormone Putative gonadotropin-releasing hormone II receptor?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,31.16,11.914
+53,species_specific,"For Human, what gene information is recorded for the hormone Lutropin/choriogonadotropin subunit beta?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,47.076,8.158
+54,species_specific,"For Human, what gene information is recorded for the hormone Pachytene checkpoint protein 2 homolog?",0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,34.809,12.454
+55,species_specific,"For Mouse, what gene information is recorded for the hormone Zinc finger protein 335?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,31.163,11.721
+56,species_specific,"For Rat, what gene information is recorded for the hormone RNA-binding protein 20?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,17.765,25.617
+57,species_specific,"For Rat, what gene information is recorded for the hormone Endothelin-3?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,16.89,14.893
+58,species_specific,"For Human, what gene information is recorded for the hormone Vitamin D3 receptor A?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,21.055,8.439
+59,species_specific,"For Mouse, what gene information is recorded for the hormone G-protein coupled receptor 54?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,25.713,9.142
+60,species_specific,"For Bovine, what gene information is recorded for the hormone Interferon tau?",0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,40.339,5.998
+61,species_specific,"For Rat, what gene information is recorded for the hormone Cholecystokinin A?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,47.74,12.754
+62,species_specific,"For Mouse, what gene information is recorded for the hormone Parathyroid hormone?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,50.258,6.834
+63,species_specific,"For Rat, what gene information is recorded for the hormone Prolactin?",0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,29.984,7.492
+64,species_specific,"For Human, what gene information is recorded for the hormone Relaxin?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,36.491,6.582
+65,species_specific,"For Mouse, what gene information is recorded for the hormone Adropin?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,16.391,8.472
+66,species_specific,"For Mouse, what gene information is recorded for the hormone Cholecystokinin B?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,38.22,18.975
+67,species_specific,"For Mouse, what gene information is recorded for the hormone Gastrin/cholecystokinin type B receptor?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,44.141,8.62
+68,species_specific,"For Human, what gene information is recorded for the hormone Protein ADM2?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,26.364,5.712
+69,species_specific,"For Sheep, what gene information is recorded for the hormone Metastasis-suppressor KiSS-1?",1.0,1.0,1.0,1.0,0.0,0.55,0.0,1.0,True,hybrid,40.613,13.887
+70,species_specific,"For Mouse, what gene information is recorded for the hormone Nuclear receptor subfamily 1 group I member 3?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,33.661,8.269
+71,species_specific,"For Human, what gene information is recorded for the hormone Early growth response protein 1?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,23.628,9.669
+72,species_specific,"For Human, what gene information is recorded for the hormone ATPase family AAA domain-containing protein 3A?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,17.962,7.02
+73,species_specific,"For Human, what gene information is recorded for the hormone Neurotensin/neuromedin N?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,29.21,4.988
+74,species_specific,"For Rat, what gene information is recorded for the hormone Adiponectin?",1.0,1.0,1.0,1.0,1.0,0.8,0.0,1.0,True,hybrid,25.662,9.629
+75,species_specific,"For Rat, what gene information is recorded for the hormone Humanin?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,27.272,3.496
+76,species_specific,"For Human, what gene information is recorded for the hormone Choriogonadotropin subunit beta 3?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,23.926,8.247
+77,species_specific,"For Mouse, what gene information is recorded for the hormone Somatotropin?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,44.345,9.279
+78,species_specific,"For Rat, what gene information is recorded for the hormone Prepronociceptin?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,23.428,5.477
+79,species_specific,"For Mouse, what gene information is recorded for the hormone Ras-related protein Rab-1A?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,28.557,11.605
+80,species_specific,"For Mouse, what gene information is recorded for the hormone Vasopressin-neurophysin 2?",0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,39.04,10.856
+81,species_specific,"For Mouse, what gene information is recorded for the hormone Extracellular calcium-sensing receptor?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,29.553,6.422
+82,species_specific,"For Human, what gene information is recorded for the hormone Mediator of RNA polymerase II transcription subunit 12?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,54.074,12.186
+83,species_specific,"For Human, what gene information is recorded for the hormone Nuclear receptor subfamily 4 group A member 1?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,25.522,9.602
+84,species_specific,"For Human, what gene information is recorded for the hormone Gastrin/cholecystokinin type B receptor?",0.4,1.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,37.162,4.884
+85,species_specific,"For Mouse, what gene information is recorded for the hormone CCN family member 3?",0.4,1.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,23.487,10.052
+86,species_specific,"For Human, what gene information is recorded for the hormone Aldo-keto reductase family 1 member D1?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,32.323,12.518
+87,species_specific,"For Pig, what gene information is recorded for the hormone Anti-Muellerian hormone?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,32.697,6.635
+88,species_specific,"For Human, what gene information is recorded for the hormone Adiponectin?",0.0,0.0,0.0,0.0,0.0,0.4,1.0,1.0,False,hybrid,21.327,5.471
+89,species_specific,"For Mouse, what gene information is recorded for the hormone Insulin-like growth factor 1.S?",0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.313,27.056
+90,species_specific,"For Mouse, what gene information is recorded for the hormone Humanin?",0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,31.819,9.741
+91,species_specific,"For Mouse, what gene information is recorded for the hormone Bile acid receptor?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,42.351,8.673
+92,species_specific,"For Mouse, what gene information is recorded for the hormone KiSS-1 receptor?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,18.952,6.661
+93,species_specific,"For Human, what gene information is recorded for the hormone E3 SUMO-protein ligase PIAS4?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,38.809,9.706
+94,species_specific,"For Human, what gene information is recorded for the hormone E3 SUMO-protein ligase PIAS3?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,21.513,9.229
+95,species_specific,"For Human, what gene information is recorded for the hormone Glucocorticoid receptor?",0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,32.996,5.485
+96,species_specific,"For Human, what gene information is recorded for the hormone Protein NDNF?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,24.511,13.316
+97,species_specific,"For Human, what gene information is recorded for the hormone Retinoic acid receptor beta?",0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,19.589,12.507
+98,species_specific,"For Mouse, what gene information is recorded for the hormone Adipolin?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,38.205,9.495
+99,species_specific,"For Human, what gene information is recorded for the hormone Estrogen receptor beta?",0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,23.182,6.542
+100,species_specific,"For Rat, what gene information is recorded for the hormone Parathyroid hormone/parathyroid hormone-related peptide receptor?",0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,37.541,12.733
+101,association,What disease or phenotype association is recorded for gene Nr5a1 in relation to hormone Prepro-gonadotropin-releasing hormone-like protein?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,9.762,21.312
+102,association,What disease or phenotype association is recorded for gene GNRHR in relation to hormone Putative gonadotropin-releasing hormone II receptor?,0.0,0.0,0.0,0.0,0.0,0.8500000000000001,1.0,1.0,False,hybrid,13.418,27.163
+103,association,What disease or phenotype association is recorded for gene AR in relation to hormone Lutropin/choriogonadotropin subunit beta?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,21.304,14.686
+104,association,What disease or phenotype association is recorded for gene MYC in relation to hormone Pachytene checkpoint protein 2 homolog?,0.0,0.0,0.0,0.0,0.0,0.4,1.0,1.0,False,hybrid,9.436,56.868
+105,association,What disease or phenotype association is recorded for gene Jak1 in relation to hormone Zinc finger protein 335?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,15.161,23.138
+106,association,What disease or phenotype association is recorded for gene Cacna1c in relation to hormone RNA-binding protein 20?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,15.034,43.521
+107,association,What disease or phenotype association is recorded for gene Slc10a1 in relation to hormone Endothelin-3?,0.4,1.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,13.44,13.022
+108,association,What disease or phenotype association is recorded for gene DSC2 in relation to hormone Vitamin D3 receptor A?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,13.967,28.874
+109,association,What disease or phenotype association is recorded for gene Lhcgr in relation to hormone G-protein coupled receptor 54?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,26.144,24.092
+110,association,What disease or phenotype association is recorded for gene IGF1 in relation to hormone Interferon tau?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,14.343,16.06
+111,association,What disease or phenotype association is recorded for gene Bax in relation to hormone Cholecystokinin A?,0.4,1.0,0.0,0.0,0.0,0.4,1.0,1.0,False,hybrid,9.469,8.855
+112,association,What disease or phenotype association is recorded for gene Sost in relation to hormone Parathyroid hormone?,0.0,0.0,0.0,0.0,0.0,0.4,1.0,1.0,False,hybrid,20.195,11.19
+113,association,What disease or phenotype association is recorded for gene Ccna1 in relation to hormone Prolactin?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,20.567,20.139
+114,association,What disease or phenotype association is recorded for gene MMP9 in relation to hormone Relaxin?,0.4,1.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,13.396,12.777
+115,association,What disease or phenotype association is recorded for gene Pcna in relation to hormone Adropin?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,12.286,14.493
+116,association,What disease or phenotype association is recorded for gene Kcnb1 in relation to hormone Cholecystokinin B?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,11.241,23.367
+117,association,What disease or phenotype association is recorded for gene CASR in relation to hormone Vitamin D3 receptor A?,1.0,1.0,1.0,1.0,0.4,1.0,0.0,0.0,True,hybrid,16.458,44.423
+118,association,What disease or phenotype association is recorded for gene Apod in relation to hormone Gastrin/cholecystokinin type B receptor?,0.0,0.0,0.0,0.0,0.0,0.65,1.0,1.0,False,hybrid,11.849,16.117
+119,association,What disease or phenotype association is recorded for gene ISG15 in relation to hormone Interferon tau?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,13.651,27.762
+120,association,What disease or phenotype association is recorded for gene MMP2 in relation to hormone Protein ADM2?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,11.418,13.583
+121,association,What disease or phenotype association is recorded for gene STAR in relation to hormone Metastasis-suppressor KiSS-1?,0.0,0.0,0.0,0.0,0.0,0.4,1.0,1.0,False,hybrid,22.117,24.297
+122,association,What disease or phenotype association is recorded for gene MYC in relation to hormone Nuclear receptor subfamily 1 group I member 3?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,22.299,12.888
+123,association,What disease or phenotype association is recorded for gene MMP1 in relation to hormone Early growth response protein 1?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,24.598,15.951
+124,association,What disease or phenotype association is recorded for gene FGF2 in relation to hormone ATPase family AAA domain-containing protein 3A?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,10.856,18.018
+125,association,What disease or phenotype association is recorded for gene MMP9 in relation to hormone Neurotensin/neuromedin N?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,14.695,5.807
+126,association,What disease or phenotype association is recorded for gene Slc2a1 in relation to hormone Adiponectin?,0.4,1.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,13.532,12.928
+127,association,What disease or phenotype association is recorded for gene Bax in relation to hormone Humanin?,0.0,0.0,0.0,0.0,0.0,0.8500000000000001,1.0,1.0,False,hybrid,35.798,9.023
+128,association,What disease or phenotype association is recorded for gene SLCO2A1 in relation to hormone Choriogonadotropin subunit beta 3?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,14.645,16.766
+129,association,What disease or phenotype association is recorded for gene Iba1 in relation to hormone Somatotropin?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,12.646,24.188
+130,association,What disease or phenotype association is recorded for gene Gfap in relation to hormone Prepronociceptin?,0.4,1.0,0.0,0.0,0.0,0.8500000000000001,1.0,0.0,False,hybrid,12.246,45.534
+131,association,What disease or phenotype association is recorded for gene Tlr4 in relation to hormone Ras-related protein Rab-1A?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,16.549,26.019
+132,association,What disease or phenotype association is recorded for gene Aqp2 in relation to hormone Vasopressin-neurophysin 2?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,17.506,13.913
+133,association,What disease or phenotype association is recorded for gene SELE in relation to hormone Relaxin?,0.0,0.0,0.0,0.0,0.0,0.65,1.0,1.0,False,hybrid,14.01,22.35
+134,association,What disease or phenotype association is recorded for gene Ccl2 in relation to hormone Extracellular calcium-sensing receptor?,0.4,1.0,0.0,0.0,0.0,0.8,0.0,1.0,False,hybrid,24.199,21.092
+135,association,What disease or phenotype association is recorded for gene AR in relation to hormone Mediator of RNA polymerase II transcription subunit 12?,0.0,0.0,0.0,0.0,0.0,0.65,1.0,1.0,False,hybrid,11.884,36.497
+136,association,What disease or phenotype association is recorded for gene EHMT2 in relation to hormone Nuclear receptor subfamily 4 group A member 1?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,9.801,50.456
+137,association,What disease or phenotype association is recorded for gene MIR222 in relation to hormone Gastrin/cholecystokinin type B receptor?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,18.041,8.812
+138,association,What disease or phenotype association is recorded for gene Col1a2 in relation to hormone CCN family member 3?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,9.838,21.059
+139,association,What disease or phenotype association is recorded for gene CYP2C19 in relation to hormone Aldo-keto reductase family 1 member D1?,0.4,1.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,16.147,18.871
+140,association,What disease or phenotype association is recorded for gene HSD3B1 in relation to hormone Anti-Muellerian hormone?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,13.201,13.143
+141,association,What disease or phenotype association is recorded for gene CCL2 in relation to hormone Adiponectin?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.085,4.568
+142,association,What disease or phenotype association is recorded for gene Sox2 in relation to hormone Insulin-like growth factor 1.S?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,13.206,8.502
+143,association,What disease or phenotype association is recorded for gene Tlr4 in relation to hormone Humanin?,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,11.43,24.031
+144,association,What disease or phenotype association is recorded for gene Cyp2b10 in relation to hormone Nuclear receptor subfamily 1 group I member 3?,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.314,13.748
+145,association,What disease or phenotype association is recorded for gene Ntf3 in relation to hormone Gastrin/cholecystokinin type B receptor?,0.4,1.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,9.891,34.251
+146,association,What disease or phenotype association is recorded for gene Abcb11 in relation to hormone Bile acid receptor?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,23.463,15.63
+147,association,What disease or phenotype association is recorded for gene Mmp2 in relation to hormone KiSS-1 receptor?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,20.825,28.759
+148,association,What disease or phenotype association is recorded for gene CYP24A1 in relation to hormone E3 SUMO-protein ligase PIAS4?,0.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,False,hybrid,11.548,14.454
+149,association,What disease or phenotype association is recorded for gene CCL2 in relation to hormone Choriogonadotropin subunit beta 3?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,12.552,25.569
+150,association,What disease or phenotype association is recorded for gene TNF in relation to hormone E3 SUMO-protein ligase PIAS3?,0.0,0.0,0.0,0.0,0.0,0.8,1.0,1.0,False,hybrid,22.6,30.041
+151,synthesis,Summarize the receptor and coding gene information for Somatostatin in Gallus gallus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,24.312,16.624
+152,synthesis,Summarize the receptor and coding gene information for Corticosterone in Saguinus oedipus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,9.529,9.055
+153,synthesis,Summarize the receptor and coding gene information for 17-alpha-Hydroxyprogesterone in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,24.618,10.962
+154,synthesis,Summarize the receptor and coding gene information for Stigmasterol in Mus musculus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,12.898,13.004
+155,synthesis,Summarize the receptor and coding gene information for Enterodiol in Pagrus major.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,7.991,23.968
+156,synthesis,Summarize the receptor and coding gene information for Testosterone 17 beta-cypionate in Pan troglodytes.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,15.716,9.513
+157,synthesis,Summarize the receptor and coding gene information for Neuropeptide S in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,22.781,11.415
+158,synthesis,Summarize the receptor and coding gene information for Pregnanediol in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,10.966,26.503
+159,synthesis,Summarize the receptor and coding gene information for Sitosterol in Oncorhynchus mykiss.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,8.58,13.239
+160,synthesis,Summarize the receptor and coding gene information for Leptin in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,30.8,9.941
+161,synthesis,Summarize the receptor and coding gene information for 17-Epiestriol in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,32.604,14.483
+162,synthesis,Summarize the receptor and coding gene information for Cortisone in Sus scrofa.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,18.149,10.031
+163,synthesis,Summarize the receptor and coding gene information for DHEA sulfate in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,12.155,19.032
+164,synthesis,Summarize the receptor and coding gene information for Oxymesterone in Pan troglodytes.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,11.139,15.804
+165,synthesis,Summarize the receptor and coding gene information for Fluocinolone Acetonide in Oryctolagus cuniculus.,1.0,1.0,1.0,1.0,1.0,0.7500000000000001,0.0,0.0,True,hybrid,8.301,7.041
+166,synthesis,Summarize the receptor and coding gene information for Trenbolone in Apodemus flavicollis.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,9.48,14.858
+167,synthesis,Summarize the receptor and coding gene information for Coumestrol in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,34.203,8.985
+168,synthesis,Summarize the receptor and coding gene information for 18-oxocortisol in Oncorhynchus mykiss.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,16.394,44.942
+169,synthesis,Summarize the receptor and coding gene information for Dehydroepiandrosterone in Equus caballus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,10.367,27.114
+170,synthesis,Summarize the receptor and coding gene information for Oxymetholone in Eulemur fulvus collaris.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,7.718,11.519
+171,synthesis,Summarize the receptor and coding gene information for 17-Epiestriol in Ovis aries.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,10.093,10.151
+172,synthesis,Summarize the receptor and coding gene information for Glycoprotein hormones alpha chain in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,39.849,13.612
+173,synthesis,Summarize the receptor and coding gene information for Dehydroepiandrosterone in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,25.692,19.87
+174,synthesis,Summarize the receptor and coding gene information for Clobetasol propionate in Ovis aries.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,12.555,8.487
+175,synthesis,Summarize the receptor and coding gene information for Clobetasol in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,13.47,8.436
+176,synthesis,Summarize the receptor and coding gene information for Putative pro-MCH-like protein 1 in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,20.632,19.362
+177,synthesis,Summarize the receptor and coding gene information for Progonadoliberin-2 in Aquarana catesbeiana.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,13.365,41.648
+178,synthesis,Summarize the receptor and coding gene information for Desogestrel in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,24.419,12.647
+179,synthesis,Summarize the receptor and coding gene information for Pituitary adenylate cyclase-activating polypeptide in Penaeus monodon.,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,14.362,14.616
+180,synthesis,Summarize the receptor and coding gene information for Pro-opiomelanocortin A in Oncorhynchus mykiss.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,17.915,24.83
+181,synthesis,Summarize the receptor and coding gene information for Corticosterone in Xenopus laevis.,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,15.25,12.415
+182,synthesis,Summarize the receptor and coding gene information for Daidzein in Micropogonias undulatus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,9.794,16.947
+183,synthesis,Summarize the receptor and coding gene information for Orexigenic neuropeptide QRFP in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.55,1.0,1.0,False,hybrid,20.783,8.302
+184,synthesis,Summarize the receptor and coding gene information for Trenbolone acetate in Canis lupus familiaris.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,20.284,10.498
+185,synthesis,Summarize the receptor and coding gene information for bisphenol A in Macaca mulatta.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,8.104,12.071
+186,synthesis,Summarize the receptor and coding gene information for Taurochenodeoxycholic Acid in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,15.557,17.406
+187,synthesis,Summarize the receptor and coding gene information for Prolactin-2B1 in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,15.47,18.019
+188,synthesis,Summarize the receptor and coding gene information for Sitosterol in Bos taurus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,13.34,20.4
+189,synthesis,Summarize the receptor and coding gene information for Fluocinonide in Sus scrofa.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,10.191,7.546
+190,synthesis,Summarize the receptor and coding gene information for Bolasterone in Canis lupus familiaris.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,11.204,6.07
+191,synthesis,Summarize the receptor and coding gene information for Testosterone Propionate in Pan troglodytes.,0.0,0.0,0.0,0.0,0.0,0.6000000000000001,1.0,1.0,False,hybrid,42.976,8.912
+192,synthesis,Summarize the receptor and coding gene information for 20-carboxyleukotriene B4 in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,17.679,11.56
+193,synthesis,Summarize the receptor and coding gene information for Slit homolog 2 protein in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,21.072,10.381
+194,synthesis,Summarize the receptor and coding gene information for Clobetasol in Saguinus oedipus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,11.869,7.803
+195,synthesis,Summarize the receptor and coding gene information for Fluocinonide in Ovis aries.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,8.664,7.606
+196,synthesis,Summarize the receptor and coding gene information for Fluocinonide in Rattus norvegicus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,10.554,6.208
+197,synthesis,Summarize the receptor and coding gene information for Pregnanetriol in Homo sapiens.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,14.519,20.735
+198,synthesis,Summarize the receptor and coding gene information for Glycitein in Oryzias latipes.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,7.58,7.634
+199,synthesis,Summarize the receptor and coding gene information for Beclomethasone dipropionate in Mus musculus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,22.763,6.712
+200,synthesis,Summarize the receptor and coding gene information for Progonadoliberin IIA in Carassius auratus.,0.0,0.0,0.0,0.0,0.0,0.7500000000000001,1.0,1.0,False,hybrid,14.191,21.149

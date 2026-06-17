@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaFold2 Protein Structure Prediction Platform</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入Plotly图表库 -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF', // 主色
+                        secondary: '#36CFC9', // 辅助色
+                        accent: '#722ED1',
+                        neutral: '#F5F7FA', // 背景色：浅灰
+                        success: '#52C41A',
+                        warning: '#FAAD14',
+                        danger: '#FF4D4F',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .form-input-focus { 
+                @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none; 
+            }
+            .btn-primary { 
+                @apply bg-primary text-white px-6 py-2 rounded-full shadow-md hover:bg-primary/90 transition-all flex items-center justify-center; 
+            }
+            .btn-secondary { 
+                @apply bg-white text-primary border border-primary px-6 py-2 rounded-full shadow-sm hover:bg-primary/5 transition-all; 
+            }
+            .sidebar-link { 
+                @apply flex items-center gap-3 px-5 py-3 rounded-r-full text-gray-100 hover:bg-white hover:text-primary hover:font-semibold transition-all; 
+            }
+            .sidebar-link.active { 
+                @apply bg-white text-primary font-semibold; 
+            }
+            .file-drop-area { 
+                @apply relative border-2 border-primary/30 rounded-xl p-6 text-center transition-all hover:border-primary hover:bg-primary/5; 
+            }
+            .file-drop-area.active { 
+                @apply border-primary bg-primary/5; 
+            }
+            .progress-container { 
+                @apply h-2 bg-gray-200 rounded-full overflow-hidden w-full my-4; 
+            }
+            .progress-bar { 
+                @apply h-full bg-primary transition-all duration-300; 
+            }
+            .notification { 
+                @apply fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform transition-all duration-300 ease-in-out z-50 max-w-sm; 
+            }
+            .notification-success { @apply border-l-4 border-success; }
+            .notification-error { @apply border-l-4 border-danger; }
+            .notification-info { @apply border-l-4 border-primary; }
+            .tab-content { @apply hidden; }
+            .tab-content.active { @apply block; }
+            .param-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 border border-gray-100; }
+            .visual-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 cursor-pointer hover:shadow-md transition-all; }
+        }
+    </style>
+    
+    <style>
+        :root {
+            --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+            --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+            --text-color: white;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            margin-right: 2rem;
+        }
+
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--logo-bg);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            line-height: 1;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-subtext {
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1;
+            margin-top: 0.2rem;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.6px;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left ul, .nav-right ul {
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-left a, .nav-right a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+
+        .nav-left a:hover, .nav-right a:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        /* 活动状态样式 */
+        .nav-left a.active, .nav-right a.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+        }
+
+        .nav-right {
+            margin-left: auto;
+        }
+
+        .nav-icon {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        /* 汉堡菜单 - 移动设备 */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-left ul, .nav-right ul {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            /* 移动导航样式 */
+            .mobile-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--nav-bg);
+                box-shadow: var(--shadow);
+                padding: 1rem 1.5rem;
+                display: none;
+            }
+            
+            .mobile-nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .mobile-nav a {
+                text-decoration: none;
+                color: var(--text-color);
+                font-weight: 500;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                font-size: 1rem;
+            }
+            
+            .mobile-nav a:hover {
+                background: var(--hover-bg);
+            }
+        }
+        
+        /* 页脚样式（黑色背景） */
+        footer {
+            background: #000; /* 黑色背景 */
+            color: #fff; /* 白色文字 */
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .footer-column ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #fff; /* hover时文字变白 */
+        }
+        
+        .footer-bottom {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-neutral text-gray-800 min-h-screen flex flex-col">
+    <!-- 1. 顶部导航栏 -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">  <!-- 打开a标签 -->
+                        <div class="logo-icon">
+                            <span class="logo-text">AH</span>
+                            <span class="logo-subtext">Animal Hormone</span>
+                        </div>
+                    </a>  <!-- 闭合a标签（这里是需要补充的） -->
+                </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+                <button class="menu-toggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <!-- 移动导航菜单 -->
+            <div class="mobile-nav">
+                <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 2. 主内容区（侧边栏 + 标签页内容） -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 侧边栏导航 -->
+            <aside class="lg:w-1/5 w-full lg:h-[calc(100vh-7rem)] sticky top-24 self-start">
+                <div class="bg-primary/10 rounded-xl p-4 shadow-sm">
+                    <h3 class="text-primary font-semibold text-lg mb-4 px-2">Prediction Pipeline</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#sequence-input" class="sidebar-link active tab-trigger" data-tab="sequence-input">
+                            <i class="fa fa-file-text-o w-5 text-center"></i> Sequence Input
+                        </a></li>
+                        <li><a href="#prediction-params" class="sidebar-link tab-trigger" data-tab="prediction-params">
+                            <i class="fa fa-sliders w-5 text-center"></i> Prediction Parameters
+                        </a></li>
+                        <li><a href="#model-selection" class="sidebar-link tab-trigger" data-tab="model-selection">
+                            <i class="fa fa-cubes w-5 text-center"></i> Model Selection
+                        </a></li>
+                        <li><a href="#structure-prediction" class="sidebar-link tab-trigger" data-tab="structure-prediction">
+                            <i class="fa fa-cog w-5 text-center"></i> Structure Prediction
+                        </a></li>
+                        <li><a href="#structure-evaluation" class="sidebar-link tab-trigger" data-tab="structure-evaluation">
+                            <i class="fa fa-check-square-o w-5 text-center"></i> Structure Evaluation
+                        </a></li>
+                        <li><a href="#structure-refinement" class="sidebar-link tab-trigger" data-tab="structure-refinement">
+                            <i class="fa fa-wrench w-5 text-center"></i> Structure Refinement
+                        </a></li>
+                        <li><a href="#structure-visualization" class="sidebar-link tab-trigger" data-tab="structure-visualization">
+                            <i class="fa fa-eye w-5 text-center"></i> Visualization
+                        </a></li>
+                        <li><a href="#prediction-results" class="sidebar-link tab-trigger" data-tab="prediction-results">
+                            <i class="fa fa-download w-5 text-center"></i> Results
+                        </a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- 标签页内容区（核心功能模块） -->
+            <div class="lg:w-4/5 w-full">
+                <!-- 平台介绍 -->
+                <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                    <h2 class="text-2xl font-bold text-primary mb-3">AlphaFold2 Protein Structure Prediction</h2>
+                    <p class="text-gray-600 mb-2">
+                        AlphaFold2 is a deep learning-based tool that predicts the 3D structures of proteins from their amino acid sequences with high accuracy.
+                        This platform provides an intuitive interface for running AlphaFold2 predictions and analyzing the results.
+                    </p>
+                    <p class="text-primary font-medium">
+                        Predict protein structures with state-of-the-art accuracy.
+                    </p>
+                </div>
+
+                <!-- 2.1 序列输入模块 -->
+                <div id="sequence-input" class="tab-content active">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-file-text-o mr-2"></i> Protein Sequence Input
+                        </h3>
+                        <p class="text-gray-600 mb-6">Provide the amino acid sequence for which you want to predict the 3D structure.</p>
+
+                        <!-- 输入方式选择 -->
+                        <div class="mb-6">
+                            <p class="text-gray-700 font-medium mb-3">Input Method</p>
+                            <div class="flex flex-wrap gap-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="sequence-input-method" value="paste" checked class="text-primary">
+                                    <span class="ml-2 text-gray-700">Paste Sequence</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="sequence-input-method" value="upload" class="text-primary">
+                                    <span class="ml-2 text-gray-700">Upload File</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="sequence-input-method" value="uniprot" class="text-primary">
+                                    <span class="ml-2 text-gray-700">UniProt ID</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 粘贴序列区域 -->
+                        <div id="paste-sequence-section" class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">Amino Acid Sequence</label>
+                            <textarea id="sequence-textarea" rows="8" placeholder="Enter amino acid sequence (one-letter code, no spaces or numbers)..." 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg form-input-focus"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Example: MAAHKGAEHHHKAAEHHEQAAKHHHAAAEHHEKGEHEQAAHHADTAYAHHKHAEEHAAQAAKHDAEHHAPKPH</p>
+                        </div>
+
+                        <!-- 上传文件区域 -->
+                        <div id="upload-sequence-section" class="mb-6 hidden">
+                            <div class="file-drop-area" data-file-type="fasta-file">
+                                <input type="file" class="file-input hidden" accept=".fasta,.fa,.faa,.txt" data-target="fasta-file">
+                                <i class="fa fa-file-text-o text-5xl text-primary/50 mb-3"></i>
+                                <p class="text-gray-700 mb-2">FASTA File</p>
+                                <p class="text-gray-500 text-sm mb-4">Protein sequence in FASTA format</p>
+                                <label class="btn-primary inline-flex cursor-pointer text-sm px-4 py-2">
+                                    <i class="fa fa-upload mr-2"></i> Select File
+                                </label>
+                                <!-- 已选文件显示 -->
+                                <div class="selected-file-name hidden mt-4">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="fasta-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UniProt ID输入区域 -->
+                        <div id="uniprot-section" class="mb-6 hidden">
+                            <label class="block text-gray-700 font-medium mb-2">UniProt Accession ID</label>
+                            <div class="flex gap-3">
+                                <input type="text" id="uniprot-id" placeholder="e.g. P01308 for Insulin" 
+                                    class="flex-grow px-3 py-2 border border-gray-300 rounded-lg form-input-focus">
+                                <button id="fetch-uniprot-btn" class="btn-primary whitespace-nowrap">
+                                    <i class="fa fa-search mr-2"></i> Fetch Sequence
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">The sequence will be retrieved from UniProt database</p>
+                        </div>
+
+                        <!-- 序列信息 -->
+                        <div class="bg-gray-50 rounded-xl p-4 mt-6">
+                            <h4 class="font-semibold text-gray-700 mb-3">Sequence Information</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Length</p>
+                                    <p class="text-gray-800 font-medium" id="seq-length">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Molecular Weight</p>
+                                    <p class="text-gray-800 font-medium" id="seq-mw">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Isoelectric Point</p>
+                                    <p class="text-gray-800 font-medium" id="seq-pi">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.2 预测参数模块 -->
+                <div id="prediction-params" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-sliders mr-2"></i> Prediction Parameters
+                        </h3>
+                        <p class="text-gray-600 mb-6">Adjust parameters to optimize the protein structure prediction process.</p>
+
+                        <!-- 基本参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Basic Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Number of Models</label>
+                                    <input type="number" id="num-models" value="5" min="1" max="5" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Generate multiple models for comparison (1-5)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Random Seed</label>
+                                    <input type="number" id="random-seed" value="42" min="0" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">For reproducibility of results</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Max Prediction Time (minutes)</label>
+                                    <input type="number" id="max-time" value="60" min="10" max="180" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Template Date Cutoff</label>
+                                    <input type="date" id="template-date" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Use only templates released before this date</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 高级参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Advanced Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">MSA Method</label>
+                                    <select id="msa-method" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="mmseqs2">MMseqs2 (fast)</option>
+                                        <option value="jackhmmer">JackHMMER (sensitive)</option>
+                                        <option value="both">Both (comprehensive)</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Method for generating Multiple Sequence Alignments</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Homooligomer Prediction</label>
+                                    <select id="homooligomer" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="none">None</option>
+                                        <option value="dimer">Dimer (2-mer)</option>
+                                        <option value="tetramer">Tetramer (4-mer)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Pairing Mode (for multimers)</label>
+                                    <select id="pairing-mode" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="unpaired_paired">Unpaired + Paired</option>
+                                        <option value="paired">Paired only</option>
+                                        <option value="unpaired">Unpaired only</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Recycling Iterations</label>
+                                    <input type="number" id="recycling-iterations" value="3" min="1" max="20" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">More iterations may improve accuracy but increase runtime</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 模板参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Template Parameters</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="use-templates" checked class="rounded text-primary">
+                                    <label for="use-templates" class="text-gray-700">Use structural templates from PDB</label>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm mb-1">Max Template Hits</label>
+                                        <input type="number" id="max-templates" value="20" min="1" max="100" 
+                                               class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm mb-1">Minimum Template Identity (%)</label>
+                                        <input type="number" id="min-template-identity" value="30" min="0" max="100" 
+                                               class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.3 模型选择模块 -->
+                <div id="model-selection" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-cubes mr-2"></i> Model Selection
+                        </h3>
+                        <p class="text-gray-600 mb-6">Choose AlphaFold2 model parameters and training configurations.</p>
+
+                        <!-- 模型版本 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">AlphaFold Version</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Model Version</label>
+                                    <select id="model-version" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="v2.3.1">AlphaFold 2.3.1 (latest)</option>
+                                        <option value="v2.2.0">AlphaFold 2.2.0</option>
+                                        <option value="v2.1.0">AlphaFold 2.1.0</option>
+                                        <option value="v2.0.0">AlphaFold 2.0.0</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Model Type</label>
+                                    <select id="model-type" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="monomer">Monomer (single chain)</option>
+                                        <option value="monomer_ptm">Monomer + PTMs</option>
+                                        <option value="multimer">Multimer (complexes)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 模型参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Model Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Confidence Threshold</label>
+                                    <input type="number" id="confidence-threshold" value="70" min="0" max="100" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">pLDDT score threshold for high confidence regions</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Attention Head</label>
+                                    <input type="number" id="attention-head" value="12" min="8" max="32" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Embedding Dimension</label>
+                                    <select id="embedding-dim" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="256">256</option>
+                                        <option value="512" selected>512</option>
+                                        <option value="1024">1024</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Use Dropout</label>
+                                    <select id="use-dropout" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="true">Yes</option>
+                                        <option value="false" selected>No</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">For model regularization</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 自定义模型 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Custom Model (Optional)</h4>
+                            <div class="file-drop-area" data-file-type="custom-model">
+                                <input type="file" class="file-input hidden" accept=".pkl,.pb" data-target="custom-model">
+                                <div class="flex flex-col items-center justify-center py-4">
+                                    <i class="fa fa-file-code-o text-2xl text-primary/50 mb-2"></i>
+                                    <p class="text-gray-600 text-sm">Upload custom trained AlphaFold model checkpoint</p>
+                                    <label class="btn-secondary mt-2 text-sm px-3 py-1 cursor-pointer">
+                                        <i class="fa fa-upload mr-1"></i> Select Model File
+                                    </label>
+                                </div>
+                                <div class="selected-file-name hidden mt-2">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="custom-model-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.4 结构预测模块 -->
+                <div id="structure-prediction" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-cog mr-2"></i> Structure Prediction
+                        </h3>
+                        <p class="text-gray-600 mb-6">Initiate and monitor the protein structure prediction process.</p>
+
+                        <!-- 预测状态 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Prediction Status</h4>
+                            <div id="prediction-not-started" class="text-center py-8">
+                                <i class="fa fa-hourglass-start text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-500 mb-4">Prediction not started</p>
+                                <button id="start-prediction-btn" class="btn-primary">
+                                    <i class="fa fa-play mr-2"></i> Start Prediction
+                                </button>
+                            </div>
+
+                            <div id="prediction-in-progress" class="hidden">
+                                <div class="mb-4">
+                                    <p class="text-gray-700 text-sm mb-1" id="prediction-status-text">Initializing prediction...</p>
+                                    <div class="progress-container">
+                                        <div class="progress-bar" id="prediction-progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center text-sm">
+                                    <div class="bg-gray-50 p-3 rounded-lg">
+                                        <p class="text-gray-500">Step</p>
+                                        <p class="font-medium text-primary" id="prediction-step">MSA Generation</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-lg">
+                                        <p class="text-gray-500">Elapsed Time</p>
+                                        <p class="font-medium text-primary" id="prediction-time">00:00:00</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-lg">
+                                        <p class="text-gray-500">Estimated Remaining</p>
+                                        <p class="font-medium text-primary" id="prediction-remaining">00:20:00</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 text-center">
+                                    <button id="cancel-prediction-btn" class="btn-secondary">
+                                        <i class="fa fa-stop mr-2"></i> Cancel Prediction
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="prediction-completed" class="hidden text-center py-6">
+                                <i class="fa fa-check-circle text-4xl text-success mb-3"></i>
+                                <p class="text-gray-700 font-medium mb-2">Prediction Completed Successfully</p>
+                                <p class="text-gray-500 text-sm mb-4">5 models generated with average pLDDT score: <span id="avg-plddt" class="font-medium">87.3</span></p>
+                                <button id="view-results-btn" class="btn-primary">
+                                    <i class="fa fa-arrow-right mr-2"></i> View Results
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 预测日志 -->
+                        <div class="param-card mt-4">
+                            <h4 class="font-semibold text-primary mb-3">Prediction Log</h4>
+                            <div class="bg-gray-900 text-gray-300 rounded-lg p-4 h-48 overflow-y-auto text-xs font-mono" id="prediction-log">
+                                <p class="text-gray-400">Prediction log will appear here once started...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.5 结构评估模块 -->
+                <div id="structure-evaluation" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-check-square-o mr-2"></i> Structure Evaluation
+                        </h3>
+                        <p class="text-gray-600 mb-6">Evaluate the quality and confidence of predicted protein structures.</p>
+
+                        <!-- 模型评估指标 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Model Quality Metrics</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                    <p class="text-gray-500 text-sm">Average pLDDT</p>
+                                    <p class="text-2xl font-bold text-primary" id="avg-plddt-score">-</p>
+                                    <p class="text-xs text-gray-500 mt-1">Predicted Local Distance Difference Test</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                    <p class="text-gray-500 text-sm">pTM Score</p>
+                                    <p class="text-2xl font-bold text-primary" id="ptm-score">-</p>
+                                    <p class="text-xs text-gray-500 mt-1">Predicted TM-score for multimers</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                    <p class="text-gray-500 text-sm">RMSD (to template)</p>
+                                    <p class="text-2xl font-bold text-primary" id="rmsd-score">-</p>
+                                    <p class="text-xs text-gray-500 mt-1">Root Mean Square Deviation (Å)</p>
+                                </div>
+                            </div>
+
+                            <!-- 模型选择 -->
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm mb-1">Select Model to Evaluate</label>
+                                <select id="evaluation-model" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <option value="model_1">Model 1 (pLDDT: 91.2)</option>
+                                    <option value="model_2">Model 2 (pLDDT: 89.7)</option>
+                                    <option value="model_3">Model 3 (pLDDT: 87.5)</option>
+                                    <option value="model_4">Model 4 (pLDDT: 85.3)</option>
+                                    <option value="model_5">Model 5 (pLDDT: 83.8)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 评估图表 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="param-card">
+                                <h4 class="font-semibold text-primary mb-3">pLDDT Confidence Plot</h4>
+                                <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                                    <img src="https://picsum.photos/seed/plddt/600/400" alt="pLDDT confidence plot" class="max-h-full max-w-full">
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Per-residue confidence scores (0-100)</p>
+                            </div>
+                            <div class="param-card">
+                                <h4 class="font-semibold text-primary mb-3">Predicted Aligned Error</h4>
+                                <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                                    <img src="https://picsum.photos/seed/pae/600/400" alt="Predicted Aligned Error plot" class="max-h-full max-w-full">
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Expected positional error between residues</p>
+                            </div>
+                        </div>
+
+                        <!-- 结构验证 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Structure Validation</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-gray-700 text-sm">Ramachandran Plot Quality</p>
+                                        <p class="text-xs text-gray-500">Fraction of residues in favored regions</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-primary">97.3%</p>
+                                        <p class="text-xs text-success"><i class="fa fa-check"></i> Passed</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-success h-1.5 rounded-full" style="width: 97.3%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-4">
+                                    <div>
+                                        <p class="text-gray-700 text-sm">Clash Score</p>
+                                        <p class="text-xs text-gray-500">Number of severe steric clashes per 1000 atoms</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-primary">2.1</p>
+                                        <p class="text-xs text-success"><i class="fa fa-check"></i> Passed</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-success h-1.5 rounded-full" style="width: 95%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-4">
+                                    <div>
+                                        <p class="text-gray-700 text-sm">MolProbity Score</p>
+                                        <p class="text-xs text-gray-500">Composite quality score</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-primary">1.7</p>
+                                        <p class="text-xs text-success"><i class="fa fa-check"></i> Passed</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-success h-1.5 rounded-full" style="width: 92%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.6 结构优化模块 -->
+                <div id="structure-refinement" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-wrench mr-2"></i> Structure Refinement
+                        </h3>
+                        <p class="text-gray-600 mb-6">Optimize and refine the predicted protein structures.</p>
+
+                        <!-- 优化选项 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Refinement Options</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Refinement Method</label>
+                                    <select id="refinement-method" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="amber">Amber (molecular dynamics)</option>
+                                        <option value="rosetta">Rosetta (energy minimization)</option>
+                                        <option value="none">None (use raw prediction)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Model to Refine</label>
+                                    <select id="model-to-refine" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="best">Best model (highest pLDDT)</option>
+                                        <option value="model_1">Model 1 (pLDDT: 91.2)</option>
+                                        <option value="model_2">Model 2 (pLDDT: 89.7)</option>
+                                        <option value="model_3">Model 3 (pLDDT: 87.5)</option>
+                                        <option value="model_4">Model 4 (pLDDT: 85.3)</option>
+                                        <option value="model_5">Model 5 (pLDDT: 83.8)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Amber参数 -->
+                        <div class="param-card" id="amber-params">
+                            <h4 class="font-semibold text-primary mb-3">Amber Refinement Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Force Field</label>
+                                    <select id="force-field" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="ff14SB">Amber ff14SB</option>
+                                        <option value="ff19SB">Amber ff19SB</option>
+                                        <option value="ff99SBildn">Amber ff99SBildn</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Solvent Model</label>
+                                    <select id="solvent-model" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="tip3p">TIP3P water</option>
+                                        <option value="tip4pew">TIP4P-Ew water</option>
+                                        <option value="implicit">Implicit solvent</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Simulation Time (ns)</label>
+                                    <input type="number" id="sim-time" value="10" min="1" max="100" step="1"
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Temperature (K)</label>
+                                    <input type="number" id="sim-temp" value="300" min="100" max="500"
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rosetta参数 -->
+                        <div class="param-card hidden" id="rosetta-params">
+                            <h4 class="font-semibold text-primary mb-3">Rosetta Refinement Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Protocol</label>
+                                    <select id="rosetta-protocol" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="relax">FastRelax</option>
+                                        <option value="cartesian">Cartesian Relax</option>
+                                        <option value="dualspace">Dual-space Relax</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Number of Models</label>
+                                    <input type="number" id="rosetta-models" value="5" min="1" max="20"
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Energy Function</label>
+                                    <select id="energy-function" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="ref2015">ref2015</option>
+                                        <option value="talaris2014">talaris2014</option>
+                                        <option value="beta_nov16">beta_nov16</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 启动优化按钮 -->
+                        <div class="text-center mt-6">
+                            <button id="start-refinement-btn" class="btn-primary">
+                                <i class="fa fa-cogs mr-2"></i> Start Structure Refinement
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.7 结构可视化模块 -->
+                <div id="structure-visualization" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-eye mr-2"></i> Structure Visualization
+                        </h3>
+                        <p class="text-gray-600 mb-6">Visualize and analyze the predicted protein structures.</p>
+
+                        <!-- 可视化控制 -->
+                        <div class="param-card mb-6">
+                            <h4 class="font-semibold text-primary mb-3">Visualization Controls</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Select Structure</label>
+                                    <select id="visualization-structure" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="model_1">Model 1 (pLDDT: 91.2)</option>
+                                        <option value="model_2">Model 2 (pLDDT: 89.7)</option>
+                                        <option value="model_3">Model 3 (pLDDT: 87.5)</option>
+                                        <option value="model_4">Model 4 (pLDDT: 85.3)</option>
+                                        <option value="model_5">Model 5 (pLDDT: 83.8)</option>
+                                        <option value="refined">Refined Model</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Coloring Scheme</label>
+                                    <select id="coloring-scheme" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="plddt">pLDDT Confidence</option>
+                                        <option value="chain">Chain</option>
+                                        <option value="secondary">Secondary Structure</option>
+                                        <option value="rainbow">Rainbow (N→C)</option>
+                                        <option value="uniform">Uniform Color</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Representation</label>
+                                    <select id="representation" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="cartoon">Cartoon</option>
+                                        <option value="surface">Surface</option>
+                                        <option value="sticks">Sticks</option>
+                                        <option value="spheres">Spheres</option>
+                                        <option value="ribbon">Ribbon</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3D结构可视化 -->
+                        <div class="param-card mb-6">
+                            <div class="flex flex-col md:flex-row gap-6">
+                                <!-- 主视图 -->
+                                <div class="md:w-2/3">
+                                    <h4 class="font-semibold text-primary mb-3">3D Structure View</h4>
+                                    <div class="bg-gray-900 rounded-lg overflow-hidden aspect-square relative">
+                                        <!-- 这里会嵌入3D可视化组件，如NGL Viewer -->
+                                        <img src="https://picsum.photos/seed/protein/800/800" alt="3D Protein Structure Visualization" class="w-full h-full object-contain">
+                                        <div class="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                                            <i class="fa fa-mouse-pointer mr-1"></i> Drag to rotate
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 控制面板 -->
+                                <div class="md:w-1/3">
+                                    <h4 class="font-semibold text-primary mb-3">View Controls</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <p class="text-gray-700 text-sm mb-2">Orientation Presets</p>
+                                            <div class="grid grid-cols-2 gap-2">
+                                                <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm transition-colors">
+                                                    Front
+                                                </button>
+                                                <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm transition-colors">
+                                                    Back
+                                                </button>
+                                                <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm transition-colors">
+                                                    Top
+                                                </button>
+                                                <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded text-sm transition-colors">
+                                                    Side
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="text-gray-700 text-sm mb-2">Display Options</p>
+                                            <div class="space-y-2">
+                                                <div class="flex items-center gap-2">
+                                                    <input type="checkbox" id="show-labels" class="rounded text-primary">
+                                                    <label for="show-labels" class="text-gray-700 text-sm">Show residue labels</label>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="checkbox" id="show-water" class="rounded text-primary">
+                                                    <label for="show-water" class="text-gray-700 text-sm">Show water molecules</label>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="checkbox" id="show-hetatms" class="rounded text-primary">
+                                                    <label for="show-hetatms" class="text-gray-700 text-sm">Show ligands/ions</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <button class="btn-primary w-full text-sm">
+                                                <i class="fa fa-expand mr-1"></i> Fullscreen View
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 结构分析工具 -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="visual-card" data-analysis-type="secondary-structure">
+                                <div class="text-center">
+                                    <i class="fa fa-cubes text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Secondary Structure</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Alpha helices and beta sheets</p>
+                                    <button class="view-analysis-btn btn-primary text-sm px-3 py-1">Analyze</button>
+                                </div>
+                            </div>
+
+                            <div class="visual-card" data-analysis-type="active-site">
+                                <div class="text-center">
+                                    <i class="fa fa-crosshairs text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Active Site Prediction</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Identify potential binding sites</p>
+                                    <button class="view-analysis-btn btn-primary text-sm px-3 py-1">Analyze</button>
+                                </div>
+                            </div>
+
+                            <div class="visual-card" data-analysis-type="pocket-detection">
+                                <div class="text-center">
+                                    <i class="fa fa-search text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Pocket Detection</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Find ligand binding pockets</p>
+                                    <button class="view-analysis-btn btn-primary text-sm px-3 py-1">Analyze</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.8 结果模块 -->
+                <div id="prediction-results" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-download mr-2"></i> Prediction Results
+                        </h3>
+                        <p class="text-gray-600 mb-6">Download the predicted protein structures and associated data.</p>
+
+                        <!-- 结果状态提示 -->
+                        <div id="results-empty" class="text-center py-10 bg-gray-50 rounded-xl">
+                            <i class="fa fa-file-text-o text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">No results available yet. Please run a prediction first.</p>
+                        </div>
+
+                        <!-- 结果内容 -->
+                        <div id="results-content" class="hidden">
+                            <!-- 预测统计 -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Models Generated</p>
+                                    <p class="text-xl font-bold text-primary" id="total-models">5</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Avg. pLDDT Score</p>
+                                    <p class="text-xl font-bold text-primary" id="avg-plddt-result">87.3</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Prediction Time</p>
+                                    <p class="text-xl font-bold text-primary" id="prediction-duration">00:42:18</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Residues</p>
+                                    <p class="text-xl font-bold text-primary" id="residue-count">342</p>
+                                </div>
+                            </div>
+
+                            <!-- 模型质量表格 -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-primary mb-3">Model Quality Metrics</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-gray-700 text-sm">
+                                                <th class="py-3 px-4 text-left">Model</th>
+                                                <th class="py-3 px-4 text-left">pLDDT Score</th>
+                                                <th class="py-3 px-4 text-left">pTM Score</th>
+                                                <th class="py-3 px-4 text-left">RMSD (Å)</th>
+                                                <th class="py-3 px-4 text-left">Status</th>
+                                                <th class="py-3 px-4 text-left">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="models-table" class="text-gray-700 text-sm">
+                                            <tr class="border-b border-gray-200">
+                                                <td class="py-3 px-4">Model 1</td>
+                                                <td class="py-3 px-4 text-success font-medium">91.2</td>
+                                                <td class="py-3 px-4">0.92</td>
+                                                <td class="py-3 px-4">1.2</td>
+                                                <td class="py-3 px-4"><span class="bg-success/10 text-success px-2 py-1 rounded-full text-xs">Best</span></td>
+                                                <td class="py-3 px-4">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" title="View">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-gray-600 hover:text-gray-800" title="Download">
+                                                        <i class="fa fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="border-b border-gray-200 bg-gray-50">
+                                                <td class="py-3 px-4">Model 2</td>
+                                                <td class="py-3 px-4 text-success font-medium">89.7</td>
+                                                <td class="py-3 px-4">0.90</td>
+                                                <td class="py-3 px-4">1.4</td>
+                                                <td class="py-3 px-4"><span class="bg-success/10 text-success px-2 py-1 rounded-full text-xs">Good</span></td>
+                                                <td class="py-3 px-4">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" title="View">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-gray-600 hover:text-gray-800" title="Download">
+                                                        <i class="fa fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="border-b border-gray-200">
+                                                <td class="py-3 px-4">Model 3</td>
+                                                <td class="py-3 px-4 text-success font-medium">87.5</td>
+                                                <td class="py-3 px-4">0.88</td>
+                                                <td class="py-3 px-4">1.7</td>
+                                                <td class="py-3 px-4"><span class="bg-success/10 text-success px-2 py-1 rounded-full text-xs">Good</span></td>
+                                                <td class="py-3 px-4">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" title="View">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-gray-600 hover:text-gray-800" title="Download">
+                                                        <i class="fa fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="border-b border-gray-200 bg-gray-50">
+                                                <td class="py-3 px-4">Model 4</td>
+                                                <td class="py-3 px-4 text-warning font-medium">85.3</td>
+                                                <td class="py-3 px-4">0.85</td>
+                                                <td class="py-3 px-4">2.1</td>
+                                                <td class="py-3 px-4"><span class="bg-warning/10 text-warning px-2 py-1 rounded-full text-xs">Medium</span></td>
+                                                <td class="py-3 px-4">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" title="View">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-gray-600 hover:text-gray-800" title="Download">
+                                                        <i class="fa fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 px-4">Model 5</td>
+                                                <td class="py-3 px-4 text-warning font-medium">83.8</td>
+                                                <td class="py-3 px-4">0.83</td>
+                                                <td class="py-3 px-4">2.3</td>
+                                                <td class="py-3 px-4"><span class="bg-warning/10 text-warning px-2 py-1 rounded-full text-xs">Medium</span></td>
+                                                <td class="py-3 px-4">
+                                                    <button class="text-primary hover:text-primary/80 mr-3" title="View">
+                                                        <i class="fa fa-eye"></i>
+                                                    </button>
+                                                    <button class="text-gray-600 hover:text-gray-800" title="Download">
+                                                        <i class="fa fa-download"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 精炼模型 -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-primary mb-3">Refined Model</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <div>
+                                            <p class="font-medium">Amber-refined Model (from Model 1)</p>
+                                            <p class="text-sm text-gray-600">Refinement completed: 2023-06-15 14:32:18</p>
+                                            <div class="flex gap-4 mt-2">
+                                                <div>
+                                                    <p class="text-xs text-gray-500">Final pLDDT</p>
+                                                    <p class="font-medium">92.1</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs text-gray-500">RMSD to original</p>
+                                                    <p class="font-medium">0.87 Å</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-xs text-gray-500">MolProbity Score</p>
+                                                    <p class="font-medium">1.2</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="btn-secondary text-sm">
+                                                <i class="fa fa-eye mr-1"></i> View
+                                            </button>
+                                            <button class="btn-primary text-sm">
+                                                <i class="fa fa-download mr-1"></i> Download
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 结果文件下载 -->
+                            <div class="bg-gray-50 p-4 rounded-xl">
+                                <h4 class="font-semibold text-primary mb-3">Download Results</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="all">
+                                        <i class="fa fa-download"></i> All Results (ZIP)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="best-model">
+                                        <i class="fa fa-download"></i> Best Model (PDB)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="all-models">
+                                        <i class="fa fa-download"></i> All Models (PDB)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="refined">
+                                        <i class="fa fa-download"></i> Refined Model (PDB)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="metrics">
+                                        <i class="fa fa-download"></i> Quality Metrics (CSV)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="plots">
+                                        <i class="fa fa-download"></i> All Plots (PDF)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 全局操作按钮 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="run-prediction-btn" class="btn-primary w-full sm:w-auto" disabled>
+                        <i class="fa fa-play-circle mr-2"></i> Run Prediction
+                    </button>
+                    <button id="reset-parameters-btn" class="btn-secondary w-full sm:w-auto">
+                        <i class="fa fa-refresh mr-2"></i> Reset Parameters
+                    </button>
+                    <button id="download-all-results-btn" class="btn-secondary w-full sm:w-auto" disabled>
+                        <i class="fa fa-download mr-2"></i> Download All Results
+                    </button>
+                </div>
+
+                <!-- 分析进度条 -->
+                <div id="prediction-progress" class="hidden mt-6">
+                    <p class="text-gray-700 text-sm mb-1" id="progress-text">Starting prediction...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. 通知组件 -->
+    <div id="notification" class="notification fade-in"></div>
+
+    <!-- 4. 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">AlphaFold2 Prediction Platform</h3>
+                    <p class="text-gray-400 text-sm">
+                        A user-friendly interface for protein structure prediction using AlphaFold2.
+                        Predict and analyze protein structures with state-of-the-art accuracy.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors">Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors">Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors">Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors">AI</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o mr-2"></i>
+                            <a href="mailto:contact@alphafold-platform.com" class="hover:text-white transition-colors">contact@alphafold-platform.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone mr-2"></i>
+                            <span>+1 (555) 123-4567</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-map-marker mr-2"></i>
+                            <span>Structural Bioinformatics Lab</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2023 AlphaFold2 Prediction Platform. All rights reserved.
+            </div>
+        </div>
+    </footer>
+        <!-- 5. JavaScript 逻辑 -->
+    <script>
+    // 全局变量：存储上传文件信息
+let uploadedFiles = {};
+// 标记预测是否完成
+let predictionCompleted = false;
+// 存储预测开始时间
+let predictionStartTime = null;
+// 预测计时器
+let predictionTimer = null;
+
+// DOM 加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化移动菜单
+    initMobileMenu();
+    // 标签页切换逻辑
+    initTabSwitch();
+    // 文件上传逻辑
+    initFileUpload();
+    // 运行预测逻辑
+    initRunPrediction();
+    // 参数依赖逻辑
+    initParameterDependencies();
+    // 序列输入切换逻辑
+    initSequenceInputSwitch();
+    // 结果下载逻辑
+    initDownloadResults();
+    // 重置参数按钮
+    initResetParameters();
+    // 结构分析按钮
+    initStructureAnalysis();
+    // 序列分析功能
+    initSequenceAnalysis();
+    // 视图控制功能
+    initViewControls();
+    // 精炼方法切换
+    initRefinementMethodSwitch();
+});
+
+// 1. 初始化移动菜单
+function initMobileMenu() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileNav = document.querySelector('.mobile-nav');
+    
+    menuToggle.addEventListener('click', function() {
+        mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+    });
+}
+
+// 2. 标签页切换
+function initTabSwitch() {
+    const tabTriggers = document.querySelectorAll('.tab-trigger');
+    tabTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 获取目标标签页ID
+            const targetTab = this.getAttribute('data-tab') || this.getAttribute('href').substring(1);
+            
+            // 移除所有激活状态
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+            
+            // 设置新的激活状态
+            document.getElementById(targetTab).classList.add('active');
+            this.classList.add('active');
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+    
+    // 结果查看按钮切换到结果标签页
+    document.getElementById('view-results-btn').addEventListener('click', function() {
+        document.querySelector('.tab-trigger[data-tab="prediction-results"]').click();
+    });
+}
+
+// 3. 文件上传逻辑
+function initFileUpload() {
+    // 文件上传区域点击触发文件选择
+    const fileDropAreas = document.querySelectorAll('.file-drop-area');
+    fileDropAreas.forEach(area => {
+        area.addEventListener('click', function(e) {
+            // 避免点击按钮时触发
+            if (!e.target.closest('button') && !e.target.closest('.selected-file-name')) {
+                const fileInput = this.querySelector('.file-input');
+                fileInput.click();
+            }
+        });
+        
+        // 拖放功能
+        area.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('active');
+        });
+        
+        area.addEventListener('dragleave', function() {
+            this.classList.remove('active');
+        });
+        
+        area.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            
+            if (e.dataTransfer.files.length) {
+                const fileInput = this.querySelector('.file-input');
+                const fileType = this.getAttribute('data-file-type');
+                handleFileUpload(fileInput, e.dataTransfer.files[0], fileType);
+            }
+        });
+        
+        // 文件选择处理
+        const fileInput = area.querySelector('.file-input');
+        const fileType = area.getAttribute('data-file-type');
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                handleFileUpload(this, this.files[0], fileType);
+            }
+        });
+        
+        // 移除文件
+        const removeBtn = area.querySelector('.remove-file');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                const fileNameEl = area.querySelector('.file-name span');
+                const selectedFileEl = area.querySelector('.selected-file-name');
+                
+                fileNameEl.textContent = '';
+                selectedFileEl.classList.add('hidden');
+                fileInput.value = '';
+                delete uploadedFiles[fileType];
+                
+                // 更新运行按钮状态
+                updateRunButtonState();
+            });
+        }
+    });
+    
+    // 文件上传处理函数
+    function handleFileUpload(input, file, fileType) {
+        const area = input.closest('.file-drop-area');
+        const fileNameEl = area.querySelector('.file-name span');
+        const selectedFileEl = area.querySelector('.selected-file-name');
+        
+        // 存储文件信息
+        uploadedFiles[fileType] = file;
+        
+        // 显示文件名
+        fileNameEl.textContent = file.name;
+        selectedFileEl.classList.remove('hidden');
+        
+        // 如果是序列文件，分析序列
+        if (fileType === 'fasta-file') {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    // 提取FASTA序列（去除标题行和空格）
+                    const sequence = content.split('\n').slice(1).join('').replace(/\s/g, '');
+                    document.getElementById('sequence-textarea').value = sequence;
+                    analyzeSequence(sequence);
+                } catch (error) {
+                    showNotification('Error reading FASTA file', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // 更新运行按钮状态
+        updateRunButtonState();
+    }
+}
+
+// 4. 运行预测逻辑
+function initRunPrediction() {
+    // 开始预测按钮
+    const startBtn = document.getElementById('start-prediction-btn');
+    // 取消预测按钮
+    const cancelBtn = document.getElementById('cancel-prediction-btn');
+    // 全局运行预测按钮
+    const globalRunBtn = document.getElementById('run-prediction-btn');
+    
+    // 开始预测
+    function startPrediction() {
+        // 切换到预测标签页
+        document.querySelector('.tab-trigger[data-tab="structure-prediction"]').click();
+        
+        // 更新UI状态
+        document.getElementById('prediction-not-started').classList.add('hidden');
+        document.getElementById('prediction-in-progress').classList.remove('hidden');
+        
+        // 记录开始时间
+        predictionStartTime = new Date();
+        
+        // 更新进度
+        let progress = 0;
+        const progressBar = document.getElementById('prediction-progress-bar');
+        const statusText = document.getElementById('prediction-status-text');
+        const predictionStep = document.getElementById('prediction-step');
+        
+        // 预测步骤
+        const steps = [
+            'MSA Generation',
+            'Template Search',
+            'Feature Construction',
+            'Model Prediction',
+            'Model Ranking',
+            'Structure Analysis'
+        ];
+        
+        let currentStep = 0;
+        predictionStep.textContent = steps[currentStep];
+        
+        // 更新时间显示
+        updatePredictionTime();
+        predictionTimer = setInterval(updatePredictionTime, 1000);
+        
+        // 模拟进度更新
+        const interval = setInterval(function() {
+            progress += Math.random() * 3;
+            
+            // 步骤更新
+            if (progress > (currentStep + 1) * 100 / steps.length && currentStep < steps.length - 1) {
+                currentStep++;
+                predictionStep.textContent = steps[currentStep];
+                addPredictionLog(`Completed step: ${steps[currentStep - 1]}`);
+            }
+            
+            // 更新进度条
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                clearInterval(predictionTimer);
+                
+                // 预测完成
+                setTimeout(function() {
+                    predictionCompleted = true;
+                    document.getElementById('prediction-in-progress').classList.add('hidden');
+                    document.getElementById('prediction-completed').classList.remove('hidden');
+                    document.getElementById('results-empty').classList.add('hidden');
+                    document.getElementById('results-content').classList.remove('hidden');
+                    document.getElementById('run-prediction-btn').disabled = true;
+                    document.getElementById('download-all-results-btn').disabled = false;
+                    
+                    // 更新评估指标
+                    document.getElementById('avg-plddt-score').textContent = '87.3';
+                    document.getElementById('ptm-score').textContent = '0.89';
+                    document.getElementById('rmsd-score').textContent = '1.5 Å';
+                    
+                    addPredictionLog('Prediction completed successfully!');
+                    showNotification('Prediction completed successfully', 'success');
+                }, 1000);
+            }
+            
+            progressBar.style.width = progress + '%';
+            statusText.textContent = `Progress: ${Math.round(progress)}%`;
+        }, 1000);
+        
+        // 添加日志
+        addPredictionLog('Prediction started');
+        addPredictionLog(`Using AlphaFold version: ${document.getElementById('model-version').value}`);
+        addPredictionLog(`Number of models to generate: ${document.getElementById('num-models').value}`);
+        
+        // 禁用运行按钮
+        startBtn.disabled = true;
+        globalRunBtn.disabled = true;
+    }
+    
+    // 取消预测
+    function cancelPrediction() {
+        if (confirm('Are you sure you want to cancel the prediction?')) {
+            clearInterval(predictionTimer);
+            document.getElementById('prediction-in-progress').classList.add('hidden');
+            document.getElementById('prediction-not-started').classList.remove('hidden');
+            
+            addPredictionLog('Prediction cancelled by user');
+            showNotification('Prediction cancelled', 'info');
+            
+            // 启用运行按钮
+            startBtn.disabled = false;
+            globalRunBtn.disabled = false;
+        }
+    }
+    
+    // 更新预测时间
+    function updatePredictionTime() {
+        if (!predictionStartTime) return;
+        
+        const now = new Date();
+        const elapsedSeconds = Math.floor((now - predictionStartTime) / 1000);
+        const hours = Math.floor(elapsedSeconds / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60).toString().padStart(2, '0');
+        const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+        
+        document.getElementById('prediction-time').textContent = `${hours}:${minutes}:${seconds}`;
+        
+        // 估计剩余时间（简单模拟）
+        const progress = parseInt(document.getElementById('prediction-progress-bar').style.width) || 0;
+        if (progress > 0 && progress < 100) {
+            const totalEstimated = Math.floor(elapsedSeconds * 100 / progress);
+            const remainingSeconds = totalEstimated - elapsedSeconds;
+            
+            const remHours = Math.floor(remainingSeconds / 3600).toString().padStart(2, '0');
+            const remMinutes = Math.floor((remainingSeconds % 3600) / 60).toString().padStart(2, '0');
+            const remSeconds = (remainingSeconds % 60).toString().padStart(2, '0');
+            
+            document.getElementById('prediction-remaining').textContent = `${remHours}:${remMinutes}:${remSeconds}`;
+        }
+    }
+    
+    // 添加预测日志
+    function addPredictionLog(message) {
+        const logElement = document.getElementById('prediction-log');
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('p');
+        logEntry.innerHTML = `[${timestamp}] ${message}`;
+        logEntry.className = 'mb-1';
+        logElement.appendChild(logEntry);
+        logElement.scrollTop = logElement.scrollHeight;
+    }
+    
+    // 绑定事件
+    startBtn.addEventListener('click', startPrediction);
+    cancelBtn.addEventListener('click', cancelPrediction);
+    globalRunBtn.addEventListener('click', startPrediction);
+    
+    // 开始结构优化
+    document.getElementById('start-refinement-btn').addEventListener('click', function() {
+        const method = document.getElementById('refinement-method').value;
+        const model = document.getElementById('model-to-refine').value;
+        
+        if (!predictionCompleted) {
+            showNotification('Please complete a prediction first', 'error');
+            return;
+        }
+        
+        showNotification(`Starting ${method} refinement on ${model}`, 'info');
+        
+        // 模拟优化过程
+        this.disabled = true;
+        this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Refining...';
+        
+        setTimeout(() => {
+            showNotification('Structure refinement completed', 'success');
+            this.disabled = false;
+            this.innerHTML = '<i class="fa fa-cogs mr-2"></i> Start Structure Refinement';
+        }, 3000);
+    });
+}
+
+// 5. 参数依赖逻辑
+function initParameterDependencies() {
+    // 模板使用复选框
+    const useTemplates = document.getElementById('use-templates');
+    const templateParams = document.querySelectorAll('#max-templates, #min-template-identity, #template-date');
+    
+    useTemplates.addEventListener('change', function() {
+        const disabled = !this.checked;
+        templateParams.forEach(param => {
+            param.disabled = disabled;
+            if (disabled) param.classList.add('opacity-50');
+            else param.classList.remove('opacity-50');
+        });
+    });
+    
+    // 多聚体模式依赖
+    const modelType = document.getElementById('model-type');
+    const pairingMode = document.getElementById('pairing-mode');
+    
+    modelType.addEventListener('change', function() {
+        const isMultimer = this.value === 'multimer';
+        pairingMode.disabled = !isMultimer;
+        
+        if (isMultimer) {
+            pairingMode.classList.remove('opacity-50');
+        } else {
+            pairingMode.classList.add('opacity-50');
+        }
+    });
+    
+    // 初始化状态
+    pairingMode.disabled = modelType.value !== 'multimer';
+    if (modelType.value !== 'multimer') {
+        pairingMode.classList.add('opacity-50');
+    }
+}
+
+// 6. 序列输入切换逻辑
+function initSequenceInputSwitch() {
+    const inputRadios = document.querySelectorAll('input[name="sequence-input-method"]');
+    const pasteSection = document.getElementById('paste-sequence-section');
+    const uploadSection = document.getElementById('upload-sequence-section');
+    const uniprotSection = document.getElementById('uniprot-section');
+    
+    // 切换输入方式
+    function switchInputMethod(method) {
+        pasteSection.classList.add('hidden');
+        uploadSection.classList.add('hidden');
+        uniprotSection.classList.add('hidden');
+        
+        if (method === 'paste') {
+            pasteSection.classList.remove('hidden');
+        } else if (method === 'upload') {
+            uploadSection.classList.remove('hidden');
+        } else if (method === 'uniprot') {
+            uniprotSection.classList.remove('hidden');
+        }
+        
+        // 更新运行按钮状态
+        updateRunButtonState();
+    }
+    
+    // 绑定单选按钮事件
+    inputRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            switchInputMethod(this.value);
+        });
+    });
+    
+    // UniProt ID获取序列
+    document.getElementById('fetch-uniprot-btn').addEventListener('click', function() {
+        const uniprotId = document.getElementById('uniprot-id').value.trim();
+        
+        if (!uniprotId) {
+            showNotification('Please enter a UniProt ID', 'error');
+            return;
+        }
+        
+        // 模拟API请求
+        this.disabled = true;
+        this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Fetching...';
+        
+        showNotification(`Fetching sequence for UniProt ID: ${uniprotId}`, 'info');
+        
+        setTimeout(() => {
+            // 模拟获取到的序列
+            const dummySequence = 'MAAHKGAEHHHKAAEHHEQAAKHHHAAAEHHEKGEHEQAAHHADTAYAHHKHAEEHAAQAAKHDAEHHAPKPHK' +
+                                 'AERQGGSLGLPGTIQRMFVSSPSTQEQESKEEEAAAKKEEEEAAAKKEAAAKKEEEEAAAKKEAAAKKEEEEAAA';
+            
+            document.getElementById('sequence-textarea').value = dummySequence;
+            analyzeSequence(dummySequence);
+            
+            this.disabled = false;
+            this.innerHTML = '<i class="fa fa-search mr-2"></i> Fetch Sequence';
+            
+            showNotification(`Successfully fetched sequence for ${uniprotId}`, 'success');
+            
+            // 切换到粘贴视图显示获取的序列
+            document.querySelector('input[name="sequence-input-method"][value="paste"]').checked = true;
+            switchInputMethod('paste');
+            
+            // 更新运行按钮状态
+            updateRunButtonState();
+        }, 1500);
+    });
+    
+    // 监听序列文本框变化
+    document.getElementById('sequence-textarea').addEventListener('input', function() {
+        analyzeSequence(this.value);
+        updateRunButtonState();
+    });
+}
+
+// 7. 序列分析功能
+function initSequenceAnalysis() {
+    // 初始化时分析文本框中的序列
+    const sequence = document.getElementById('sequence-textarea').value;
+    if (sequence) {
+        analyzeSequence(sequence);
+    }
+}
+
+// 分析蛋白质序列
+function analyzeSequence(sequence) {
+    if (!sequence) {
+        document.getElementById('seq-length').textContent = '-';
+        document.getElementById('seq-mw').textContent = '-';
+        document.getElementById('seq-pi').textContent = '-';
+        return;
+    }
+    
+    // 清理序列（只保留字母）
+    const cleanSequence = sequence.replace(/[^A-Za-z]/g, '');
+    
+    // 计算长度
+    const length = cleanSequence.length;
+    document.getElementById('seq-length').textContent = length;
+    
+    // 计算分子量（近似）
+    // 平均氨基酸分子量约为110 Da
+    const mw = (length * 110).toFixed(2) + ' Da';
+    document.getElementById('seq-mw').textContent = mw;
+    
+    // 估算等电点（简单模拟）
+    const pi = (4 + Math.random() * 6).toFixed(2);
+    document.getElementById('seq-pi').textContent = pi;
+}
+
+// 8. 结果下载逻辑
+function initDownloadResults() {
+    const downloadButtons = document.querySelectorAll('.download-result-btn');
+    
+    downloadButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.getAttribute('data-type');
+            
+            if (!predictionCompleted) {
+                showNotification('Please complete a prediction first', 'error');
+                return;
+            }
+            
+            // 模拟下载
+            this.disabled = true;
+            this.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Downloading...';
+            
+            setTimeout(() => {
+                let fileName = '';
+                switch(type) {
+                    case 'all':
+                        fileName = 'alphafold_results.zip';
+                        break;
+                    case 'best-model':
+                        fileName = 'best_model.pdb';
+                        break;
+                    case 'all-models':
+                        fileName = 'all_models.zip';
+                        break;
+                    case 'refined':
+                        fileName = 'refined_model.pdb';
+                        break;
+                    case 'metrics':
+                        fileName = 'quality_metrics.csv';
+                        break;
+                    case 'plots':
+                        fileName = 'analysis_plots.pdf';
+                        break;
+                }
+                
+                showNotification(`Successfully downloaded ${fileName}`, 'success');
+                
+                // 恢复按钮状态
+                this.disabled = false;
+                this.innerHTML = `<i class="fa fa-download mr-1"></i> ${this.textContent.trim()}`;
+            }, 1500);
+        });
+    });
+    
+    // 表格中的下载按钮
+    const tableDownloadBtns = document.querySelectorAll('#models-table .fa-download').forEach(icon => {
+        icon.parentElement.addEventListener('click', function() {
+            const modelName = this.closest('tr').querySelector('td:first-child').textContent;
+            showNotification(`Downloading ${modelName}.pdb`, 'info');
+            
+            // 模拟下载延迟
+            this.disabled = true;
+            setTimeout(() => {
+                showNotification(`${modelName}.pdb downloaded successfully`, 'success');
+                this.disabled = false;
+            }, 1000);
+        });
+    });
+    
+    // 表格中的查看按钮
+    document.querySelectorAll('#models-table .fa-eye').forEach(icon => {
+        icon.parentElement.addEventListener('click', function() {
+            const modelName = this.closest('tr').querySelector('td:first-child').textContent;
+            // 切换到可视化标签页
+            document.querySelector('.tab-trigger[data-tab="structure-visualization"]').click();
+            // 更新选中的结构
+            document.getElementById('visualization-structure').value = modelName.toLowerCase().replace(' ', '_');
+            showNotification(`Visualizing ${modelName}`, 'info');
+        });
+    });
+}
+
+// 9. 重置参数按钮
+function initResetParameters() {
+    document.getElementById('reset-parameters-btn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to reset all parameters to default?')) {
+            // 重置序列输入
+            document.getElementById('sequence-textarea').value = '';
+            document.querySelector('input[name="sequence-input-method"][value="paste"]').checked = true;
+            document.getElementById('paste-sequence-section').classList.remove('hidden');
+            document.getElementById('upload-sequence-section').classList.add('hidden');
+            document.getElementById('uniprot-section').classList.add('hidden');
+            
+            // 重置序列信息
+            document.getElementById('seq-length').textContent = '-';
+            document.getElementById('seq-mw').textContent = '-';
+            document.getElementById('seq-pi').textContent = '-';
+            
+            // 重置预测参数
+            document.getElementById('num-models').value = 5;
+            document.getElementById('random-seed').value = 42;
+            document.getElementById('max-time').value = 60;
+            document.getElementById('template-date').value = '';
+            document.getElementById('msa-method').value = 'mmseqs2';
+            document.getElementById('homooligomer').value = 'none';
+            document.getElementById('pairing-mode').value = 'unpaired_paired';
+            document.getElementById('recycling-iterations').value = 3;
+            document.getElementById('use-templates').checked = true;
+            document.getElementById('max-templates').value = 20;
+            document.getElementById('min-template-identity').value = 30;
+            
+            // 重置模型选择
+            document.getElementById('model-version').value = 'v2.3.1';
+            document.getElementById('model-type').value = 'monomer';
+            document.getElementById('confidence-threshold').value = 70;
+            document.getElementById('attention-head').value = 12;
+            document.getElementById('embedding-dim').value = 512;
+            document.getElementById('use-dropout').value = 'false';
+            
+            // 重置优化参数
+            document.getElementById('refinement-method').value = 'amber';
+            document.getElementById('model-to-refine').value = 'best';
+            document.getElementById('force-field').value = 'ff14SB';
+            document.getElementById('solvent-model').value = 'tip3p';
+            document.getElementById('sim-time').value = 10;
+            document.getElementById('sim-temp').value = 300;
+            
+            // 重置上传文件
+            uploadedFiles = {};
+            document.querySelectorAll('.selected-file-name').forEach(el => {
+                el.classList.add('hidden');
+            });
+            document.querySelectorAll('.file-input').forEach(input => {
+                input.value = '';
+            });
+            
+            // 重置预测状态
+            clearInterval(predictionTimer);
+            document.getElementById('prediction-not-started').classList.remove('hidden');
+            document.getElementById('prediction-in-progress').classList.add('hidden');
+            document.getElementById('prediction-completed').classList.add('hidden');
+            document.getElementById('prediction-progress-bar').style.width = '0%';
+            document.getElementById('prediction-log').innerHTML = '<p class="text-gray-400">Prediction log will appear here once started...</p>';
+            
+            // 重置结果
+            predictionCompleted = false;
+            document.getElementById('results-empty').classList.remove('hidden');
+            document.getElementById('results-content').classList.add('hidden');
+            document.getElementById('download-all-results-btn').disabled = true;
+            
+            // 更新运行按钮状态
+            updateRunButtonState();
+            
+            showNotification('All parameters have been reset to default', 'info');
+        }
+    });
+}
+
+// 10. 结构分析按钮
+function initStructureAnalysis() {
+    const analysisButtons = document.querySelectorAll('.view-analysis-btn');
+    
+    analysisButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const card = this.closest('.visual-card');
+            const analysisType = card.getAttribute('data-analysis-type');
+            
+            if (!predictionCompleted) {
+                showNotification('Please complete a prediction first', 'error');
+                return;
+            }
+            
+            // 模拟分析过程
+            this.disabled = true;
+            this.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Analyzing...';
+            
+            setTimeout(() => {
+                let analysisName = '';
+                switch(analysisType) {
+                    case 'secondary-structure':
+                        analysisName = 'Secondary Structure Analysis';
+                        break;
+                    case 'active-site':
+                        analysisName = 'Active Site Prediction';
+                        break;
+                    case 'pocket-detection':
+                        analysisName = 'Pocket Detection';
+                        break;
+                }
+                
+                showNotification(`${analysisName} completed`, 'success');
+                this.disabled = false;
+                this.innerHTML = 'View Results';
+                
+                // 可以在这里添加显示分析结果的逻辑
+            }, 2000);
+        });
+    });
+}
+
+// 11. 视图控制功能
+function initViewControls() {
+    // 可视化控制选项变化时更新视图
+    const visualizationControls = [
+        'visualization-structure',
+        'coloring-scheme',
+        'representation'
+    ];
+    
+    visualizationControls.forEach(controlId => {
+        document.getElementById(controlId).addEventListener('change', function() {
+            const structure = document.getElementById('visualization-structure').value;
+            const coloring = document.getElementById('coloring-scheme').value;
+            const representation = document.getElementById('representation').value;
+            
+            showNotification(`Updated view: ${structure} (${coloring}, ${representation})`, 'info');
+            
+            // 在实际应用中，这里会更新3D视图
+        });
+    });
+    
+    // 方向预设按钮
+    document.querySelectorAll('.grid-cols-2 button').forEach(button => {
+        button.addEventListener('click', function() {
+            showNotification(`View rotated to ${this.textContent}`, 'info');
+            // 在实际应用中，这里会旋转3D模型
+        });
+    });
+    
+    // 全屏按钮
+    document.querySelector('.btn-primary.w-full.text-sm').addEventListener('click', function() {
+        showNotification('Fullscreen mode activated', 'info');
+        // 在实际应用中，这里会切换到全屏视图
+    });
+    
+    // 显示选项变化
+    const displayOptions = ['show-labels', 'show-water', 'show-hetatms'];
+    displayOptions.forEach(optionId => {
+        document.getElementById(optionId).addEventListener('change', function() {
+            const action = this.checked ? 'enabled' : 'disabled';
+            const feature = this.id.replace('show-', '');
+            showNotification(`${feature} ${action}`, 'info');
+            // 在实际应用中，这里会显示/隐藏相应的特征
+        });
+    });
+}
+
+// 12. 精炼方法切换
+function initRefinementMethodSwitch() {
+    const refinementMethod = document.getElementById('refinement-method');
+    const amberParams = document.getElementById('amber-params');
+    const rosettaParams = document.getElementById('rosetta-params');
+    
+    function updateRefinementParams() {
+        const method = refinementMethod.value;
+        
+        amberParams.classList.add('hidden');
+        rosettaParams.classList.add('hidden');
+        
+        if (method === 'amber') {
+            amberParams.classList.remove('hidden');
+        } else if (method === 'rosetta') {
+            rosettaParams.classList.remove('hidden');
+        }
+    }
+    
+    refinementMethod.addEventListener('change', updateRefinementParams);
+    
+    // 初始化显示
+    updateRefinementParams();
+}
+
+// 13. 更新运行按钮状态
+function updateRunButtonState() {
+    const sequenceText = document.getElementById('sequence-textarea').value.trim();
+    const hasFastaFile = !!uploadedFiles['fasta-file'];
+    const hasUniprotId = document.getElementById('uniprot-id').value.trim() !== '';
+    const inputMethod = document.querySelector('input[name="sequence-input-method"]:checked').value;
+    
+    // 检查是否有有效的输入
+    let hasValidInput = false;
+    if (inputMethod === 'paste' && sequenceText.length > 0) {
+        hasValidInput = true;
+    } else if (inputMethod === 'upload' && hasFastaFile) {
+        hasValidInput = true;
+    } else if (inputMethod === 'uniprot' && hasUniprotId) {
+        hasValidInput = true;
+    }
+    
+    // 更新按钮状态
+    const runButtons = [
+        document.getElementById('run-prediction-btn'),
+        document.getElementById('start-prediction-btn')
+    ];
+    
+    runButtons.forEach(button => {
+        button.disabled = !hasValidInput;
+    });
+}
+
+// 14. 显示通知
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    
+    // 设置通知类型和内容
+    notification.className = 'notification';
+    notification.classList.add(`notification-${type}`);
+    
+    // 设置图标和消息
+    let icon = '';
+    switch(type) {
+        case 'success':
+            icon = '<i class="fa fa-check-circle mr-2"></i>';
+            break;
+        case 'error':
+            icon = '<i class="fa fa-exclamation-circle mr-2"></i>';
+            break;
+        case 'warning':
+            icon = '<i class="fa fa-warning mr-2"></i>';
+            break;
+        default:
+            icon = '<i class="fa fa-info-circle mr-2"></i>';
+    }
+    
+    notification.innerHTML = `${icon} ${message}`;
+    
+    // 显示通知
+    notification.style.transform = 'translateX(0)';
+    notification.style.opacity = '1';
+    
+    // 3秒后自动隐藏
+    setTimeout(() => {
+        notification.style.transform = 'translateX(calc(100% + 20px))';
+        notification.style.opacity = '0';
+    }, 3000);
+}
+    </script>
+</body>
+</html>

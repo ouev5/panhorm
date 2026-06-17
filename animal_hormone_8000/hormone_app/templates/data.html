@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Browser - Animal Hormone Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#60a5fa',
+                        neutral: '#f1f5f9',
+                        'neutral-dark': '#334155',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .shadow-soft {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .transition-smooth {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .tag-hover {
+                @apply hover:bg-primary/90 hover:text-white hover:shadow-md;
+            }
+            .card-hover {
+                @apply hover:shadow-lg hover:-translate-y-1;
+            }
+            .nav-item {
+                @apply px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2;
+            }
+            .nav-item:hover {
+                @apply bg-white/10;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg;
+            }
+            .btn-secondary {
+                @apply bg-white border border-gray-300 hover:bg-gray-50 text-neutral-dark font-medium py-2 px-4 rounded-lg transition-all duration-300;
+            }
+        }
+/* Navigation bar styles */
+:root {
+    --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+    --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+    --text-color: white;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+    background: var(--nav-bg);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    color: var(--text-color);
+    margin-right: 2rem;
+}
+
+.logo-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--logo-bg);
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.logo-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.logo-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+    line-height: 1;
+    font-family: 'Arial', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.logo-subtext {
+    font-size: 1rem;
+    color: var(--text-color);
+    line-height: 1;
+    margin-top: 0.2rem;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.6px;
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-left ul, .nav-right ul {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-left a, .nav-right a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+}
+
+.nav-left a:hover, .nav-right a:hover {
+    background: var(--hover-bg);
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+/* Active state styles */
+.nav-left a.active, .nav-right a.active {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+}
+
+.nav-right {
+    margin-left: auto;
+}
+
+.nav-icon {
+    margin-right: 0.6rem;
+    font-size: 1.1rem;
+}
+
+/* Hamburger menu - mobile */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .nav-left ul, .nav-right ul {
+        display: none;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    /* Mobile navigation styles */
+    .mobile-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--nav-bg);
+        box-shadow: var(--shadow);
+        padding: 1rem 1.5rem;
+        display: none;
+    }
+    
+    .mobile-nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .mobile-nav a {
+        text-decoration: none;
+        color: var(--text-color);
+        font-weight: 500;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+    }
+    
+    .mobile-nav a:hover {
+        background: var(--hover-bg);
+    }
+}
+/* Search area container */
+.search-container {
+  max-width: 1200px;
+  margin: 2.5rem auto;
+  
+  display: flex; 
+  justify-content: center;
+}
+
+/* Form container */
+.search-form {
+  display: flex;
+  width: 100%;
+  
+  border-radius: 36px; 
+  overflow: hidden; 
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0; 
+}
+
+/* Search input */
+.search-input {
+  flex: 1; 
+  height: 72px; 
+  padding: 0 24px 0 56px; 
+  border: none; 
+  outline: none; 
+  font-size: 20px;
+  
+  transition: border-color 0.3s; 
+}
+
+.search-input:focus {
+  border-color: #3b82f6; 
+}
+
+/* Search button */
+.search-btn {
+  background: #2563eb;
+  height: 72px; 
+  padding: 0 36px;
+  color: white;
+  border: none; 
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 20px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-btn:hover {
+  background: #1d4ed8; 
+}
+
+/* Search icon */
+.search-icon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 24px;
+}  
+
+/* Table styles */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table th {
+  background-color: #1e40af;
+  color: white;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+  word-break: break-word; 
+}
+
+.data-table tr {
+  transition: all 0.2s ease-in-out;
+}
+
+.data-table tr:hover {
+  background-color: #f9fafb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* Pagination disabled state */
+.page-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-neutral-dark">
+    
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">  
+                        <div class="logo-icon">
+                            <span class="logo-text">AH</span>
+                            <span class="logo-subtext">Animal Hormone</span>
+                        </div>
+                    </a>  
+                </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="active"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    
+    <main class="container mx-auto px-4 py-8">
+        
+        <div class="mb-8">
+            <h1 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-neutral-dark">Animal Hormone Data Browser</h1>
+            <p class="text-gray-500 mt-2">Contains <span class="text-primary font-semibold" id="dataCount">-</span> hormone-related entries</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                <div class="text-2xl font-bold text-blue-600" id="totalRecords">-</div>
+                <div class="text-sm text-gray-500">Total Records</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                <div class="text-2xl font-bold text-green-600" id="totalHormones">-</div>
+                <div class="text-sm text-gray-500">Unique Hormones</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                <div class="text-2xl font-bold text-purple-600" id="totalGenes">-</div>
+                <div class="text-sm text-gray-500">Unique Genes</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow-sm text-center">
+                <div class="text-2xl font-bold text-orange-600" id="totalSpecies">-</div>
+                <div class="text-sm text-gray-500">Unique Species</div>
+            </div>
+        </div>
+        </div>
+
+        
+        <div class="search-container">
+            <form action="{% url 'hormone_app:search' %}" method="get" class="search-form">
+                <input 
+                    type="search" 
+                    name="query" 
+                    placeholder="Search hormones, genes, species or literature..." 
+                    class="search-input"
+                    required
+                >
+                <button type="submit" class="search-btn">
+                    <i class="fa fa-search"></i> Search
+                </button>
+            </form>
+        </div>
+
+        
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-soft p-6 card-hover transition-smooth">
+                <h3 class="text-lg font-semibold mb-4">Hormone Type Distribution</h3>
+                <div id="typeDistribution" class="w-full h-80"></div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-soft p-6 card-hover transition-smooth">
+                <h3 class="text-lg font-semibold mb-4">Species Distribution</h3>
+                <div id="speciesDistribution" class="w-full h-80"></div>
+            </div>
+        </section>
+
+        
+        <div class="flex gap-4 mb-4">
+            <input type="text" id="searchInput" placeholder="Search hormone, gene, disease..." class="flex-1 px-4 py-2 border rounded-lg text-sm">
+            <select id="organismFilter" class="px-4 py-2 border rounded-lg text-sm">
+                <option value="">All Organisms</option>
+            </select>
+        </div>
+
+        <section class="bg-white rounded-xl shadow-soft overflow-hidden mb-8 transition-smooth">
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold">ID</th>
+                            <th class="px-6 py-4 text-left font-semibold">Hormone Name</th>
+                            <th class="px-6 py-4 text-left font-semibold">Organism</th>
+                            <th class="px-6 py-4 text-left font-semibold">Related Genes</th>
+                            <th class="px-6 py-4 text-left font-semibold">Regulation</th>
+                            <th class="px-6 py-4 text-left font-semibold">PMID</th>
+                            <th class="px-6 py-4 text-left font-semibold">Related Diseases</th>
+                            <th class="px-6 py-4 text-left font-semibold">DO Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hormoneTableBody">
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            
+            <div class="px-6 py-4 flex justify-between items-center border-t border-gray-100">
+                <div id="paginationInfo" class="text-sm text-gray-500">Showing 0-0 of 0 entries</div>
+                <div class="flex gap-1">
+                    <button id="prevPage" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50 transition-smooth page-btn-disabled">
+                        <i class="fa fa-angle-left"></i>
+                    </button>
+                    <div id="pageNumbers" class="flex gap-1">
+                        
+                    </div>
+                    <button id="nextPage" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 transition-smooth page-btn-disabled">
+                        <i class="fa fa-angle-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-white/10 rounded-lg p-2 mr-3">
+                            <span class="text-white font-bold text-xl">AH</span>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold text-lg">Animal Hormone Database</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        This database is dedicated to collecting, organizing, and sharing research literature and experimental data related to animal hormones, providing researchers with convenient information retrieval and analysis tools.
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa fa-home w-5 text-center"></i> Home
+                        </a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa fa-database w-5 text-center"></i> Data
+                        </a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa fa-bar-chart w-5 text-center"></i> Analysis
+                        </a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa fa-question-circle w-5 text-center"></i> Help
+                        </a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors flex items-center gap-2">
+                            <i class="fa fa-robot w-5 text-center"></i> AI
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center gap-2">
+                            <i class="fa fa-envelope-o w-5 text-center"></i>
+                            <a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fa fa-phone w-5 text-center"></i>
+                            <span>+86 123 4567 8901</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <i class="fa fa-map-marker w-5 text-center"></i>
+                            <span>Chinese Academy of Sciences, Haidian District, Beijing</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Animal Hormone Database. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // API-driven hormone data table with search, filter, and pagination
+        const API_BASE = '/hormone_app/api';
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/hormone-stats/`);
+                const stats = await res.json();
+                document.getElementById('totalRecords').textContent = stats.summary.total_records.toLocaleString();
+                document.getElementById('totalHormones').textContent = stats.summary.unique_hormones.toLocaleString();
+                document.getElementById('totalGenes').textContent = stats.summary.unique_genes.toLocaleString();
+                document.getElementById('totalSpecies').textContent = stats.summary.unique_species.toLocaleString();
+                document.getElementById('dataCount').textContent = stats.summary.total_records.toLocaleString();
+
+                // Populate organism filter
+                const select = document.getElementById('organismFilter');
+                const organisms = (stats.species || []).sort((a, b) => b.value - a.value);
+                organisms.forEach(org => {
+                    const opt = document.createElement('option');
+                    opt.value = org.name;
+                    opt.textContent = `${org.name} (${org.value})`;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        // Load all data (fetch all pages)
+        async function loadAllData() {
+            try {
+                let page = 1;
+                let allFetched = [];
+                while (true) {
+                    const res = await fetch(`${API_BASE}/hormone-data/?page=${page}&page_size=200`);
+                    const json = await res.json();
+                    allFetched = allFetched.concat(json.data || []);
+                    if (page >= json.total_pages) break;
+                    page++;
+                    if (page > 100) break; // safety limit
+                }
+                allData = allFetched;
+                filteredData = [...allData];
+                applyFilters();
+            } catch (e) {
+                console.error('Failed to load data:', e);
+                document.getElementById('hormoneTableBody').innerHTML =
+                    '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">Failed to load data from server.</td></tr>';
+            }
+        }
+
+        // Apply search and organism filters
+        function applyFilters() {
+            const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
+            const organismFilter = document.getElementById('organismFilter').value;
+
+            filteredData = allData.filter(item => {
+                // Organism filter
+                if (organismFilter && item.organism !== organismFilter) return false;
+                // Search filter
+                if (searchTerm) {
+                    const searchFields = [
+                        item.hormone_name, item.related_genes, item.related_diseases,
+                        item.organism, item.regulation_type, item.pmid, item.DO_ID,
+                        item.doid_standardized_name
+                    ].filter(Boolean).join(' ').toLowerCase();
+                    if (!searchFields.includes(searchTerm)) return false;
+                }
+                return true;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Render table
+        function renderTable() {
+            const tableBody = document.getElementById('hormoneTableBody');
+            tableBody.innerHTML = '';
+
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">No matching records found.</td></tr>';
+                document.getElementById('paginationInfo').textContent = 'Showing 0-0 of 0 entries';
+                document.getElementById('pageButtons').innerHTML = '';
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredData.length / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, filteredData.length);
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            pageData.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100';
+
+                const pmidHtml = item.pmid
+                    ? `<a href="https://pubmed.ncbi.nlm.nih.gov/${item.pmid}/" target="_blank" class="text-blue-600 hover:underline">${item.pmid}</a>`
+                    : '-';
+                const diseaseHtml = item.related_diseases || '-';
+                const doIdHtml = item.DO_ID || '-';
+                const doNameHtml = item.doid_standardized_name || '-';
+                const regClass = item.regulation_type === 'upregulation'
+                    ? 'text-green-600' : item.regulation_type === 'downregulation'
+                    ? 'text-red-600' : 'text-gray-500';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 font-medium">${item.id}</td>
+                    <td class="px-6 py-4">${item.hormone_name}</td>
+                    <td class="px-6 py-4">${item.organism || '-'}</td>
+                    <td class="px-6 py-4">${item.related_genes || '-'}</td>
+                    <td class="px-6 py-4 ${regClass} text-sm">${item.regulation_type || '-'}</td>
+                    <td class="px-6 py-4">${pmidHtml}</td>
+                    <td class="px-6 py-4 text-sm" title="${diseaseHtml}">${diseaseHtml.length > 50 ? diseaseHtml.substring(0, 50) + '...' : diseaseHtml}</td>
+                    <td class="px-6 py-4 text-sm">${doNameHtml}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('paginationInfo').textContent =
+                `Showing ${startIndex + 1}-${endIndex} of ${filteredData.length} entries`;
+
+            renderPagination(totalPages);
+        }
+
+        // Render pagination
+        function renderPagination(totalPages) {
+            const container = document.getElementById('pageButtons');
+            container.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            const prevBtn = document.getElementById('prevPage');
+            if (currentPage === 1) {
+                prevBtn.classList.add('page-btn-disabled');
+            } else {
+                prevBtn.classList.remove('page-btn-disabled');
+            }
+
+            // Next button
+            const nextBtn = document.getElementById('nextPage');
+            if (currentPage === totalPages) {
+                nextBtn.classList.add('page-btn-disabled');
+            } else {
+                nextBtn.classList.remove('page-btn-disabled');
+            }
+
+            // Page numbers - show smart range
+            const pageNumbersContainer = document.getElementById('pageNumbers');
+            pageNumbersContainer.innerHTML = '';
+
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                addPageButton(pageNumbersContainer, 1);
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'w-9 h-9 flex items-center justify-center text-gray-400';
+                    dots.textContent = '...';
+                    pageNumbersContainer.appendChild(dots);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                addPageButton(pageNumbersContainer, i);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'w-9 h-9 flex items-center justify-center text-gray-400';
+                    dots.textContent = '...';
+                    pageNumbersContainer.appendChild(dots);
+                }
+                addPageButton(pageNumbersContainer, totalPages);
+            }
+        }
+
+        function addPageButton(container, page) {
+            const btn = document.createElement('button');
+            btn.className = `w-9 h-9 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 transition-smooth ${page === currentPage ? 'bg-primary text-white border-primary' : 'text-gray-500'}`;
+            btn.textContent = page;
+            btn.addEventListener('click', () => {
+                currentPage = page;
+                renderTable();
+            });
+            container.appendChild(btn);
+        }
+
+        // Init charts with API data
+        async function initCharts() {
+            if (typeof echarts === 'undefined') {
+                setTimeout(initCharts, 500);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/hormone-stats/`);
+                const stats = await res.json();
+
+                // Species distribution chart
+                const speciesChartDom = document.getElementById('speciesDistribution');
+                if (speciesChartDom) {
+                    const speciesChart = echarts.init(speciesChartDom);
+                    const speciesOption = {
+                        title: { text: '', left: 'center' },
+                        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+                        legend: {
+                            orient: 'vertical', left: 10, top: 'center',
+                            textStyle: { fontSize: 11 }
+                        },
+                        series: [{
+                            name: 'Species Distribution',
+                            type: 'pie',
+                            radius: ['40%', '70%'],
+                            center: ['60%', '50%'],
+                            data: (stats.species || []).slice(0, 15).map(s => ({
+                                name: s.name, value: s.value
+                            })),
+                            label: { fontSize: 10, formatter: '{b}\n{d}%' },
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10, shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0,0,0,0.5)'
+                                }
+                            }
+                        }]
+                    };
+                    speciesChart.setOption(speciesOption);
+                    window.addEventListener('resize', () => speciesChart.resize());
+                    speciesChart.resize();
+                }
+
+                // Hormone type distribution chart
+                const typeChartDom = document.getElementById('typeDistribution');
+                if (typeChartDom && stats.regulation) {
+                    const typeChart = echarts.init(typeChartDom);
+                    const typeOption = {
+                        title: { text: '', left: 'center' },
+                        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+                        legend: {
+                            orient: 'vertical', left: 10, top: 'center',
+                            textStyle: { fontSize: 11 }
+                        },
+                        series: [{
+                            name: 'Regulation Type',
+                            type: 'pie',
+                            radius: ['40%', '70%'],
+                            center: ['60%', '50%'],
+                            data: stats.regulation.map(r => ({ name: r.name, value: r.value })),
+                            label: { fontSize: 11, formatter: '{b}: {c} ({d}%)' },
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10, shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0,0,0,0.5)'
+                                }
+                            }
+                        }]
+                    };
+                    typeChart.setOption(typeOption);
+                    window.addEventListener('resize', () => typeChart.resize());
+                    typeChart.resize();
+                }
+            } catch (e) {
+                console.error('Failed to init charts:', e);
+            }
+        }
+
+        // Pagination button handlers
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredData.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        // Search and filter event listeners
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 300);
+        });
+        document.getElementById('organismFilter').addEventListener('change', applyFilters);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadAllData();
+            initCharts();
+        });
+
+    </script>ipt>
+<!-- AI Customer Service Widget with Markdown Rendering -->
+
+<!-- Floating Button -->
+<div id="ai-customer-service-btn" onclick="toggleChat()" style="
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    z-index: 9999;
+    transition: all 0.3s ease;
+">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="white"/>
+        <circle cx="9" cy="10" r="1.5" fill="white"/>
+        <circle cx="15" cy="10" r="1.5" fill="white"/>
+        <path d="M12 17.5C14.33 17.5 16.32 16.05 17.12 14H6.88C7.68 16.05 9.67 17.5 12 17.5Z" fill="white"/>
+    </svg>
+</div>
+
+<!-- Chat Window -->
+<div id="ai-customer-service-window" style="
+    position: fixed;
+    right: 20px;
+    bottom: 90px;
+    width: 380px;
+    height: 550px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 9998;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+">
+    <!-- Header -->
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    ">
+        <div style="font-size: 16px; font-weight: 600;">🧬 AI Assistant</div>
+        <div onclick="toggleChat()" style="cursor: pointer; padding: 5px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Quick Questions -->
+    <div style="
+        padding: 10px 15px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    ">
+        <span onclick="askQuestion('What does this platform do?')" class="cs-quick-btn">Platform Intro</span>
+        <span onclick="askQuestion('How to perform GO enrichment analysis?')" class="cs-quick-btn">GO Analysis</span>
+        <span onclick="askQuestion('How to use BLAST?')" class="cs-quick-btn">BLAST</span>
+        <span onclick="askQuestion('How to use single-cell analysis?')" class="cs-quick-btn">Single Cell</span>
+    </div>
+    
+    <!-- Messages -->
+    <div id="chat-messages" class="cs-messages">
+        <div class="cs-msg cs-msg-bot">
+            <div class="cs-msg-content">Hello! I'm the AI assistant for this bioinformatics platform. How can I help you? 😊</div>
+        </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="cs-input-area">
+        <input type="text" id="chat-input" placeholder="Type your question..." onkeypress="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()" id="send-btn">Send</button>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#ai-customer-service-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+}
+.cs-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8fafc;
+}
+.cs-messages::-webkit-scrollbar { width: 6px; }
+.cs-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.cs-msg { display: flex; margin-bottom: 12px; }
+.cs-msg-user { justify-content: flex-end; }
+.cs-msg-bot { justify-content: flex-start; }
+.cs-msg-content {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+}
+.cs-msg-user .cs-msg-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+.cs-msg-bot .cs-msg-content {
+    background: white;
+    color: #334155;
+    border-bottom-left-radius: 4px;
+}
+.cs-input-area {
+    padding: 12px 15px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 10px;
+}
+.cs-input-area input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+}
+.cs-input-area button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.cs-input-area button:disabled { opacity: 0.6; cursor: not-allowed; }
+.cs-quick-btn {
+    padding: 5px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+.cs-quick-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* Markdown Styles */
+.cs-msg-content h1, .cs-msg-content h2, .cs-msg-content h3 {
+    margin: 10px 0 8px 0;
+    font-weight: 600;
+    color: inherit;
+}
+.cs-msg-content h1 { font-size: 16px; }
+.cs-msg-content h2 { font-size: 15px; }
+.cs-msg-content h3 { font-size: 14px; }
+.cs-msg-content p { margin: 8px 0; }
+.cs-msg-content ul, .cs-msg-content ol { margin: 8px 0; padding-left: 20px; }
+.cs-msg-content li { margin: 4px 0; }
+.cs-msg-content code {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+}
+.cs-msg-content pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+.cs-msg-content pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+}
+.cs-msg-content strong { font-weight: 600; }
+.cs-msg-content em { font-style: italic; }
+.cs-msg-content blockquote {
+    border-left: 3px solid #667eea;
+    padding-left: 10px;
+    margin: 10px 0;
+    color: #64748b;
+}
+.cs-msg-content hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+.cs-msg-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+    font-size: 13px;
+}
+.cs-msg-content th, .cs-msg-content td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 8px;
+    text-align: left;
+}
+.cs-msg-content th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+</style>
+
+<script>
+let isOpen = false;
+const CS_API_URL = 'http://43.99.62.219:8002/api/chat';
+
+function toggleChat() {
+    const win = document.getElementById('ai-customer-service-window');
+    isOpen = !isOpen;
+    win.style.display = isOpen ? 'flex' : 'none';
+    if (isOpen) document.getElementById('chat-input').focus();
+}
+
+function renderMarkdown(text) {
+    if (!text) return '';
+    text = text.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    text = text.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    text = text.replace(/^---$/gm, '<hr>');
+    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+    text = text.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#667eea;text-decoration:underline;">$1</a>');
+    text = text.replace(/\n\n/g, '</p><p>');
+    text = text.replace(/\n/g, '<br>');
+    return '<p>' + text + '</p>';
+}
+
+function addMessage(content, isUser) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `cs-msg ${isUser ? 'cs-msg-user' : 'cs-msg-bot'}`;
+    const renderedContent = isUser ? content : renderMarkdown(content);
+    div.innerHTML = `<div class="cs-msg-content">${renderedContent}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function addTyping() {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.id = 'typing-indicator';
+    div.className = 'cs-msg cs-msg-bot';
+    div.innerHTML = '<div class="cs-msg-content" style="opacity:0.7;">Thinking...</div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const btn = document.getElementById('send-btn');
+    const question = input.value.trim();
+    if (!question) return;
+    
+    input.disabled = true;
+    btn.disabled = true;
+    
+    addMessage(question, true);
+    input.value = '';
+    addTyping();
+    
+    try {
+        const res = await fetch(CS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: question })
+        });
+        const data = await res.json();
+        removeTyping();
+        addMessage(data.answer, false);
+    } catch (e) {
+        removeTyping();
+        addMessage('Sorry, the service is temporarily unavailable. Please try again later.', false);
+    }
+    
+    input.disabled = false;
+    btn.disabled = false;
+    input.focus();
+}
+
+function askQuestion(q) {
+    document.getElementById('chat-input').value = q;
+    sendMessage();
+}
+</script>
+</body>
+</html>

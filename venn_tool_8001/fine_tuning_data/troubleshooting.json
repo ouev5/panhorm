@@ -1,0 +1,42 @@
+[
+  {
+    "instruction": "为什么分析结果加载很慢？",
+    "input": "",
+    "output": "加载缓慢的可能原因：\n\n**富集分析**：\n- Enrichr API是外部服务，响应时间不稳定\n- 大基因列表（>100个）计算量更大\n- 网络延迟可能影响响应\n\n**单细胞分析**：\n- t-SNE需要实时计算，可能需要5-30秒\n- 大规模数据渲染需要时间\n\n**解决方法**：\n1. 耐心等待，不要重复点击\n2. 减少基因列表数量\n3. UMAP比t-SNE更快\n4. 检查网络连接\n\n如果长时间无响应，可刷新页面重试。"
+  },
+  {
+    "instruction": "为什么图表显示不完整？",
+    "input": "",
+    "output": "图表显示问题排查：\n\n**常见原因**：\n1. **浏览器缓存**：使用Ctrl+Shift+R强制刷新\n2. **浏览器兼容性**：推荐使用Chrome或Firefox\n3. **窗口大小**：调整浏览器窗口大小\n\n**解决方法**：\n1. 清除浏览器缓存\n2. 切换不同的图表标签页\n3. 使用缩放功能调整视图\n4. 检查浏览器控制台是否有错误（F12）\n\n**图表截断**：\n- 下载图片可查看完整内容\n- CSV下载包含全部数据"
+  },
+  {
+    "instruction": "基因列表输入格式要求？",
+    "input": "",
+    "output": "基因列表输入格式：\n\n**支持格式**：\n- 每行一个基因名称\n- 支持逗号分隔\n- 支持制表符分隔\n\n**基因名称**：\n- 使用官方基因符号（如TP53, BRCA1）\n- 大小写不敏感\n- 避免使用别名\n\n**文件上传**：\n- 支持TXT、CSV、TSV格式\n- 文件大小限制：视浏览器而定\n\n**示例**：\n```\nTP53\nBRCA1\nEGFR\nMYC\nAKT1\n```\n\n**注意事项**：\n- 移除多余的空格和空行\n- 确保基因名称拼写正确"
+  },
+  {
+    "instruction": "为什么数据库搜索结果有限？",
+    "input": "",
+    "output": "数据库搜索限制说明：\n\n**限制原因**：\n1. 提高响应速度\n2. 避免返回过多无关结果\n3. 服务器资源限制\n\n**当前限制**：\n- 最多返回200条结果\n- 搜索关键词需至少1个字符\n\n**优化搜索**：\n1. 使用更具体的关键词\n2. 选择正确的搜索类型（Hormone/Genes）\n3. 尝试不同的关键词组合\n\n**数据库内容**：\n- 4,096条激素记录\n- 898种唯一激素\n- 可搜索激素名称、相关基因、疾病信息"
+  },
+  {
+    "instruction": "如何引用这个平台？",
+    "input": "",
+    "output": "引用建议：\n\n**数据来源引用**：\n\n1. **Tabula Sapiens单细胞数据**：\n   > Tabula Sapiens Consortium. (2022). The Tabula Sapiens: A multiple-organ, single-cell transcriptomic atlas of humans. Science, 376(6584), eabl4896.\n\n2. **Enrichr富集分析**：\n   > Chen, E. Y., et al. (2013). Enrichr: interactive and collaborative HTML5 gene list enrichment analysis tool. BMC Bioinformatics, 14(1), 128.\n\n3. **STRING蛋白互作**：\n   > Szklarczyk, D., et al. (2023). The STRING database in 2023: protein-protein association networks and functional enrichment analyses. Nucleic Acids Research, 51(D1), D638-D646.\n\n**分析方法引用**：\n- UMAP: McInnes, L., et al. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.\n- t-SNE: van der Maaten, L., & Hinton, G. (2008). Visualizing Data using t-SNE."
+  },
+  {
+    "instruction": "分析结果可以用于商业用途吗？",
+    "input": "",
+    "output": "使用许可说明：\n\n**平台使用**：\n- 平台仅供学术研究使用\n- 商业用途需联系平台管理员\n\n**数据许可**：\n\n1. **Tabula Sapiens**：CC BY 4.0许可，需注明出处\n\n2. **Enrichr API**：免费学术使用，商业需联系\n\n3. **STRING**：学术免费，商业使用需许可\n\n4. **KEGG**：学术使用需引用，商业需付费许可\n\n**建议**：\n- 学术论文发表需正确引用数据来源\n- 商业应用前确认各数据库的使用条款\n- 咨询所在机构的知识产权政策"
+  },
+  {
+    "instruction": "如何报告Bug或提出建议？",
+    "input": "",
+    "output": "反馈渠道：\n\n**报告Bug**：\n请提供以下信息：\n1. 操作步骤（如何复现问题）\n2. 预期结果 vs 实际结果\n3. 截图或错误信息\n4. 浏览器类型和版本\n\n**功能建议**：\n描述您希望添加的功能：\n1. 功能描述\n2. 使用场景\n3. 预期效果\n\n**联系方式**：\n- 平台管理员：[联系平台管理员]\n- GitHub Issues：[项目地址]\n\n我们会认真对待每一条反馈，持续改进平台功能。"
+  },
+  {
+    "instruction": "可以在手机上使用吗？",
+    "input": "",
+    "output": "移动端使用说明：\n\n**支持情况**：\n- 平台采用响应式设计\n- 支持手机和平板访问\n- 部分功能在移动端可能有布局调整\n\n**建议**：\n1. 使用横屏模式获得更好体验\n2. 推荐使用平板而非手机\n3. 桌面浏览器体验最佳\n\n**限制**：\n- 复杂图表在小屏幕上可能显示不完整\n- 文件上传功能在部分移动浏览器受限\n- 下载功能依赖浏览器支持\n\n**最佳实践**：\n- 数据输入和简单查看可用手机\n- 深度分析和论文图表建议使用电脑"
+  }
+]

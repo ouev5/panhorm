@@ -1,0 +1,79 @@
+{
+  "documents": [
+    {
+      "id": "geneinsights_overview",
+      "title": "Gene Insights Hub Platform Overview",
+      "content": "Gene Insights Hub is a comprehensive multi-source data integration analysis platform for bioinformatics research. The platform integrates seven core functional modules: (1) Multi-set Venn diagram and UpSet plot analysis for gene list intersection, union, and difference operations; (2) GO and KEGG functional enrichment analysis via the Enrichr API, with interactive bar charts, bubble charts, and pie charts; (3) STRING protein-protein interaction network visualization with interactive force-directed graph layouts; (4) Sankey-bubble enrichment analysis combining KEGG pathway flow visualization with significance-encoded bubble charts; (5) Single-cell gene expression background analysis using scanpy with Leiden/Louvain clustering and UMAP/t-SNE dimensionality reduction, supporting Human (Tabula Sapiens, 94,836 cells, 34,562 genes) and Mouse (Tabula Muris Senis, 93,792 cells) reference atlases; (6) Multi-species switching framework supporting species-specific analysis pipelines; (7) Hormone database gene search with real-time filtering. The platform is built with Flask (v3.1.3) and Gunicorn (v25.3.0), generating all visualizations using matplotlib (v3.10.8) and seaborn (v0.13.2)."
+    },
+    {
+      "id": "geneinsights_venn",
+      "title": "Venn Diagram and UpSet Plot Analysis",
+      "content": "The Venn diagram module supports intersection, union, and difference analysis across multiple gene lists or datasets. Users can input gene lists directly via text or upload files (TXT/CSV/TSV format). The UpSet plot provides a matrix-style visualization for complex multi-set comparisons, which is more scalable than traditional Venn diagrams when analyzing more than 4 gene sets. Interactive features include clicking on specific regions to select and export genes. Gene lists can also be imported from the hormone database search function. Results are downloadable in CSV format for downstream analysis."
+    },
+    {
+      "id": "geneinsights_enrichment",
+      "title": "GO and KEGG Enrichment Analysis",
+      "content": "The enrichment analysis module uses the Enrichr API to perform GO Biological Process and KEGG pathway enrichment analysis. Users input a gene list and select the analysis type. Results include: gene count per term, p-value, adjusted p-value (FDR), combined score, and overlapping genes. Visualization options include bar charts showing enrichment strength and statistical significance, bubble charts displaying both gene ratio and significance simultaneously, and pie charts showing category distribution. The significance threshold uses hypergeometric testing with FDR < 0.05. KEGG pathway enrichment results can also be visualized through the Sankey-bubble chart module showing hierarchical pathway relationships. The Enrichr API gene sets used are GO_Biological_Process_2023 and KEGG_2021_Human. Results are downloadable in PNG, SVG, and CSV formats."
+    },
+    {
+      "id": "geneinsights_string",
+      "title": "STRING Protein-Protein Interaction Network",
+      "content": "The STRING network module constructs and visualizes protein-protein interaction networks using the STRING API (v12.0). The confidence score threshold is set at 0.4 to balance sensitivity and specificity. The network is displayed as an interactive force-directed graph where nodes represent proteins and edges represent known or predicted interactions. Edge thickness reflects the confidence score. Users can generate PPI networks directly from gene lists obtained through Venn diagram or enrichment analysis. The module also supports TSV data download for detailed interaction evidence, including combined scores, experimental evidence, database evidence, co-expression evidence, and text mining evidence for each interaction pair."
+    },
+    {
+      "id": "geneinsights_sankey",
+      "title": "Sankey-Bubble Enrichment Analysis",
+      "content": "The Sankey-bubble enrichment module provides a combined visualization of KEGG pathway enrichment results. The Sankey diagram shows the flow from input genes through KEGG pathways, with the width of each flow proportional to the number of genes involved. The bubble chart overlays statistical significance information, with bubble size representing gene count and color representing the adjusted p-value (FDR). This combined view allows researchers to simultaneously assess the breadth (number of genes) and statistical rigor (significance) of pathway enrichment. Users can click on specific pathways to select associated genes and continue to STRING network analysis or single-cell analysis via the Continue button."
+    },
+    {
+      "id": "geneinsights_singlecell",
+      "title": "Single-Cell Gene Expression Analysis",
+      "content": "The single-cell analysis module provides two main functions built on scanpy (v1.12.1): (1) Background analysis: Query gene expression levels across cell types in reference atlases. Currently supporting Human (Tabula Sapiens: 94,836 cells, 34,562 genes, 161 cell types from 24 tissues, published in Science 2022) and Mouse (Tabula Muris Senis: 93,792 cells). Visualization includes UMAP and t-SNE plots colored by cell type, tissue, or gene expression level. (2) Gene query: Input a gene name to view its expression distribution across all cell types. Clustering uses Leiden/Louvain algorithms. Quality control standards: n_genes > 200, n_counts > 500, mitochondrial gene proportion < 10%. The multi-species framework allows switching between human and mouse reference data."
+    },
+    {
+      "id": "genereg_overview",
+      "title": "GeneReg Target Gene Prediction Module",
+      "content": "GeneReg (v2.2) is a weighted scoring system for predicting transcription factor-target gene regulatory relationships. The system integrates three dimensions of evidence: (1) ChIP-seq evidence (weight = 0.50): Based on 438 transcription factors and 5,235 BED files from ENCODE and ChIP-Atlas databases. Scoring considers peak-TSS proximity (promoter regions receive highest weight), signal quality, and cross-cell line validation. Penalties are applied for housekeeping gene promoters and gene body distributions. (2) Motif scanning (weight = 0.25): Based on JASPAR 2024 position weight matrices, scoring considers PWM match quality and motif position relative to TSS. (3) Literature evidence (weight = 0.25): Based on PubMed co-occurrence frequency and publication recency. The final weighted score ranges from 0-100, with scores >= 60 classified as positive predictions. The DeepSeek LLM provides an additional confidence adjustment of +/- 15 points for high-confidence cases and +/- 5 points for moderate cases. Validated on a 27-gene standard test set (13 positive, 14 negative pairs), achieving 100% sensitivity, specificity, accuracy, and F1 score."
+    },
+    {
+      "id": "genereg_details",
+      "title": "GeneReg Prediction Details and Evidence Visualization",
+      "content": "GeneReg provides detailed evidence visualization for each prediction. ChIP-seq evidence shows peak profiles with genomic coordinates, signal intensity, and distance to TSS. For hormone receptors (such as AR, ESR1), additional co-factor analysis is integrated to improve accuracy. The binding density index and stratified penalty strategy distinguish functional from non-functional binding: passive binding events receive score reductions of 20-45%. Motif evidence displays PWM match sequences with positional information and conservation scores. Literature evidence shows supporting PubMed citations with co-occurrence context. Users input a gene symbol and receptor name to receive a comprehensive prediction with all three evidence dimensions displayed. The module is implemented with FastAPI (v0.136.0) and Uvicorn (v0.44.0)."
+    },
+    {
+      "id": "autoba_overview",
+      "title": "autoBA Automated Multi-Omics Analysis Module",
+      "content": "autoBA is an AI-driven automated multi-omics analysis system that enables natural language interaction for bioinformatics analysis. Built with Flask (v3.1.3) and integrated with the DeepSeek large language model (deepseek-v4-pro), the system supports the following analysis pipelines: (1) RNA-seq differential expression analysis with automated volcano plot generation (log2FC vs -log10 p-value), configurable significance thresholds, and gene labeling; (2) Single-cell dimensionality reduction (UMAP/t-SNE) with cluster visualization, supporting customization by cluster assignment, gene expression level, or metadata attributes; (3) Automated multi-step analysis combining expression profiling with functional annotation. The AI assistant maintains conversation context for iterative parameter refinement. All visualizations are generated using matplotlib (v3.10.8) and seaborn (v0.13.2) at publication quality (>300 DPI), exportable in PNG and SVG formats."
+    },
+    {
+      "id": "autoba_usage",
+      "title": "How to Use autoBA Automated Analysis",
+      "content": "To use autoBA, describe your analysis goal in the AI chat interface using natural language. Examples: 'Generate a volcano plot from my expression data', 'Perform UMAP dimensionality reduction', or 'Run differential expression analysis'. The AI assistant automatically selects the appropriate pipeline, configures parameters, and generates results. You can iteratively refine: adjust p-value thresholds, change coloring schemes, or request alternative visualizations. Each analysis produces: statistical summary (number of differentially expressed genes, top enriched pathways), downloadable result files (CSV), and publication-ready figures. The system logs all AI-generated analysis steps for reproducibility."
+    },
+    {
+      "id": "literature_overview",
+      "title": "AI-Powered Literature Search Module",
+      "content": "The literature search module is an AI-powered PubMed retrieval system that combines intelligent query optimization with comprehensive literature mining. Core features include: (1) Smart query optimization: The DeepSeek model (deepseek-v4-pro) automatically translates user queries and optimizes them into PubMed-compliant Boolean search expressions, generating multiple semantically diverse search terms for comprehensive coverage. (2) Deep search mode: AI generates 3-5 diverse search queries from different angles, retrieves results for each, then merges and deduplicates by PMID, significantly improving recall compared to single-query searches. (3) Gene-centric literature mining: Extracts gene names, association types (Strong/Moderate/Weak), and experimental evidence from retrieved articles, constructing gene-disease and gene-pathway association networks. (4) Results include structured metadata: PMID, title, journal, publication year, and AI-generated relevance summaries. The system uses PubMed E-utilities API (esearch.fcgi + efetch.fcgi) and validates extracted data through Pydantic models (v2.12.4)."
+    },
+    {
+      "id": "literature_usage",
+      "title": "How to Use Literature Search",
+      "content": "The literature search supports two modes: (1) Standard search: Enter a query in Chinese or English (e.g., 'insulin related genes' or 'PCOS biomarkers'). The AI optimizes the query and searches PubMed. (2) Deep search: The AI generates 3-5 semantically diverse queries from your input, searches each separately, merges and deduplicates results for maximum recall. (3) Gene search: Directly extract gene-disease associations from literature, including gene names, confidence levels (Strong/Moderate/Weak), and evidence snippets. The system processes XML responses from PubMed and presents results with PMID, title, journal, year, and AI-generated summaries. All search results are downloadable."
+    },
+    {
+      "id": "rag_customer_service",
+      "title": "AI Customer Service RAG System",
+      "content": "The AI customer service module provides domain-specific question answering for the AHormoneDB platform using a Retrieval-Augmented Generation (RAG) architecture. The system combines keyword matching with semantic retrieval using sentence-transformers (all-MiniLM-L6-v2, 384 dimensions, cosine similarity). The knowledge base contains curated information about platform features, analysis tools, data sources, methodology, and troubleshooting guides. When a user asks a question, the system retrieves the top 3 most relevant knowledge chunks, assembles them into structured prompts with the user query, and sends them to the DeepSeek API (deepseek-v4-pro, temperature = 0.7) for answer generation. Responses include inline citations referencing specific platform features and data sources. The system filters low-information responses and validates citations."
+    },
+    {
+      "id": "platform_technology",
+      "title": "AHormoneDB Technology Stack",
+      "content": "AHormoneDB is built on a microservice architecture with six independent service modules: (1) Main database portal: Django v4.2, MySQL v8.x, Django ORM, providing the core hormone database with hormone records, receptors, genes, and disease annotations; (2) Gene Insights Hub: Flask v3.1.3 + Gunicorn v25.3.0, providing multi-source data integration analysis with scanpy v1.12.1, matplotlib v3.10.8, and seaborn v0.13.2; (3) AI Customer Service: FastAPI v0.136.0 + Uvicorn v0.44.0, using sentence-transformers (all-MiniLM-L6-v2) for RAG retrieval and DeepSeek API for generation; (4) GeneReg Prediction: FastAPI v0.136.0, implementing the weighted scoring algorithm with local ENCODE/ChIP-Atlas data; (5) autoBA Analysis: Flask v3.1.3 + DeepSeek API, providing AI-driven automated analysis; (6) Literature Search: FastAPI v0.136.0 + PubMed E-utilities API + DeepSeek API, enabling AI-powered literature retrieval. All services communicate through RESTful APIs and share a common DeepSeek API integration layer. Nginx serves as the reverse proxy."
+    },
+    {
+      "id": "platform_data_sources",
+      "title": "AHormoneDB Data Sources and Scale",
+      "content": "AHormoneDB integrates data from multiple authoritative sources. The core knowledge base encompasses 646 species, containing 6,238 unique hormone records (4,286 peptide and 1,952 non-peptide), 2,448 receptors, 4,102 downstream regulatory genes, and 3,488 DO-standardized disease annotations. Primary data sources include: Hmrbase2 and HORDB (hormone records), UniProt (protein annotations), NCBI Gene (gene standardization), PubChem (small molecule hormones), OMIM and DisGeNET (disease associations), Disease Ontology (standardized disease classification). For analysis tools: Enrichr API (GO/KEGG enrichment), STRING API v12.0 (protein interactions), PubMed E-utilities (literature retrieval), ENCODE and ChIP-Atlas (ChIP-seq peaks, 438 TFs, 5,235 files), JASPAR 2024 (motif PWMs). Single-cell reference data: Tabula Sapiens (Human, 94,836 cells, Science 2022) and Tabula Muris Senis (Mouse, 93,792 cells)."
+    }
+  ]
+}

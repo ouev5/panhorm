@@ -1,0 +1,73 @@
+name: rnaseq_diffexpr
+description: RNA-seq差异表达分析流程
+task_type: deterministic
+
+required_inputs:
+  - fastq_files
+  - genome_index
+  - annotation_gtf
+
+output_patterns:
+  - deseq2_results.csv
+
+steps:
+  - step_id: 1
+    tool_name: trimmomatic
+    tool_version: 0.39
+    command_template: trimmomatic PE -phred33 {fastq_files[0]} {fastq_files[1]} {output_dir}/trimmed_{sample}_1.fq.gz {output_dir}/unpaired_{sample}_1.fq.gz {output_dir}/trimmed_{sample}_2.fq.gz {output_dir}/unpaired_{sample}_2.fq.gz ILLUMINACLIP:{adapter_file}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+    input_files:
+      - {fastq_files[0]}
+      - {fastq_files[1]}
+    output_files:
+      - {output_dir}/trimmed_{sample}_1.fq.gz
+      - {output_dir}/trimmed_{sample}_2.fq.gz
+    parameters:
+      adapter_file: adapters/TruSeq3-PE.fa
+      sample: sample1
+
+  - step_id: 2
+    tool_name: hisat2
+    tool_version: 2.2.1
+    command_template: hisat2 -x {genome_index} -1 {input_dir}/trimmed_{sample}_1.fq.gz -2 {input_dir}/trimmed_{sample}_2.fq.gz -S {output_dir}/{sample}.sam
+    input_files:
+      - {input_dir}/trimmed_{sample}_1.fq.gz
+      - {input_dir}/trimmed_{sample}_2.fq.gz
+    output_files:
+      - {output_dir}/{sample}.sam
+    parameters:
+      sample: sample1
+
+  - step_id: 3
+    tool_name: samtools
+    tool_version: 1.16
+    command_template: samtools sort -o {output_dir}/{sample}_sorted.bam {input_dir}/{sample}.sam
+    input_files:
+      - {input_dir}/{sample}.sam
+    output_files:
+      - {output_dir}/{sample}_sorted.bam
+    parameters:
+      sample: sample1
+
+  - step_id: 4
+    tool_name: featureCounts
+    tool_version: 2.0.3
+    command_template: featureCounts -a {annotation_gtf} -o {output_dir}/{sample}_counts.txt -p {input_dir}/{sample}_sorted.bam
+    input_files:
+      - {input_dir}/{sample}_sorted.bam
+    output_files:
+      - {output_dir}/{sample}_counts.txt
+    parameters:
+      sample: sample1
+
+  - step_id: 5
+    tool_name: deseq2
+    tool_version: 1.36.0
+    command_template: Rscript {script_dir}/run_deseq2.R --counts {counts_file} --output {output_dir}/deseq2_results.csv --condition {condition}
+    input_files:
+      - {counts_file}
+    output_files:
+      - {output_dir}/deseq2_results.csv
+    parameters:
+      counts_file: {output_dir}/{sample}_counts.txt
+      condition: treated
+      sample: sample1

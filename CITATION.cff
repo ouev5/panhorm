@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "PanHorm Bioinformatics Platform"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - name: "ouev5"
+repository-code: "https://github.com/ouev5/panhorm"
+url: "https://github.com/ouev5/panhorm"
+abstract: "A sanitized multi-service bioinformatics platform codebase for hormone-related data mining, gene regulation prediction, literature-assisted discovery, multi-omics exploration, and visualization."
+keywords:
+  - bioinformatics
+  - hormone
+  - gene regulation
+  - multi-omics
+  - literature mining
+  - visualization
+license: MIT
+date-released: "2026-06-18"

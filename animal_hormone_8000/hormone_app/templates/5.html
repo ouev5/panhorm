@@ -1,0 +1,3860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEGG Pathway Analysis | Single-cell RNA-seq Platform</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <!-- 引入Font Awesome图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入Plotly图表库 -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF', // 主色
+                        secondary: '#36CFC9', // 辅助色
+                        accent: '#722ED1',
+                        neutral: '#F5F7FA', // 背景色：浅灰
+                        success: '#52C41A',
+                        warning: '#FAAD14',
+                        danger: '#FF4D4F',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .form-input-focus { 
+                @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none; 
+            }
+            .btn-primary { 
+                @apply bg-primary text-white px-6 py-2 rounded-full shadow-md hover:bg-primary/90 transition-all flex items-center justify-center; 
+            }
+            .btn-secondary { 
+                @apply bg-white text-primary border border-primary px-6 py-2 rounded-full shadow-sm hover:bg-primary/5 transition-all; 
+            }
+            .sidebar-link { 
+                @apply flex items-center gap-3 px-5 py-3 rounded-r-full text-gray-100 hover:bg-white hover:text-primary hover:font-semibold transition-all; 
+            }
+            .sidebar-link.active { 
+                @apply bg-white text-primary font-semibold; 
+            }
+            .file-drop-area { 
+                @apply relative border-2 border-primary/30 rounded-xl p-6 text-center transition-all hover:border-primary hover:bg-primary/5; 
+            }
+            .file-drop-area.active { 
+                @apply border-primary bg-primary/5; 
+            }
+            .progress-container { 
+                @apply h-2 bg-gray-200 rounded-full overflow-hidden w-full my-4; 
+            }
+            .progress-bar { 
+                @apply h-full bg-primary transition-all duration-300; 
+            }
+            .notification { 
+                @apply fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform transition-all duration-300 ease-in-out z-50 max-w-sm; 
+            }
+            .notification-success { @apply border-l-4 border-success; }
+            .notification-error { @apply border-l-4 border-danger; }
+            .notification-info { @apply border-l-4 border-primary; }
+            .tab-content { @apply hidden; }
+            .tab-content.active { @apply block; }
+            .param-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 border border-gray-100; }
+            .visual-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 cursor-pointer hover:shadow-md transition-all; }
+            .pathway-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 hover:shadow-md transition-all border border-gray-100 overflow-hidden; }
+            .pathway-card:hover { @apply transform -translate-y-1; }
+        }
+    </style>
+    
+    <style>
+        :root {
+            --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+            --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+            --text-color: white;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            margin-right: 2rem;
+        }
+
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--logo-bg);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            line-height: 1;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-subtext {
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1;
+            margin-top: 0.2rem;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.6px;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left ul, .nav-right ul {
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-left a, .nav-right a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+
+        .nav-left a:hover, .nav-right a:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        /* 活动状态样式 */
+        .nav-left a.active, .nav-right a.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+        }
+
+        .nav-right {
+            margin-left: auto;
+        }
+
+        .nav-icon {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        /* 汉堡菜单 - 移动设备 */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-left ul, .nav-right ul {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            /* 移动导航样式 */
+            .mobile-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--nav-bg);
+                box-shadow: var(--shadow);
+                padding: 1rem 1.5rem;
+                display: none;
+            }
+            
+            .mobile-nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .mobile-nav a {
+                text-decoration: none;
+                color: var(--text-color);
+                font-weight: 500;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                font-size: 1rem;
+            }
+            
+            .mobile-nav a:hover {
+                background: var(--hover-bg);
+            }
+        }
+        
+        /* 页脚样式（黑色背景） */
+        footer {
+            background: #000; /* 黑色背景 */
+            color: #fff; /* 白色文字 */
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .footer-column ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #fff; /* hover时文字变白 */
+        }
+        
+        .footer-bottom {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-neutral text-gray-800 min-h-screen flex flex-col">
+    <!-- 1. 顶部导航栏 -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">  <!-- 打开a标签 -->
+                        <div class="logo-icon">
+                            <span class="logo-text">AH</span>
+                            <span class="logo-subtext">Animal Hormone</span>
+                        </div>
+                    </a>  <!-- 闭合a标签（这里是需要补充的） -->
+                </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+                <button class="menu-toggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <!-- 移动导航菜单 -->
+            <div class="mobile-nav">
+                <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 2. 主内容区（侧边栏 + 标签页内容） -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 侧边栏导航 -->
+            <aside class="lg:w-1/5 w-full lg:h-[calc(100vh-7rem)] sticky top-24 self-start">
+                <div class="bg-primary/10 rounded-xl p-4 shadow-sm">
+                    <h3 class="text-primary font-semibold text-lg mb-4 px-2">KEGG Analysis</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#input" class="sidebar-link active tab-trigger" data-tab="input">
+                            <i class="fa fa-upload w-5 text-center"></i> Input
+                        </a></li>
+                        <li><a href="#parameters" class="sidebar-link tab-trigger" data-tab="parameters">
+                            <i class="fa fa-sliders w-5 text-center"></i> Parameters
+                        </a></li>
+                        <li><a href="#enrichment" class="sidebar-link tab-trigger" data-tab="enrichment">
+                            <i class="fa fa-pie-chart w-5 text-center"></i> Enrichment
+                        </a></li>
+                        <li><a href="#results" class="sidebar-link tab-trigger" data-tab="results">
+                            <i class="fa fa-table w-5 text-center"></i> Results
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- KEGG数据库信息卡片 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm mt-6">
+                    <h4 class="text-primary font-medium mb-3">About KEGG</h4>
+                    <p class="text-gray-600 text-sm mb-3">
+                        The Kyoto Encyclopedia of Genes and Genomes (KEGG) is a comprehensive resource for understanding high-level functions and utilities of the biological system.
+                    </p>
+                    <div class="text-xs text-gray-500">
+                        <p class="mb-1"><i class="fa fa-database mr-1"></i> Current Release: 108.0 (July 2023)</p>
+                        <p><i class="fa fa-file-text-o mr-1"></i> Pathways: 534 | Modules: 1,793</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 标签页内容区（核心功能模块） -->
+            <div class="lg:w-4/5 w-full">
+                <!-- 平台介绍 -->
+                <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                    <h2 class="text-2xl font-bold text-primary mb-3">KEGG Pathway Analysis</h2>
+                    <p class="text-gray-600 mb-2">
+                        The Kyoto Encyclopedia of Genes and Genomes (KEGG) is a comprehensive bioinformatics resource integrating genomic, pathway, disease, and other biological data. This tool enables functional enrichment analysis of your gene sets to identify significantly associated biological pathways and networks.
+                    </p>
+                    <p class="text-primary font-medium">
+                        Uncover biological system functions and interactions through pathway analysis.
+                    </p>
+                </div>
+
+                <!-- 2.1 输入模块 -->
+                <div id="input" class="tab-content active">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-upload mr-2"></i> Input Data
+                        </h3>
+                        <p class="text-gray-600 mb-6">Provide gene lists for KEGG pathway enrichment analysis.</p>
+
+                        <!-- 基因列表输入方式选择 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Input Method</h4>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" id="input-upload" name="input-method" value="upload" checked 
+                                        class="h-4 w-4 text-primary form-input-focus">
+                                    <label for="input-upload" class="text-gray-700">Upload gene list file</label>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" id="input-paste" name="input-method" value="paste" 
+                                        class="h-4 w-4 text-primary form-input-focus">
+                                    <label for="input-paste" class="text-gray-700">Paste gene list</label>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" id="input-previous" name="input-method" value="previous" 
+                                        class="h-4 w-4 text-primary form-input-focus">
+                                    <label for="input-previous" class="text-gray-700">Use results from differential expression analysis</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 上传基因列表 -->
+                        <div id="upload-section" class="mt-6">
+                            <div class="file-drop-area" data-file-type="gene-list">
+                                <input type="file" class="file-input hidden" accept=".txt,.csv,.tsv" data-target="gene-list">
+                                <i class="fa fa-file-text-o text-5xl text-primary/50 mb-3"></i>
+                                <p class="text-gray-700 mb-2">Gene List File</p>
+                                <p class="text-gray-500 text-sm mb-4">
+                                    Upload a text file containing gene symbols or IDs (one per line or comma-separated).<br>
+                                    Supported formats: .txt, .csv, .tsv
+                                </p>
+                                <label class="btn-primary inline-flex cursor-pointer text-sm px-4 py-2">
+                                    <i class="fa fa-upload mr-2"></i> Select File
+                                </label>
+                                <!-- 已选文件显示 -->
+                                <div class="selected-file-name hidden mt-4">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="gene-list-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 粘贴基因列表 -->
+                        <div id="paste-section" class="mt-6 hidden">
+                            <div class="param-card">
+                                <h4 class="font-semibold text-primary mb-3">Paste Gene List</h4>
+                                <p class="text-gray-500 text-sm mb-3">
+                                    Enter gene symbols or IDs (one per line or comma-separated). For best results, use official gene symbols.
+                                </p>
+                                <textarea id="gene-list-text" rows="8" 
+                                    class="w-full px-3 py-2 border rounded-lg form-input-focus"
+                                    placeholder="e.g.&#10;TP53&#10;EGFR&#10;KRAS&#10;BRAF&#10;PTEN&#10;..."></textarea>
+                                <div class="flex justify-end mt-3">
+                                    <button id="count-genes-btn" class="btn-secondary text-sm px-4 py-1">
+                                        <i class="fa fa-count mr-1"></i> Count Genes
+                                    </button>
+                                </div>
+                                <p id="gene-count-display" class="text-gray-500 text-sm mt-2 hidden"></p>
+                            </div>
+                        </div>
+
+                        <!-- 选择之前的差异表达结果 -->
+                        <div id="previous-section" class="mt-6 hidden">
+                            <div class="param-card">
+                                <h4 class="font-semibold text-primary mb-3">Select Differential Expression Results</h4>
+                                <p class="text-gray-500 text-sm mb-3">
+                                    Choose from your previous differential expression analysis results.
+                                </p>
+                                <select id="previous-de-results" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <option value="">-- No previous results available --</option>
+                                </select>
+                                <div class="mt-3">
+                                    <label class="block text-gray-700 text-sm mb-1">Filter Criteria</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-600 text-xs mb-1">Minimum log2 Fold Change</label>
+                                            <input type="number" id="prev-log2fc" value="1.0" step="0.1" min="0.1" 
+                                                class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-600 text-xs mb-1">Maximum Adjusted P-value</label>
+                                            <input type="number" id="prev-pval" value="0.05" step="0.01" min="0.001" max="0.1" 
+                                                class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 基因ID类型和物种 -->
+                        <div class="param-card mt-6">
+                            <h4 class="font-semibold text-primary mb-3">Gene Identification</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Gene ID Type</label>
+                                    <select id="gene-id-type" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="symbol">Gene Symbol (e.g., TP53)</option>
+                                        <option value="entrez">Entrez ID (e.g., 11998)</option>
+                                        <option value="ensembl">Ensembl ID (e.g., ENSG00000141510)</option>
+                                        <option value="uniprot">UniProt ID (e.g., P04637)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Organism</label>
+                                    <select id="organism" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="hsa">Homo sapiens (human)</option>
+                                        <option value="mmu">Mus musculus (mouse)</option>
+                                        <option value="rno">Rattus norvegicus (rat)</option>
+                                        <option value="dme">Drosophila melanogaster (fruit fly)</option>
+                                        <option value="cel">Caenorhabditis elegans (nematode)</option>
+                                        <option value="dre">Danio rerio (zebrafish)</option>
+                                        <option value="bta">Bos taurus (cattle)</option>
+                                        <option value="ssc">Sus scrofa (pig)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.2 参数设置模块 -->
+                <div id="parameters" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-sliders mr-2"></i> Analysis Parameters
+                        </h3>
+                        <p class="text-gray-600 mb-6">Configure parameters for KEGG pathway enrichment analysis.</p>
+
+                        <!-- 分析类型 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Analysis Type</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="analysis-pathway" checked class="rounded text-primary">
+                                    <label for="analysis-pathway" class="text-gray-700">Pathway enrichment analysis</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="analysis-module" checked class="rounded text-primary">
+                                    <label for="analysis-module" class="text-gray-700">KEGG module enrichment analysis</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="analysis-network" class="rounded text-primary">
+                                    <label for="analysis-network" class="text-gray-700">Gene network analysis</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="analysis-disease" class="rounded text-primary">
+                                    <label for="analysis-disease" class="text-gray-700">Disease association analysis</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 通路分类 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Pathway Categories</h4>
+                            <p class="text-gray-500 text-sm mb-3">Select KEGG pathway categories to include in the analysis:</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="cat-metabolism" checked class="rounded text-primary">
+                                    <label for="cat-metabolism" class="text-gray-700 text-sm">Metabolism</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="cat-genetic" checked class="rounded text-primary">
+                                    <label for="cat-genetic" class="text-gray-700 text-sm">Genetic Information Processing</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="cat-environmental" checked class="rounded text-primary">
+                                    <label for="cat-environmental" class="text-gray-700 text-sm">Environmental Information Processing</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="cat-cellular" checked class="rounded text-primary">
+                                    <label for="cat-cellular" class="text-gray-700 text-sm">Cellular Processes</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="cat-organismal" checked class="rounded text-primary">
+                                    <label for="cat-organismal" class="text-gray-700 text-sm">Organismal Systems</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="cat-disease" checked class="rounded text-primary">
+                                    <label for="cat-disease" class="text-gray-700 text-sm">Human Diseases</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 统计参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Statistical Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Enrichment Test Method</label>
+                                    <select id="test-method" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="hypergeometric">Hypergeometric test</option>
+                                        <option value="fisher">Fisher's exact test</option>
+                                        <option value="binomial">Binomial test</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Multiple Testing Correction</label>
+                                    <select id="correction-method" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="fdr_bh">Benjamini-Hochberg (FDR)</option>
+                                        <option value="bonferroni">Bonferroni</option>
+                                        <option value="holm">Holm-Bonferroni</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Significance Threshold (Adjusted P-value)</label>
+                                    <input type="number" id="pval-threshold" value="0.05" step="0.01" min="0.001" max="0.1" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Gene Count per Pathway</label>
+                                    <input type="number" id="min-gene-count" value="5" min="1" max="50" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Maximum Gene Count per Pathway</label>
+                                    <input type="number" id="max-gene-count" value="500" min="10" max="2000" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Enrichment Score</label>
+                                    <input type="number" id="min-enrichment" value="1.3" step="0.1" min="0.5" max="10" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">log2(Ratio of gene counts)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 可视化参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Visualization Options</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Maximum Pathways to Visualize</label>
+                                    <input type="number" id="max-pathways" value="20" min="5" max="100" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Pathway Network Layout</label>
+                                    <select id="network-layout" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="force">Force-directed layout</option>
+                                        <option value="circular">Circular layout</option>
+                                        <option value="hierarchical">Hierarchical layout</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-gray-700 text-sm mb-1">Color Palette for Visualizations</label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button class="palette-option w-8 h-8 rounded-full bg-primary border-2 border-white" data-palette="primary"></button>
+                                        <button class="palette-option w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 border-2 border-gray-300" data-palette="blue-purple"></button>
+                                        <button class="palette-option w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 border-2 border-gray-300" data-palette="green-teal"></button>
+                                        <button class="palette-option w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-orange-500 border-2 border-gray-300" data-palette="red-orange"></button>
+                                        <button class="palette-option w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 border-2 border-gray-300" data-palette="purple-pink"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.3 通路结果模块 -->
+                <div id="pathways" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-sitemap mr-2"></i> Enriched KEGG Pathways
+                        </h3>
+                        <p class="text-gray-600 mb-6">Significantly enriched biological pathways identified in your gene list.</p>
+
+                        <!-- 通路筛选器 -->
+                        <div class="param-card mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Pathway Category</label>
+                                    <select id="pathway-category-filter" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="all">All Categories</option>
+                                        <option value="metabolism">Metabolism</option>
+                                        <option value="genetic">Genetic Information Processing</option>
+                                        <option value="environmental">Environmental Information Processing</option>
+                                        <option value="cellular">Cellular Processes</option>
+                                        <option value="organismal">Organismal Systems</option>
+                                        <option value="disease">Human Diseases</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Sort By</label>
+                                    <select id="pathway-sort" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="pvalue">Adjusted P-value</option>
+                                        <option value="enrichment">Enrichment Score</option>
+                                        <option value="gene_count">Gene Count</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">P-value Cutoff</label>
+                                    <input type="number" id="pathway-pval-filter" value="0.05" step="0.01" min="0.001" max="0.1" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Genes</label>
+                                    <input type="number" id="pathway-gene-filter" value="5" min="1" max="100" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 通路卡片网格 -->
+                        <div id="pathways-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- 通路卡片1 -->
+                            <div class="pathway-card">
+                                <div class="relative h-40 overflow-hidden rounded-lg mb-3">
+                                    <img src="https://picsum.photos/seed/pathway1/400/200" alt="Cell cycle pathway visualization" class="pathway-image w-full h-full object-cover">
+                                    <div class="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded-full">
+                                        Metabolism
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-gray-800 mb-1">Cell Cycle</h4>
+                                <p class="text-sm text-gray-500 mb-2">hsa04110 | 28 genes</p>
+                                <div class="flex items-center text-sm mb-3">
+                                    <span class="bg-success/10 text-success px-2 py-0.5 rounded mr-2">
+                                        <i class="fa fa-arrow-up mr-1"></i> 5.23
+                                    </span>
+                                    <span class="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                        p = 1.2e-08
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">CDK1</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">CCNB1</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">TP53</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">+25</span>
+                                </div>
+                                <button class="view-pathway-details w-full btn-secondary text-sm py-1">
+                                    View Details
+                                </button>
+                            </div>
+
+                            <!-- 通路卡片2 -->
+                            <div class="pathway-card">
+                                <div class="relative h-40 overflow-hidden rounded-lg mb-3">
+                                    <img src="https://picsum.photos/seed/pathway2/400/200" alt="PI3K-Akt signaling pathway visualization" class="pathway-image w-full h-full object-cover">
+                                    <div class="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded-full">
+                                        Environmental
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-gray-800 mb-1">PI3K-Akt signaling pathway</h4>
+                                <p class="text-sm text-gray-500 mb-2">hsa04151 | 42 genes</p>
+                                <div class="flex items-center text-sm mb-3">
+                                    <span class="bg-success/10 text-success px-2 py-0.5 rounded mr-2">
+                                        <i class="fa fa-arrow-up mr-1"></i> 4.87
+                                    </span>
+                                    <span class="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                        p = 3.5e-07
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">PIK3CA</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">AKT1</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">PTEN</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">+39</span>
+                                </div>
+                                <button class="view-pathway-details w-full btn-secondary text-sm py-1">
+                                    View Details
+                                </button>
+                            </div>
+
+                            <!-- 通路卡片3 -->
+                            <div class="pathway-card">
+                                <div class="relative h-40 overflow-hidden rounded-lg mb-3">
+                                    <img src="https://picsum.photos/seed/pathway3/400/200" alt="MAPK signaling pathway visualization" class="pathway-image w-full h-full object-cover">
+                                    <div class="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded-full">
+                                        Environmental
+                                    </div>
+                                </div>
+                                <h4 class="font-semibold text-gray-800 mb-1">MAPK signaling pathway</h4>
+                                <p class="text-sm text-gray-500 mb-2">hsa04010 | 36 genes</p>
+                                <div class="flex items-center text-sm mb-3">
+                                    <span class="bg-success/10 text-success px-2 py-0.5 rounded mr-2">
+                                        <i class="fa fa-arrow-up mr-1"></i> 4.12
+                                    </span>
+                                    <span class="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                        p = 7.8e-06
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">MAPK1</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">KRAS</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">BRAF</span>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">+33</span>
+                                </div>
+                                <button class="view-pathway-details w-full btn-secondary text-sm py-1">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 加载更多按钮 -->
+                        <div class="text-center mt-6">
+                            <button id="load-more-pathways" class="btn-secondary">
+                                <i class="fa fa-refresh mr-2"></i> Load More Pathways
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.4 网络分析模块 -->
+                <div id="networks" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-share-alt mr-2"></i> Pathway Network Analysis
+                        </h3>
+                        <p class="text-gray-600 mb-6">Networks of interconnected pathways and genes based on your enrichment results.</p>
+
+                        <!-- 网络控制选项 -->
+                        <div class="param-card mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Network Type</label>
+                                    <select id="network-type" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="pathway">Pathway-Pathway Network</option>
+                                        <option value="gene-pathway">Gene-Pathway Network</option>
+                                        <option value="gene">Gene-Gene Interaction Network</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Layout</label>
+                                    <select id="network-layout-control" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="force">Force-directed</option>
+                                        <option value="circular">Circular</option>
+                                        <option value="hierarchical">Hierarchical</option>
+                                        <option value="radial">Radial</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Node Color By</label>
+                                    <select id="node-color" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="pvalue">Adjusted P-value</option>
+                                        <option value="enrichment">Enrichment Score</option>
+                                        <option value="category">Pathway Category</option>
+                                        <option value="gene_count">Gene Count</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Node Size By</label>
+                                    <select id="node-size" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="gene_count">Gene Count</option>
+                                        <option value="enrichment">Enrichment Score</option>
+                                        <option value="none">Uniform Size</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-3 mt-4">
+                                <button id="zoom-in-network" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-search-plus mr-1"></i> Zoom In
+                                </button>
+                                <button id="zoom-out-network" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-search-minus mr-1"></i> Zoom Out
+                                </button>
+                                <button id="reset-network-view" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-refresh mr-1"></i> Reset View
+                                </button>
+                                <button id="download-network" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-download mr-1"></i> Download SVG
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 通路网络图 -->
+                        <div class="pathway-network border border-gray-200 mb-6">
+                            <img src="https://picsum.photos/seed/network/1200/500" alt="Pathway network visualization" class="w-full h-full object-contain">
+                        </div>
+
+                        <!-- 网络节点说明 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Network Legend</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700 mb-2">Pathway Categories</h5>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center">
+                                            <span class="w-4 h-4 rounded-full bg-blue-500 mr-2"></span>
+                                            <span class="text-sm text-gray-600">Metabolism</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="w-4 h-4 rounded-full bg-green-500 mr-2"></span>
+                                            <span class="text-sm text-gray-600">Genetic Information</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="w-4 h-4 rounded-full bg-yellow-500 mr-2"></span>
+                                            <span class="text-sm text-gray-600">Environmental Information</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="w-4 h-4 rounded-full bg-purple-500 mr-2"></span>
+                                            <span class="text-sm text-gray-600">Cellular Processes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700 mb-2">P-value Scale</h5>
+                                    <div class="flex items-center justify-between h-6 bg-gradient-to-r from-red-500 to-blue-500 rounded mb-1">
+                                        <span class="text-xs text-white">1e-10</span>
+                                        <span class="text-xs text-white">1e-5</span>
+                                        <span class="text-xs text-white">0.05</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500">Lower p-values (more significant) in red</p>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700 mb-2">Interactions</h5>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center">
+                                            <span class="w-10 h-0.5 bg-gray-400 mr-2"></span>
+                                            <span class="text-sm text-gray-600">Functional association</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="w-10 h-0.5 bg-gray-400 mr-2 relative">
+                                                <span class="absolute top-0 left-0 w-2 h-2 bg-gray-400 rounded-full -mt-0.5"></span>
+                                                <span class="absolute top-0 right-0 w-2 h-2 bg-gray-400 rounded-full -mt-0.5"></span>
+                                            </span>
+                                            <span class="text-sm text-gray-600">Component overlap</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="w-10 h-0.5 bg-gray-400 mr-2 relative">
+                                                <span class="absolute top-0 left-1/2 w-1 h-1 bg-gray-400 rounded-full -mt-0.25 animate-ping"></span>
+                                            </span>
+                                            <span class="text-sm text-gray-600">Regulatory relationship</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.5 富集结果可视化模块 -->
+                <div id="enrichment" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-pie-chart mr-2"></i> Enrichment Visualizations
+                        </h3>
+                        <p class="text-gray-600 mb-6">Visual representations of KEGG pathway enrichment results.</p>
+
+                        <!-- 可视化选项卡 -->
+                        <div class="border-b border-gray-200 mb-6">
+                            <ul class="flex flex-wrap -mb-px" id="visualization-tabs" role="tablist">
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-block p-4 border-b-2 border-primary text-primary rounded-t-lg font-medium" 
+                                            id="bar-chart-tab" data-visual-type="bar">
+                                        Bar Chart
+                                    </button>
+                                </li>
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg font-medium" 
+                                            id="bubble-chart-tab" data-visual-type="bubble">
+                                        Bubble Chart
+                                    </button>
+                                </li>
+                                <li class="mr-2" role="presentation">
+                                    <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg font-medium" 
+                                            id="pie-chart-tab" data-visual-type="pie">
+                                        Pie Chart
+                                    </button>
+                                </li>
+                                <li role="presentation">
+                                    <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg font-medium" 
+                                            id="heatmap-tab" data-visual-type="heatmap">
+                                        Heatmap
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- 可视化图表容器 -->
+                        <div class="bg-gray-50 rounded-xl p-4 mb-6 min-h-[400px] flex items-center justify-center">
+                            <img src="https://picsum.photos/seed/keggbar/1000/400" alt="KEGG pathway enrichment bar chart" class="w-full h-auto rounded-lg">
+                        </div>
+
+                        <!-- 可视化控制 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Visualization Controls</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Number of Pathways to Display</label>
+                                    <input type="number" id="num-pathways-visual" value="15" min="5" max="50" 
+                                        class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Sort Order</label>
+                                    <select id="visual-sort-order" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="asc">Ascending (most significant first)</option>
+                                        <option value="desc">Descending (least significant first)</option>
+                                        <option value="alphabetical">Alphabetical</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Color Scale</label>
+                                    <select id="color-scale" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="pvalue">By p-value (default)</option>
+                                        <option value="enrichment">By enrichment score</option>
+                                        <option value="category">By pathway category</option>
+                                        <option value="uniform">Uniform color</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-3 mt-4">
+                                <button id="refresh-visualization" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-refresh mr-1"></i> Refresh Visualization
+                                </button>
+                                <button id="download-visualization" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-download mr-1"></i> Download as PNG
+                                </button>
+                                <button id="download-visualization-svg" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-download mr-1"></i> Download as SVG
+                                </button>
+                                <button id="expand-visualization" class="btn-secondary text-sm px-3 py-1">
+                                    <i class="fa fa-expand mr-1"></i> Full Screen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.6 结果表格和下载模块 -->
+                <div id="results" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-table mr-2"></i> Analysis Results
+                        </h3>
+                        <p class="text-gray-600 mb-6">Detailed results of KEGG pathway enrichment analysis and download options.</p>
+
+                        <!-- 结果统计摘要 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                <p class="text-gray-500 text-sm mb-1">Significant Pathways</p>
+                                <p class="text-xl font-bold text-primary">47</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                <p class="text-gray-500 text-sm mb-1">Significant Modules</p>
+                                <p class="text-xl font-bold text-primary">23</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                <p class="text-gray-500 text-sm mb-1">Total Genes Analyzed</p>
+                                <p class="text-xl font-bold text-primary">386</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                <p class="text-gray-500 text-sm mb-1">Genes Mapped to KEGG</p>
+                                <p class="text-xl font-bold text-primary">247 (64%)</p>
+                            </div>
+                        </div>
+
+                        <!-- 结果表格 -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-semibold text-primary">KEGG Pathway Enrichment Results</h4>
+                                <div class="flex gap-2">
+                                    <div class="relative">
+                                        <input type="text" placeholder="Search pathways..." 
+                                            class="pl-8 pr-3 py-1 border rounded-lg text-sm form-input-focus">
+                                        <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    </div>
+                                    <select class="px-3 py-1 border rounded-lg text-sm form-input-focus">
+                                        <option value="10">10 per page</option>
+                                        <option value="25" selected>25 per page</option>
+                                        <option value="50">50 per page</option>
+                                        <option value="100">100 per page</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-700 text-sm">
+                                            <th class="py-3 px-4 text-left font-semibold">Pathway Name</th>
+                                            <th class="py-3 px-4 text-left font-semibold">KEGG ID</th>
+                                            <th class="py-3 px-4 text-left font-semibold">Category</th>
+                                            <th class="py-3 px-4 text-left font-semibold">Gene Count</th>
+                                            <th class="py-3 px-4 text-left font-semibold">Enrichment Score</th>
+                                            <th class="py-3 px-4 text-left font-semibold">Adjusted p-value</th>
+                                            <th class="py-3 px-4 text-left font-semibold">Genes</th>
+                                            <th class="py-3 px-4 text-left font-semibold">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-gray-700 text-sm">
+                                        <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                            <td class="py-3 px-4 font-medium">Cell cycle</td>
+                                            <td class="py-3 px-4">hsa04110</td>
+                                            <td class="py-3 px-4">
+                                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Cellular Processes</span>
+                                            </td>
+                                            <td class="py-3 px-4">28</td>
+                                            <td class="py-3 px-4 text-success">5.23</td>
+                                            <td class="py-3 px-4">1.2e-08</td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">CDK1</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">CCNB1</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">+26</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <button class="text-primary hover:text-primary/80 mr-2" title="View details">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                <button class="text-secondary hover:text-secondary/80" title="View pathway map">
+                                                    <i class="fa fa-map"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                            <td class="py-3 px-4 font-medium">PI3K-Akt signaling pathway</td>
+                                            <td class="py-3 px-4">hsa04151</td>
+                                            <td class="py-3 px-4">
+                                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Environmental Information</span>
+                                            </td>
+                                            <td class="py-3 px-4">42</td>
+                                            <td class="py-3 px-4 text-success">4.87</td>
+                                            <td class="py-3 px-4">3.5e-07</td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">PIK3CA</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">AKT1</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">+40</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <button class="text-primary hover:text-primary/80 mr-2" title="View details">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                <button class="text-secondary hover:text-secondary/80" title="View pathway map">
+                                                    <i class="fa fa-map"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                            <td class="py-3 px-4 font-medium">MAPK signaling pathway</td>
+                                            <td class="py-3 px-4">hsa04010</td>
+                                            <td class="py-3 px-4">
+                                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Environmental Information</span>
+                                            </td>
+                                            <td class="py-3 px-4">36</td>
+                                            <td class="py-3 px-4 text-success">4.12</td>
+                                            <td class="py-3 px-4">7.8e-06</td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">MAPK1</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">KRAS</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">+34</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <button class="text-primary hover:text-primary/80 mr-2" title="View details">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                <button class="text-secondary hover:text-secondary/80" title="View pathway map">
+                                                    <i class="fa fa-map"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                            <td class="py-3 px-4 font-medium">Apoptosis</td>
+                                            <td class="py-3 px-4">hsa04210</td>
+                                            <td class="py-3 px-4">
+                                                <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Cellular Processes</span>
+                                            </td>
+                                            <td class="py-3 px-4">19</td>
+                                            <td class="py-3 px-4 text-success">3.89</td>
+                                            <td class="py-3 px-4">2.1e-05</td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">TP53</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">BCL2</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">+17</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <button class="text-primary hover:text-primary/80 mr-2" title="View details">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                <button class="text-secondary hover:text-secondary/80" title="View pathway map">
+                                                    <i class="fa fa-map"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-t border-gray-200 hover:bg-gray-50">
+                                            <td class="py-3 px-4 font-medium">TGF-beta signaling pathway</td>
+                                            <td class="py-3 px-4">hsa04350</td>
+                                            <td class="py-3 px-4">
+                                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Environmental Information</span>
+                                            </td>
+                                            <td class="py-3 px-4">15</td>
+                                            <td class="py-3 px-4 text-success">3.24</td>
+                                            <td class="py-3 px-4">4.7e-05</td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">TGFB1</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">SMAD3</span>
+                                                    <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">+13</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <button class="text-primary hover:text-primary/80 mr-2" title="View details">
+                                                    <i class="fa fa-eye"></i>
+                                                </button>
+                                                <button class="text-secondary hover:text-secondary/80" title="View pathway map">
+                                                    <i class="fa fa-map"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- 分页 -->
+                            <div class="flex justify-between items-center mt-4">
+                                <p class="text-sm text-gray-500">Showing 1-5 of 47 results</p>
+                                <div class="flex gap-1">
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed">
+                                        <i class="fa fa-chevron-left text-xs"></i>
+                                    </button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-primary bg-primary text-white">1</button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:border-primary hover:text-primary">2</button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:border-primary hover:text-primary">3</button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:border-primary hover:text-primary">4</button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:border-primary hover:text-primary">5</button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:border-primary hover:text-primary">
+                                        <i class="fa fa-chevron-right text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 结果下载 -->
+                        <div class="bg-gray-50 p-4 rounded-xl">
+                            <h4 class="font-semibold text-primary mb-3">Download Results</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="all">
+                                    <i class="fa fa-download"></i> All Results (ZIP)
+                                </button>
+                                <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="table">
+                                    <i class="fa fa-download"></i> Enrichment Table (CSV)
+                                </button>
+                                <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="genes">
+                                    <i class="fa fa-download"></i> Gene-Pathway Mapping (CSV)
+                                </button>
+                                <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="images">
+                                    <i class="fa fa-download"></i> All Visualizations (PDF)
+                                </button>
+                                <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="networks">
+                                    <i class="fa fa-download"></i> Network Data (JSON)
+                                </button>
+                                <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="report">
+                                    <i class="fa fa-download"></i> Analysis Report (PDF)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 全局操作按钮 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="run-kegg-analysis-btn" class="btn-primary w-full sm:w-auto">
+                        <i class="fa fa-play-circle mr-2"></i> Run KEGG Analysis
+                    </button>
+                    <button id="reset-kegg-parameters-btn" class="btn-secondary w-full sm:w-auto">
+                        <i class="fa fa-refresh mr-2"></i> Reset Parameters
+                    </button>
+                    <button id="save-kegg-parameters-btn" class="btn-secondary w-full sm:w-auto">
+                        <i class="fa fa-save mr-2"></i> Save Parameters
+                    </button>
+                </div>
+
+                <!-- 分析进度条 -->
+                <div id="kegg-analysis-progress" class="hidden mt-6">
+                    <p class="text-gray-700 text-sm mb-1" id="kegg-progress-text">Starting KEGG analysis...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="kegg-progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. 通知组件 -->
+    <div id="notification" class="notification fade-in"></div>
+
+    <!-- 4. 通路详情模态框 -->
+    <div id="pathway-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-auto">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h4 class="font-semibold text-primary text-lg" id="pathway-modal-title">Pathway Details</h4>
+                <button id="close-pathway-modal" class="text-gray-500 hover:text-danger">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6" id="pathway-modal-content">
+                <!-- 模态框内容将动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Animal Hormone Database</h3>
+                    <p class="text-gray-400 text-sm">
+                        This database is dedicated to collecting, organizing, and sharing research literature and experimental data related to animal hormones, providing researchers with convenient information retrieval and analysis tools.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors">Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors">Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors">Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors">AI</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o mr-2"></i>
+                            <a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone mr-2"></i>
+                            <span>+86 15393345650</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-map-marker mr-2"></i>
+                            <span>Inner Mongolia University of Science and Technology</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Animal Hormone Database. All rights reserved.
+            </div>
+        </div>
+    </footer>
+        <!-- 5. JavaScript 逻辑 -->
+<script>
+// 全局变量：存储上传文件信息
+let uploadedFiles = {};
+// 标记分析是否完成
+let analysisCompleted = false;
+// 存储分析结果
+let analysisResults = null;
+// 当前分析任务ID
+let currentTaskId = null;
+
+// ==================== 工具函数 ====================
+
+// 1. 动态获取API基础URL
+function getBaseUrl() {
+    // 获取当前页面的基础路径
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/hormone_app/')) {
+        return '/hormone_app/api/kegg';
+    } else {
+        return '/api/kegg';
+    }
+}
+
+// 使用动态URL
+const API_BASE_URL = getBaseUrl();
+
+// 2. 从meta标签获取CSRF令牌
+function getCsrfToken() {
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) {
+        return metaToken.getAttribute('content');
+    }
+    
+    // 回退到表单中的令牌
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    return csrfToken ? csrfToken.value : '';
+}
+
+// 3. 调试日志函数
+let DEBUG_MODE = true; // 设置为false来禁用调试输出
+
+function debugLog(...args) {
+    if (DEBUG_MODE) {
+        console.log('[KEGG分析调试]', ...args);
+    }
+}
+
+function debugError(...args) {
+    if (DEBUG_MODE) {
+        console.error('[KEGG分析错误]', ...args);
+    }
+}
+
+// ==================== API 函数（简化版） ====================
+
+// 在前端JavaScript中添加这个函数
+function handleClientModeResponse(data) {
+    if (!data) return data;
+    
+    // 检查是否有client_mode标志
+    if (data.client_mode) {
+        debugLog('运行在客户端模式，不需要登录');
+        
+        // 显示客户端模式信息
+        if (data.data_persistence_note) {
+            console.log('[客户端模式]', data.data_persistence_note);
+        }
+        
+        // 如果是认证相关错误，提供空结果
+        if (data.success === false && data.error && 
+            (data.error.includes('Authentication') || 
+             data.error.includes('login') || 
+             data.error.includes('认证') ||
+             data.error.includes('401'))) {
+            debugLog('认证相关错误被忽略（客户端模式）');
+            return { 
+                success: true, 
+                results: [], 
+                client_mode: true,
+                total: 0,
+                message: '运行在客户端模式，无历史数据'
+            };
+        }
+    }
+    return data;
+}
+// 通用API请求函数
+async function makeApiRequest(url, options = {}) {
+    let fullUrl;
+    
+    // 智能处理URL拼接逻辑
+    if (url.startsWith('http')) {
+        // 完整的HTTP URL，直接使用
+        fullUrl = url;
+    } else if (url.startsWith('/hormone_app/')) {
+        // 已经是完整路径（以/hormone_app/开头），直接使用
+        fullUrl = url;
+    } else if (url.startsWith('/')) {
+        // 以/开头的相对路径（如 /kegg-tasks/）
+        // 直接拼接到 API_BASE_URL 后面
+        fullUrl = API_BASE_URL + url;
+    } else {
+        // 不以/开头的相对路径
+        fullUrl = `${API_BASE_URL}/${url}`;
+    }
+    
+    debugLog(`API请求: ${fullUrl} ${options.method || 'GET'}`);
+    debugLog(`API_BASE_URL: ${API_BASE_URL}, 传入URL: ${url}, 完整URL: ${fullUrl}`);
+    
+    const defaultHeaders = {
+        'X-CSRFToken': getCsrfToken(),
+    };
+    
+    // 如果不是FormData，添加Content-Type
+    if (!(options.body instanceof FormData)) {
+        if (options.body && typeof options.body === 'object') {
+            defaultHeaders['Content-Type'] = 'application/json';
+        }
+    }
+    
+    try {
+        const response = await fetch(fullUrl, {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...options.headers,
+            },
+        });
+        
+        debugLog(`API响应状态: ${response.status} ${response.statusText}`);
+        
+        // 处理响应
+        const contentType = response.headers.get('content-type');
+        
+        // 检查是否是文件下载
+        const isFileDownload = contentType && 
+            (contentType.includes('application/zip') || 
+             contentType.includes('application/octet-stream') ||
+             contentType.includes('text/csv') ||
+             contentType.includes('text/html') ||
+             contentType.includes('text/plain'));
+        
+        if (isFileDownload) {
+            debugLog('API返回文件下载响应');
+            return response;
+        }
+        
+        // 检查是否是JSON响应
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            
+            // 处理客户端模式响应
+            const processedData = handleClientModeResponse(data);
+            
+            if (!response.ok) {
+                // 如果是401错误（需要认证），在客户端模式下提供友好错误
+                if (response.status === 401 && processedData.client_mode) {
+                    debugLog('API需要认证，但在客户端模式下继续');
+                    
+                    // 如果是需要登录的API，返回空结果
+                    if (url.includes('previous-results') || url.includes('list')) {
+                        return { 
+                            success: true, 
+                            results: [], 
+                            tasks: [],
+                            total: 0,
+                            client_mode: true,
+                            message: '运行在客户端模式，无历史数据'
+                        };
+                    }
+                }
+                
+                // 如果是其他错误，抛出异常
+                debugError(`API错误: ${response.status} ${response.statusText}`, data);
+                const errorMsg = data.error || data.message || `API请求失败: ${response.status} ${response.statusText}`;
+                throw new Error(errorMsg);
+            }
+            
+            return processedData;
+        } else {
+            // 如果是文件下载等非JSON响应
+            if (!response.ok) {
+                const errorText = await response.text();
+                debugError(`API错误详情:`, errorText);
+                throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+            }
+            return response;
+        }
+        
+    } catch (error) {
+        debugError('API请求异常:', error);
+        throw error;
+    }
+}
+
+
+// 1. 创建KEGG分析任务
+async function createKeggTask(analysisParams) {
+    debugLog('创建分析任务，参数:', analysisParams);
+    return await makeApiRequest('/hormone_app/api/kegg-tasks/', {
+        method: 'POST',
+        body: JSON.stringify(analysisParams)
+    });
+}
+
+// 2. 上传基因列表文件
+async function uploadGeneFile(file, task_id) {
+    debugLog('上传基因文件:', file.name, '任务ID:', task_id);
+    
+    const formData = new FormData();
+    formData.append('gene_file', file);
+    
+    return await makeApiRequest(`/hormone_app/api/kegg-tasks/${task_id}/upload/`, {
+        method: 'POST',
+        body: formData
+    });
+}
+
+// 3. 验证基因列表（粘贴方式）
+async function validateGeneList(geneList, geneIdType, organism) {
+    debugLog('验证基因列表:', `基因数量: ${geneList.length}`, `ID类型: ${geneIdType}`, `物种: ${organism}`);
+    
+    return await makeApiRequest('/validate/', {
+        method: 'POST',
+        body: JSON.stringify({
+            genes: geneList,
+            id_type: geneIdType,
+            organism: organism
+        })
+    });
+}
+
+// 4. 获取之前的分析结果
+async function getPreviousResults() {
+    debugLog('获取历史分析结果');
+    try {
+        const result = await makeApiRequest('/previous-results/');
+        
+        // 如果是客户端模式且返回空结果，显示提示
+        if (result.client_mode && (!result.results || result.results.length === 0)) {
+            debugLog('客户端模式：无历史结果');
+            return { 
+                results: [], 
+                client_mode: true,
+                message: '运行在客户端模式，无历史分析结果。请上传新数据进行分析。'
+            };
+        }
+        
+        return result;
+    } catch (error) {
+        debugError('获取历史结果失败:', error);
+        return { 
+            results: [], 
+            client_mode: true,
+            message: '客户端模式：无法获取历史结果'
+        };
+    }
+}
+
+// 5. 运行KEGG分析
+async function runKeggAnalysis(task_id) {
+    debugLog('运行KEGG分析，任务ID:', task_id);
+    return await makeApiRequest(`/hormone_app/api/kegg-tasks/${task_id}/run/`, {
+        method: 'POST'
+    });
+}
+
+// 6. 获取分析状态
+async function getAnalysisStatus(task_id) {
+    debugLog('获取分析状态，任务ID:', task_id);
+    return await makeApiRequest(`/hormone_app/api/kegg-tasks/${task_id}/status/`);
+}
+
+// 7. 获取分析结果
+async function getAnalysisResults(task_id) {
+    debugLog('获取分析结果，任务ID:', task_id);
+    return await makeApiRequest(`/hormone_app/api/kegg-tasks/${task_id}/results/`);
+}
+
+// 8. 获取可视化图表数据
+async function getVisualizationPlot(task_id, plot_type) {
+    debugLog('获取可视化图表:', plot_type, '任务ID:', task_id);
+    return await makeApiRequest(`/hormone_app/api/kegg-tasks/${task_id}/plots/${plot_type}/`);
+}
+
+// 9. 下载结果文件 (修正版)
+async function downloadResults(task_id, file_type) {
+    debugLog('尝试下载结果文件:', file_type, '任务ID:', task_id);
+
+    let url;
+    if (file_type === 'all') {
+        // 下载所有结果的ZIP包
+        url = `/hormone_app/api/kegg-tasks/${task_id}/download-all/`;
+    } else if (file_type === 'report') {
+         // 下载报告
+         url = `/hormone_app/api/kegg-tasks/${task_id}/download-report/`;
+    } else {
+        // **关键修正**: 后端没有 /download-by-type/ 路由。
+        // 根据您的路由，应该使用 /download/ 路由，并通过查询参数传递类型。
+        // 但这要求后端 download_kegg_result_by_type 函数能处理 type 查询参数。
+        // 假设后端可以处理 ?type= 参数，或者您将此作为查询参数附加。
+        // 如果后端 download 函数无法区分类型，您可能需要后端增加逻辑或修改前端UI来分别调用不同按钮对应不同路由。
+        // 这里我们先按有 ?type 参数的情况构建URL，但请注意后端必须支持！
+        url = `/hormone_app/api/kegg-tasks/${task_id}/download/?type=${file_type}`;
+        // **备选方案 (推荐)**: 如果后端 download 函数不能通过 ?type 区分，您可能需要为每种类型单独定义路由，
+        // 或者修改前端UI，让用户选择下载 table, genes, images 等时，直接调用对应的固定路由。
+        // 例如，如果用户点击“下载表格”，直接调用 downloadResults(task_id, 'table_fixed_route')
+        // 然后在这里根据 'table_fixed_route' 选择固定的 url = `/hormone_app/api/kegg-tasks/${task_id}/download-table/` (需后端定义)
+        // 但最灵活的方式是后端支持一个路由加参数。
+    }
+
+    try {
+        showNotification('info', '正在准备下载文件...');
+
+        // **使用 makeApiRequest 获取响应对象**
+        // makeApiRequest 内部已经处理了API_BASE_URL的拼接
+        // 传入相对于API_BASE_URL的路径即可
+        const response = await makeApiRequest(url, { method: 'GET' }); // makeApiRequest 会返回 fetch 的原始 Response 对象（对于文件）
+
+        // 检查 makeApiRequest 是否返回了 Response 对象（意味着是文件下载）
+        if (response instanceof Response) {
+            // 如果 response.ok 在 makeApiRequest 内部已经被检查过并抛出了异常，这里就不需要再检查了。
+            // 但如果 makeApiRequest 在非 ok 情况下没有抛异常而是返回了 Response，这里仍需检查。
+            if (!response.ok) {
+                 const errorText = await response.text(); // 或者 response.json()
+                 throw new Error(`下载失败: ${response.status} ${response.statusText}. Details: ${errorText}`);
+            }
+
+            // 检查 Content-Type 和 Content-Disposition
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const contentType = response.headers.get('content-type');
+            debugLog('下载响应 Content-Type:', contentType);
+            debugLog('下载响应 Content-Disposition:', contentDisposition);
+
+            // 检查是否是预期的文件类型
+            const isFileDownload = contentType && (
+                contentType.includes('application/zip') ||
+                contentType.includes('application/octet-stream') ||
+                contentType.includes('text/csv') ||
+                contentType.includes('text/html') || // 报告
+                contentType.includes('application/pdf') || // 报告
+                contentType.includes('application/json') || // 网络数据
+                (contentDisposition && contentDisposition.includes('attachment'))
+            );
+
+            if (!isFileDownload) {
+                 const responseBody = await response.text();
+                 console.error("Download response is not a file. Content received:", responseBody);
+                 throw new Error("下载响应不是一个有效的文件。服务器可能返回了错误页面或意外内容。");
+            }
+
+            // 获取blob数据
+            const blob = await response.blob();
+            const urlObj = window.URL.createObjectURL(blob);
+
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.href = urlObj;
+
+            // 根据 file_type 设置文件名
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const fileExtensionMap = {
+                'all': 'zip',
+                'table': 'csv',
+                'genes': 'csv',
+                'images': 'pdf', // 或 zip
+                'networks': 'json',
+                'report': contentType && contentType.includes('application/pdf') ? 'pdf' : 'html',
+                'summary': 'csv'
+            };
+            const extension = fileExtensionMap[file_type] || 'txt';
+            a.download = `kegg_analysis_${task_id}_${file_type}_${timestamp}.${extension}`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(urlObj);
+
+            showNotification('success', `文件 ${file_type} 下载成功！`);
+            debugLog('文件下载成功');
+
+        } else {
+            // 如果 makeApiRequest 返回的不是 Response，而是 JSON (这不应该发生在文件下载上)
+            // 说明可能出现了问题，比如服务器返回了错误信息而不是文件
+            console.error("makeApiRequest did not return a Response object for file download.", response);
+            throw new Error("下载流程出现意外错误。");
+        }
+
+
+    } catch (error) {
+        debugError('下载结果文件失败:', error);
+        showNotification('error', `下载失败: ${error.message}`);
+    }
+}
+
+// 10. 保存分析参数
+async function saveKeggParameters(params) {
+    debugLog('保存分析参数:', params);
+    return await makeApiRequest('/save-params/', {
+        method: 'POST',
+        body: JSON.stringify(params)
+    });
+}
+
+// 11. 列出用户任务
+async function listUserKeggTasks() {
+    debugLog('列出用户任务');
+    try {
+        const result = await makeApiRequest('/hormone_app/api/kegg-tasks/list/');
+        
+        // 如果是客户端模式且返回空结果，显示提示
+        if (result.client_mode && (!result.tasks || result.tasks.length === 0)) {
+            debugLog('客户端模式：无用户任务');
+            return { 
+                tasks: [], 
+                client_mode: true,
+                message: '运行在客户端模式，无历史任务。请创建新任务进行分析。'
+            };
+        }
+        
+        return result;
+    } catch (error) {
+        debugError('获取任务列表失败:', error);
+        return { 
+            tasks: [], 
+            client_mode: true,
+            message: '客户端模式：无法获取任务列表'
+        };
+    }
+}
+
+// 12. 取消分析任务
+async function cancelKeggTask(task_id) {
+    debugLog('取消分析任务，任务ID:', task_id);
+    return await makeApiRequest(`/hormone_app/api/kegg-tasks/${task_id}/cancel/`, {
+        method: 'POST'
+    });
+}
+
+// ==================== 初始化函数 ====================
+
+// DOM 加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    debugLog('页面加载完成，开始初始化...');
+    debugLog('当前页面路径:', window.location.pathname);
+    debugLog('API基础URL:', API_BASE_URL);
+    debugLog('CSRF令牌:', getCsrfToken() ? '已获取' : '未找到');
+    
+    // 初始化移动菜单
+    initMobileMenu();
+    // 标签页切换逻辑
+    initTabSwitch();
+    // 文件上传逻辑
+    initFileUpload();
+    // 输入方式切换逻辑
+    initInputMethodSwitch();
+    // 可视化选项卡切换
+    initVisualizationTabs();
+    // 通路详情模态框
+    initPathwayModal();
+    // 分析按钮事件
+    initAnalysisButtons();
+    // 加载更多通路
+    initLoadMorePathways();
+    // 网络分析控制
+    initNetworkControls();
+    // 下载结果按钮
+    initDownloadButtons();
+    // 基因计数功能
+    initGeneCount();
+    // 初始化颜色选择器
+    initColorPalette();
+    // 初始化分析历史
+    loadPreviousResults();
+    // 初始化演示数据处理
+    initDemoDataHandler();
+    
+    debugLog('初始化完成');
+});
+
+// ==================== 完整的初始化函数 ====================
+
+// 1. 初始化移动菜单
+function initMobileMenu() {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const mobileNav = document.querySelector('.mobile-nav');
+    
+    if (menuToggle && mobileNav) {
+        menuToggle.addEventListener('click', function() {
+            mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // 点击移动菜单项后关闭菜单
+        const mobileLinks = mobileNav.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileNav.style.display = 'none';
+            });
+        });
+    }
+}
+
+// 2. 初始化标签页切换
+function initTabSwitch() {
+    const tabTriggers = document.querySelectorAll('.tab-trigger');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 移除所有活动状态
+            tabTriggers.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // 添加当前活动状态
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // 如果切换到结果标签页且分析已完成，加载结果
+            if (tabId === 'results' && analysisCompleted && analysisResults) {
+                loadResultsTable();
+            }
+            
+            // 如果切换到可视化标签页，加载默认可视化
+            if (tabId === 'visualization') {
+                setTimeout(() => loadVisualization('bar'), 100);
+            }
+            
+            // 平滑滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+}
+
+// 3. 初始化文件上传
+function initFileUpload() {
+    const fileDropAreas = document.querySelectorAll('.file-drop-area');
+    const fileInputs = document.querySelectorAll('.file-input');
+    const removeButtons = document.querySelectorAll('.remove-file');
+    
+    // 文件拖放功能
+    fileDropAreas.forEach(area => {
+        area.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('active');
+        });
+        
+        area.addEventListener('dragleave', function() {
+            this.classList.remove('active');
+        });
+        
+        area.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            
+            if (e.dataTransfer.files.length) {
+                const fileType = this.getAttribute('data-file-type');
+                handleFileUpload(e.dataTransfer.files[0], fileType);
+            }
+        });
+        
+        // 点击上传区域触发文件选择
+        area.addEventListener('click', function() {
+            const fileInput = this.querySelector('.file-input');
+            if (fileInput) fileInput.click();
+        });
+    });
+    
+    // 文件选择处理
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files.length) {
+                const fileType = this.getAttribute('data-target');
+                handleFileUpload(this.files[0], fileType);
+            }
+        });
+    });
+    
+    // 移除文件
+    removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const fileNameElement = this.closest('.selected-file-name');
+            const fileType = fileNameElement.previousElementSibling.getAttribute('data-file-type');
+            
+            fileNameElement.classList.add('hidden');
+            fileNameElement.querySelector('.file-name span').textContent = '';
+            delete uploadedFiles[fileType];
+            
+            // 重置文件输入
+            const fileInput = document.querySelector(`.file-input[data-target="${fileType}"]`);
+            if (fileInput) fileInput.value = '';
+            
+            // 禁用运行分析按钮
+            document.getElementById('run-kegg-analysis-btn').disabled = true;
+        });
+    });
+}
+
+// 处理文件上传
+async function handleFileUpload(file, fileType) {
+    // 检查文件类型
+    const allowedExtensions = ['.txt', '.csv', '.tsv'];
+    const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+        showNotification('请上传.txt, .csv或.tsv格式的文件', 'error');
+        return;
+    }
+    
+    // 检查文件大小 (最大5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('文件大小不能超过5MB', 'error');
+        return;
+    }
+    
+    try {
+        showNotification('正在上传文件...', 'info');
+        
+        // 首先创建任务
+        const analysisParams = collectAnalysisParameters();
+        const taskResult = await createKeggTask(analysisParams);
+        currentTaskId = taskResult.task_id;
+        
+        // 然后上传文件
+        const result = await uploadGeneFile(file, currentTaskId);
+        
+        // 存储文件信息
+        uploadedFiles[fileType] = {
+            file: file,
+            taskId: currentTaskId,
+            geneCount: result.gene_count
+        };
+        
+        // 显示文件名
+        const fileNameElement = document.querySelector(`#${fileType}-file-name`);
+        if (fileNameElement) {
+            fileNameElement.textContent = `${file.name} (${result.gene_count} genes)`;
+            fileNameElement.closest('.selected-file-name').classList.remove('hidden');
+        }
+        
+        showNotification(`文件上传成功: ${file.name}`, 'success');
+        
+        // 启用运行分析按钮
+        const runButton = document.getElementById('run-kegg-analysis-btn');
+        if (runButton) {
+            runButton.disabled = false;
+        }
+        
+    } catch (error) {
+        showNotification(`文件上传失败: ${error.message}`, 'error');
+        debugError('Upload error:', error);
+    }
+}
+
+// 4. 初始化输入方式切换
+function initInputMethodSwitch() {
+    const inputRadios = document.querySelectorAll('input[name="input-method"]');
+    const uploadSection = document.getElementById('upload-section');
+    const pasteSection = document.getElementById('paste-section');
+    const previousSection = document.getElementById('previous-section');
+    
+    inputRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (uploadSection) uploadSection.classList.add('hidden');
+            if (pasteSection) pasteSection.classList.add('hidden');
+            if (previousSection) previousSection.classList.add('hidden');
+            
+            switch(this.value) {
+                case 'upload':
+                    if (uploadSection) uploadSection.classList.remove('hidden');
+                    break;
+                case 'paste':
+                    if (pasteSection) pasteSection.classList.remove('hidden');
+                    break;
+                case 'previous':
+                    if (previousSection) previousSection.classList.remove('hidden');
+                    break;
+            }
+        });
+    });
+}
+
+// 5. 初始化可视化选项卡
+function initVisualizationTabs() {
+    const visualizationTabs = document.querySelectorAll('#visualization-tabs button');
+    
+    visualizationTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // 移除所有活动状态
+            visualizationTabs.forEach(t => {
+                t.classList.remove('border-primary', 'text-primary');
+                t.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+            });
+            
+            // 添加当前活动状态
+            this.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+            this.classList.add('border-primary', 'text-primary');
+            
+            // 加载可视化图表
+            const visualType = this.getAttribute('data-visual-type');
+            loadVisualization(visualType);
+        });
+    });
+}
+
+// 加载可视化图表
+async function loadVisualization(type) {
+    const visualContainer = document.querySelector('.bg-gray-50.rounded-xl.p-4.mb-6'); // 找到放置图表的容器
+    if (!visualContainer) {
+        debugError('找不到可视化图表容器');
+        return;
+    }
+
+    if (!analysisResults || !currentTaskId) {
+        visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                        <i class="fa fa-bar-chart text-5xl text-gray-300 mb-4"></i>
+                                        <p class="text-gray-500">请先运行分析以查看可视化结果</p>
+                                    </div>`;
+        return;
+    }
+
+    // 显示加载状态
+    const loadingHTML = `<div class="flex flex-col items-center justify-center h-64">
+                            <div class="loader w-10 h-10 rounded-full border-4 border-gray-200 border-t-primary animate-spin"></div>
+                            <p class="mt-4 text-gray-500">正在生成 ${type} 图表...</p>
+                         </div>`;
+    visualContainer.innerHTML = loadingHTML;
+
+    try {
+        // 调用API获取图表数据
+        debugLog('正在请求后端API获取图表数据，类型:', type, '任务ID:', currentTaskId);
+        const plotDataResponse = await getVisualizationPlot(currentTaskId, type);
+        debugLog('API返回的绘图数据:', plotDataResponse);
+
+        // 检查API响应是否成功且包含数据
+        if (!plotDataResponse.success || !plotDataResponse.data) {
+            throw new Error(plotDataResponse.error || 'API返回的数据格式不正确或为空');
+        }
+
+        const plotData = plotDataResponse.data; // 实际的绘图数据在 data 字段下
+
+        // 确保容器清空并准备绘制图表
+        visualContainer.innerHTML = '';
+        const plotDiv = document.createElement('div'); // 创建一个div用于Plotly绘图
+        plotDiv.id = `plotly-${type}-chart`; // 给div一个唯一ID，方便管理
+        plotDiv.style.width = '100%';
+        plotDiv.style.height = '500px'; // 可以根据需要调整高度
+        visualContainer.appendChild(plotDiv);
+
+        let plotConfig = null;
+
+        switch(type) {
+            case 'bar':
+                // 处理条形图数据 (假设后端返回格式为 { pathways: [...], scores: [...] })
+                if (plotData.pathways && plotData.scores && Array.isArray(plotData.pathways) && Array.isArray(plotData.scores)) {
+                    // 为了便于排序和展示，将数据打包成对象数组
+                    const combinedData = plotData.pathways.map((pathway, index) => ({
+                        pathway: pathway,
+                        score: plotData.scores[index]
+                    }));
+
+                    // 按得分排序（可选，按升序排列，最显著的在上面）
+                    combinedData.sort((a, b) => a.score - b.score);
+
+                    const sortedPathways = combinedData.map(d => d.pathway);
+                    const sortedScores = combinedData.map(d => d.score);
+
+                    const trace = {
+                        x: sortedScores, // X轴是得分
+                        y: sortedPathways, // Y轴是通路名
+                        type: 'bar',
+                        orientation: 'h', // 水平条形图
+                        marker: {
+                            color: 'rgba(22, 93, 255, 0.8)', // 使用主题色
+                            line: {
+                                color: 'rgba(22, 93, 255, 1.0)',
+                                width: 1
+                            }
+                        },
+                        hovertemplate: '<b>%{y}</b><br>Enrichment Score: %{x}<extra></extra>'
+                    };
+                    const layout = {
+                        title: 'KEGG Pathway Enrichment Analysis (Bar Chart)',
+                        xaxis: { title: 'Enrichment Score' },
+                        yaxis: { title: 'Pathway', automargin: true }, // automargin确保标签不会被截断
+                        height: Math.max(500, sortedPathways.length * 25), // 根据通路数量动态调整高度
+                        margin: { l: 150, r: 50, t: 50, b: 100 } // 左边距增加以容纳Y轴标签
+                    };
+                    plotConfig = { data: [trace], layout: layout };
+                } else {
+                    console.error('条形图数据格式不正确:', plotData);
+                    visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                                    <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                                    <p class="text-gray-500">加载图表失败: 缺少必要的绘图数据</p>
+                                                </div>`;
+                    return;
+                }
+                break;
+            case 'bubble':
+                // 处理气泡图数据 (假设后端返回格式为 { pathways: [...], gene_counts: [...], pvalues: [...] })
+                if (plotData.pathways && plotData.gene_counts && plotData.pvalues &&
+                    Array.isArray(plotData.pathways) && Array.isArray(plotData.gene_counts) && Array.isArray(plotData.pvalues)) {
+
+                    const negLogPValues = plotData.pvalues.map(p => -Math.log10(p)); // 计算 -log10(p_value)
+
+                    const trace = {
+                        x: plotData.gene_counts, // X轴是基因数
+                        y: negLogPValues,        // Y轴是 -log10(p值)
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {
+                            size: 10, // 可以根据 gene_counts 调整大小
+                            sizemode: 'diameter',
+                            sizeref: 2.0 * Math.max(...plotData.gene_counts) / (40**2), // 调整大小参考
+                            color: negLogPValues, // 颜色可以代表 -log10(p_value) 或其他指标
+                            colorscale: 'Reds', // 使用红色系表示显著性
+                            showscale: true,
+                            colorbar: { title: '-log10(P-value)' }
+                        },
+                        text: plotData.pathways, // 悬停时显示通路名
+                        hovertemplate: '<b>%{text}</b><br>Gene Count: %{x}<br>-log10(P-value): %{y}<extra></extra>'
+                    };
+                    const layout = {
+                        title: 'KEGG Pathway Enrichment Analysis (Bubble Chart)',
+                        xaxis: { title: 'Gene Count in Pathway' },
+                        yaxis: { title: '-log10(P-value)' },
+                        height: 500,
+                        showlegend: false
+                    };
+                    plotConfig = { data: [trace], layout: layout };
+                } else {
+                    console.error('气泡图数据格式不正确:', plotData);
+                    visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                                    <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                                    <p class="text-gray-500">加载图表失败: 缺少必要的绘图数据</p>
+                                                </div>`;
+                    return;
+                }
+                break;
+            case 'pie':
+                // ✅ 修改：处理饼图数据 (适应后端返回格式为 { labels: [...], datasets: [{ data: [...], backgroundColor: [...] }] })
+                if (plotData.labels && plotData.datasets && Array.isArray(plotData.labels) && Array.isArray(plotData.datasets) && plotData.datasets[0] && Array.isArray(plotData.datasets[0].data)) {
+
+                    // 限制显示的类别数量，取前N个，其余合并为 "Others"
+                    const maxSlices = 10; // 显示前10个最大的扇形
+                    let values = plotData.datasets[0].data.slice(); // 获取数值数组
+                    let labels = plotData.labels.slice(); // 获取标签数组
+                    let backgroundColors = plotData.datasets[0].backgroundColor ? plotData.datasets[0].backgroundColor.slice() : []; // 获取颜色数组（可选）
+                    let othersCount = 0;
+                    let othersColor = '';
+
+                    // 对值进行排序并选择前maxSlices个
+                    const sortedIndices = values.map((value, index) => index)
+                        .sort((a, b) => values[b] - values[a]);
+
+                    // 构建最终的标签和值数组
+                    labels = sortedIndices.slice(0, maxSlices).map(index => labels[index]);
+                    values = sortedIndices.slice(0, maxSlices).map(index => values[index]);
+                    if (backgroundColors.length > 0) {
+                        backgroundColors = sortedIndices.slice(0, maxSlices).map(index => backgroundColors[index]);
+                    }
+
+                    // 如果有剩余的值，计算它们的总和作为“Others”类别
+                    if (sortedIndices.length > maxSlices) {
+                        othersCount = sortedIndices.slice(maxSlices).reduce((acc, index) => acc + values[index], 0);
+                        if (backgroundColors.length > 0) {
+                             // 为 Others 选择一个颜色，这里取第一个剩余颜色或默认颜色
+                             othersColor = sortedIndices.length > maxSlices ? backgroundColors[sortedIndices[maxSlices]] || '#CCCCCC' : '#CCCCCC';
+                        }
+                        if (othersCount > 0) {
+                            labels.push('Others');
+                            values.push(othersCount);
+                            if (backgroundColors.length > 0) {
+                                backgroundColors.push(othersColor);
+                            }
+                        }
+                    }
+
+                    const trace = {
+                        values: values,
+                        labels: labels,
+                        type: 'pie',
+                        hovertemplate: '<b>%{label}</b><br>Value: %{value}<extra></extra>',
+                        // 使用后端提供的颜色，如果提供了的话
+                        marker: backgroundColors.length > 0 ? { colors: backgroundColors } : {}
+                    };
+                    const layout = {
+                        title: 'KEGG Pathway Enrichment Distribution (Pie Chart)',
+                        height: 500
+                    };
+                    plotConfig = { data: [trace], layout: layout };
+                } else {
+                    console.error('饼图数据格式不正确:', plotData);
+                    visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                                    <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                                    <p class="text-gray-500">加载图表失败: 缺少必要的绘图数据</p>
+                                                </div>`;
+                    return;
+                }
+                break;
+            case 'heatmap':
+                // ✅ 修改：处理热图数据 (适应后端返回格式为 { z: [...], x: [...], y: [...] })
+                if (plotData.z && plotData.x && plotData.y &&
+                    Array.isArray(plotData.z) && Array.isArray(plotData.x) && Array.isArray(plotData.y) &&
+                    plotData.z.every(row => Array.isArray(row) && row.length === plotData.x.length) && // 检查矩阵维度
+                    plotData.z.length === plotData.y.length) {
+
+                    const trace = {
+                        x: plotData.x, // X轴标签
+                        y: plotData.y, // Y轴标签
+                        z: plotData.z, // Z轴值矩阵
+                        type: 'heatmap',
+                        colorscale: 'Viridis',
+                        hoverongaps: false,
+                        hovertemplate: '<b>Pathway: %{y}</b><br><b>Metric: %{x}</b><br>Value: %{z}<extra></extra>' // 根据实际情况调整悬停提示
+                    };
+                    const layout = {
+                        title: 'KEGG Pathway Enrichment Analysis (Heatmap)', // 更贴切的标题
+                        xaxis: { title: 'Metrics' }, // 根据实际情况更改标题
+                        yaxis: { title: 'Pathways', autorange: "reversed" }, // 通常热图Y轴倒序
+                        height: Math.max(500, plotData.y.length * 20), // 动态高度，根据路径数量调整
+                        margin: { l: 150, r: 50, t: 50, b: 150 } // 为标签留出空间
+                    };
+                    plotConfig = { data: [trace], layout: layout };
+                } else {
+                    console.error('热图数据格式不正确或维度不匹配:', plotData);
+                    visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                                    <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                                    <p class="text-gray-500">加载图表失败: 缺少必要的绘图数据或数据格式错误</p>
+                                                </div>`;
+                    return;
+                }
+                break;
+            // 可以根据需要添加更多 case，比如 volcano
+            case 'volcano':
+                // 假设 plotData 是一个包含 {pathway, log2fc, neg_log10_p, significant} 对象的数组
+                if (Array.isArray(plotData) && plotData.length > 0 && plotData[0].hasOwnProperty('pathway') && plotData[0].hasOwnProperty('log2fc') && plotData[0].hasOwnProperty('neg_log10_p')) {
+                    const pathways = plotData.map(item => item.pathway);
+                    const log2fcs = plotData.map(item => item.log2fc);
+                    const negLog10Pvals = plotData.map(item => item.neg_log10_p);
+                    // 假设有一个 'significant' 字段用于区分
+                    const significants = plotData.map(item => item.significant || (item.neg_log10_p > 1.3 && Math.abs(item.log2fc) > 1)); // 示例阈值
+
+                    // 将数据分为显著和非显著两组
+                    const traceSig = {
+                        x: log2fcs.filter((_, i) => significants[i]),
+                        y: negLog10Pvals.filter((_, i) => significants[i]),
+                        mode: 'markers',
+                        type: 'scatter',
+                        name: 'Significant',
+                        marker: { color: 'red', size: 8 },
+                        text: pathways.filter((_, i) => significants[i]),
+                        hovertemplate: '<b>%{text}</b><br>Log2FC: %{x}<br>-log10(P-value): %{y}<extra></extra>'
+                    };
+                    const traceNonSig = {
+                        x: log2fcs.filter((_, i) => !significants[i]),
+                        y: negLog10Pvals.filter((_, i) => !significants[i]),
+                        mode: 'markers',
+                        type: 'scatter',
+                        name: 'Not Significant',
+                        marker: { color: 'gray', size: 6 },
+                        text: pathways.filter((_, i) => !significants[i]),
+                        hovertemplate: '<b>%{text}</b><br>Log2FC: %{x}<br>-log10(P-value): %{y}<extra></extra>'
+                    };
+                    const layout = {
+                        title: 'KEGG Pathway Enrichment Analysis (Volcano Plot)',
+                        xaxis: { title: 'Log2 Enrichment Score' },
+                        yaxis: { title: '-log10(P-value)' },
+                        height: 500,
+                        showlegend: true
+                    };
+                    plotConfig = { data: [traceSig, traceNonSig], layout: layout };
+                } else {
+                    console.error('火山图数据格式不正确或为空:', plotData);
+                    visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                                    <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                                    <p class="text-gray-500">加载图表失败: 缺少必要的绘图数据</p>
+                                                </div>`;
+                    return;
+                }
+                break;
+            default:
+                console.warn(`不支持的图表类型: ${type}`);
+                visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                                <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                                <p class="text-gray-500">不支持的图表类型: ${type}</p>
+                                            </div>`;
+                return;
+        }
+
+        // 检查 plotConfig 是否已设置
+        if (plotConfig) {
+            debugLog('准备绘制Plotly图表，配置:', plotConfig);
+            // 使用Plotly绘制图形
+            Plotly.newPlot(plotDiv, plotConfig.data, plotConfig.layout);
+        } else {
+            // 如果 switch 没有匹配任何类型（理论上不应发生，除非default分支未覆盖）
+            visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                            <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                            <p class="text-gray-500">无法生成图表: 未知错误</p>
+                                        </div>`;
+        }
+
+    } catch (error) {
+        debugError('加载可视化图表出错:', error);
+        visualContainer.innerHTML = `<div class="flex flex-col items-center justify-center h-64">
+                                        <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
+                                        <p class="text-gray-500">加载图表失败: ${error.message}</p>
+                                    </div>`;
+    }
+}
+// 6. 初始化通路详情模态框
+function initPathwayModal() {
+    const modal = document.getElementById('pathway-modal');
+    const closeButton = document.getElementById('close-pathway-modal');
+    
+    if (!modal || !closeButton) return;
+    
+    // 关闭模态框
+    closeButton.addEventListener('click', function() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // 恢复背景滚动
+    });
+    
+    // 点击模态框外部关闭
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    });
+}
+
+// 加载通路详情 (修改版 v3 - 添加通路图)
+// 在全局范围初始化基因数据存储
+(function() {
+    window._pathwayGenes = window._pathwayGenes || {};
+})();
+
+/**
+ * 加载通路详情 - 完整修复版
+ * @param {string} pathwayId - 通路ID
+ * @param {string} pathwayName - 通路名称
+ */
+async function loadPathwayDetails(pathwayId, pathwayName) {
+    const modalContent = document.getElementById('pathway-modal-content');
+    const modalTitle = document.getElementById('pathway-modal-title');
+
+    if (!modalContent || !modalTitle) return;
+
+    // 设置模态框标题
+    modalTitle.textContent = `${pathwayName} (${pathwayId})`;
+
+    // 显示加载状态
+    modalContent.innerHTML = `
+        <div class="flex justify-center items-center h-80">
+            <div class="loader w-12 h-12 rounded-full border-4 border-gray-200 border-t-primary animate-spin"></div>
+        </div>
+    `;
+
+    try {
+        // 构造请求URL，调用后端API
+        const response = await fetch(`/hormone_app/api/kegg/pathway/${encodeURIComponent(pathwayId)}/`);
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load pathway details');
+        }
+
+        const pathwayDetail = data.pathway; // 获取API返回的pathway对象
+
+        // --- 准备数据 ---
+        const keggId = pathwayDetail.id || pathwayId; // 数据库中的原始ID
+        // 统一生成标准ID：强制去除path:前缀，确保格式统一
+        const standardId = (pathwayDetail.standard_id || pathwayId).replace('path:', ''); 
+        const name = pathwayDetail.name || pathwayName;
+        const description = pathwayDetail.description || 'Description not available in database.';
+        const geneCount = pathwayDetail.gene_count || pathwayDetail.total_genes || 0;
+        const category = pathwayDetail.category || 'N/A';
+        
+        // KEGG页面链接
+        const keggUrl = `https://www.kegg.jp/pathway/${standardId}`; 
+        // 通路图图片URL
+        const pathwayImageUrl = `https://www.kegg.jp/kegg/pathway/hsa/${standardId}.png`;
+        // 备用图片URL
+        const alternativeImageUrl = `https://www.kegg.jp/kegg/pathway/${standardId}.png`;
+        
+        // 获取基因数据并存储到全局对象中
+        const genes = pathwayDetail.genes || [];
+        window._pathwayGenes[pathwayId] = genes; // 关键修复：存储基因数据
+
+        // --- 生成基因列表HTML ---
+        let genesHtml = '<p class="text-gray-500 italic">Gene information not available for this specific pathway in detail API.</p>';
+        if (genes && Array.isArray(genes) && genes.length > 0) {
+            const displayedGenes = genes.slice(0, 8).map(g => {
+                if (typeof g === 'string') return g;
+                return g.symbol || g.name || g.id || 'Unknown';
+            });
+            const moreCount = Math.max(0, genes.length - displayedGenes.length);
+            const moreText = moreCount > 0 ? `+${moreCount} more` : '';
+
+            genesHtml = `
+                <div class="flex flex-wrap gap-2">
+                    ${displayedGenes.map(gene => 
+                        `<span class="bg-white text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 hover:bg-primary/5 transition-colors" title="${gene}">${gene}</span>`
+                    ).join('')}
+                    ${moreText ? 
+                        `<span class="bg-white text-gray-700 text-xs px-2 py-1 rounded border border-gray-200">${moreText}</span>` 
+                        : ''
+                    }
+                </div>
+                ${moreCount > 0 ? 
+                    `<button class="mt-3 text-sm text-primary hover:text-primary/80 flex items-center gap-1 transition-colors" onclick="showAllGenes('${pathwayId}')">
+                        <i class="fa fa-list-ul"></i> 查看所有 ${genes.length} 个基因
+                    </button>` 
+                    : ''
+                }
+            `;
+        }
+
+        // 构建模态框内容HTML
+        modalContent.innerHTML = `
+            <div class="space-y-6">
+                <!-- 通路图卡片 -->
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                        <h5 class="font-medium text-gray-700">
+                            <i class="fa fa-image text-primary mr-2"></i>KEGG通路图
+                        </h5>
+                        <a href="${keggUrl}" target="_blank" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 transition-colors">
+                            <i class="fa fa-external-link mr-1"></i> 查看原图
+                        </a>
+                    </div>
+                    <div class="p-4">
+                        <div class="relative bg-gray-50 rounded-lg flex justify-center items-center p-2">
+                            <img 
+                                src="${pathwayImageUrl}" 
+                                alt="${name} pathway diagram"
+                                class="max-w-full h-auto rounded shadow-sm border border-gray-200 cursor-pointer transition-transform hover:scale-[1.02]"
+                                onclick="window.open('${pathwayImageUrl}', '_blank')"
+                                onerror="this.onerror=null; this.src='${alternativeImageUrl}'; this.onerror=function(){
+                                    this.style.display='none'; 
+                                    this.parentElement.innerHTML='<div class=\'text-center py-8\'><i class=\'fa fa-image text-gray-400 text-4xl mb-2\'></i><p class=\'text-gray-500\'>通路图加载失败，请点击下方按钮在KEGG官网查看</p><a href=\'${keggUrl}\' target=\'_blank\' class=\'mt-3 inline-block btn-primary text-sm\'><i class=\'fa fa-external-link mr-1\'></i>前往KEGG官网</a></div>';
+                                }"
+                                loading="lazy"
+                            />
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 text-center">
+                            <i class="fa fa-info-circle mr-1"></i> 
+                            图片来源于KEGG数据库，点击图片可放大查看
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 通路信息网格 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 基本信息卡片 -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <h5 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fa fa-info-circle text-primary mr-2"></i>基本信息
+                        </h5>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500">KEGG ID</span>
+                                <span class="font-medium font-mono text-xs bg-gray-100 px-2 py-1 rounded">${keggId}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500">标准ID</span>
+                                <span class="font-medium font-mono text-xs">${standardId}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">名称</span>
+                                <span class="font-medium text-right">${name}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">分类</span>
+                                <span class="font-medium">${category}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">基因数量</span>
+                                <span class="font-medium">${geneCount}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 分析统计卡片 -->
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <h5 class="font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fa fa-chart-bar text-primary mr-2"></i>分析统计
+                        </h5>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">富集分数</span>
+                                <span class="text-warning font-medium bg-yellow-50 px-2 py-1 rounded">N/A</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">校正p值</span>
+                                <span class="text-warning font-medium bg-yellow-50 px-2 py-1 rounded">N/A</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">关联基因</span>
+                                <span class="font-medium text-primary">${genes.length}</span>
+                            </div>
+                            <div class="pt-2 mt-2 border-t border-gray-100">
+                                <a href="${keggUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1 transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                    ${keggUrl}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 描述信息 -->
+                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                    <h5 class="font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fa fa-align-left text-primary mr-2"></i>通路描述
+                    </h5>
+                    <p class="text-gray-700 text-sm leading-relaxed bg-gray-50 p-3 rounded-lg">${description}</p>
+                </div>
+
+                <!-- 相关基因 -->
+                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                    <h5 class="font-medium text-gray-700 mb-3 flex items-center">
+                        <i class="fa fa-dna text-primary mr-2"></i>相关基因 (${genes.length})
+                    </h5>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        ${genesHtml}
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="flex justify-end gap-3 pt-2 border-t border-gray-200">
+                    <button onclick="downloadPathwayImage('${pathwayImageUrl}', '${standardId}')" 
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm flex items-center gap-2">
+                        <i class="fa fa-download"></i> 下载通路图
+                    </button>
+                    <a href="${keggUrl}" target="_blank" 
+                       class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-2">
+                        <i class="fa fa-external-link"></i> 在KEGG中查看
+                    </a>
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error loading pathway details:', error);
+        // 显示错误信息
+        modalContent.innerHTML = `
+            <div class="text-center py-12">
+                <div class="bg-red-50 rounded-lg p-8 inline-block max-w-md">
+                    <div class="text-red-500 text-5xl mb-4">
+                        <i class="fa fa-exclamation-triangle"></i>
+                    </div>
+                    <p class="text-red-600 font-medium text-lg mb-2">加载通路详情失败</p>
+                    <p class="text-gray-600 text-sm mb-4">${error.message}</p>
+                    <div class="flex justify-center gap-3">
+                        <button onclick="loadPathwayDetails('${pathwayId}', '${pathwayName}')" 
+                                class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-2">
+                            <i class="fa fa-refresh"></i> 重新加载
+                        </button>
+                        <button onclick="document.getElementById('pathway-modal').classList.add('hidden')"
+                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * 下载通路图
+ * @param {string} imageUrl - 图片URL
+ * @param {string} pathwayId - 通路ID
+ */
+function downloadPathwayImage(imageUrl, pathwayId) {
+    // 创建隐藏的a标签
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `KEGG_${pathwayId}_pathway.png`;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    
+    // 尝试触发下载
+    try {
+        link.click();
+        
+        // 显示下载提示
+        showToast('开始下载通路图...', 'info');
+    } catch (error) {
+        console.error('Download failed:', error);
+        // 如果下载失败，在新标签页打开
+        window.open(imageUrl, '_blank');
+        showToast('无法直接下载，已在新标签页打开图片', 'warning');
+    }
+}
+
+/**
+ * 显示所有基因 - 修复版
+ * @param {string} pathwayId - 通路ID
+ */
+function showAllGenes(pathwayId) {
+    // 从全局存储中获取基因数据
+    const allGenesArray = window._pathwayGenes?.[pathwayId] || [];
+    
+    if (!allGenesArray || allGenesArray.length === 0) {
+        showToast('没有找到该通路的基因数据', 'error');
+        return;
+    }
+    
+    // 提取基因符号
+    const geneSymbols = allGenesArray.map(g => {
+        if (typeof g === 'string') return g;
+        return g.symbol || g.name || g.id || JSON.stringify(g);
+    }).filter(Boolean);
+    
+    // 创建模态框唯一ID
+    const modalId = `gene-modal-${Date.now()}`;
+    
+    // 创建模态框
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] animate-fade-in';
+    modal.onclick = function(e) {
+        if (e.target === this) this.remove();
+    };
+    
+    // 按字母顺序排序
+    geneSymbols.sort((a, b) => a.localeCompare(b));
+    
+    // 计算列数
+    const columnClass = geneSymbols.length > 50 ? 'grid-cols-4' : 
+                       geneSymbols.length > 30 ? 'grid-cols-3' : 
+                       geneSymbols.length > 10 ? 'grid-cols-2' : 'grid-cols-1';
+    
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-5xl max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+            <!-- 头部 -->
+            <div class="flex justify-between items-center bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <i class="fa fa-sitemap"></i>
+                        通路基因列表
+                    </h3>
+                    <p class="text-blue-100 text-sm mt-1">
+                        ${pathwayId} · 共 ${geneSymbols.length} 个基因
+                    </p>
+                </div>
+                <button onclick="document.getElementById('${modalId}').remove()" 
+                        class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 基因列表 -->
+            <div class="p-6 overflow-y-auto" style="max-height: 60vh;">
+                <div class="grid ${columnClass} gap-2">
+                    ${geneSymbols.map(gene => `
+                        <span class="bg-gray-50 hover:bg-blue-50 text-gray-700 text-sm px-3 py-2 rounded-lg border border-gray-200 transition-all hover:border-blue-300 cursor-default truncate" 
+                              title="${gene}">
+                            ${gene}
+                        </span>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <!-- 底部 -->
+            <div class="bg-gray-50 px-6 py-3 border-t flex justify-between items-center">
+                <span class="text-sm text-gray-600 flex items-center gap-2">
+                    <i class="fa fa-info-circle text-blue-500"></i>
+                    共显示 ${geneSymbols.length} 个基因
+                </span>
+                <div class="flex gap-2">
+                    <button onclick="copyGeneList('${pathwayId}')" 
+                            class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center gap-2">
+                        <i class="fa fa-copy"></i> 复制列表
+                    </button>
+                    <button onclick="this.closest('.fixed').remove()" 
+                            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm flex items-center gap-2">
+                        <i class="fa fa-close"></i> 关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+/**
+ * 复制基因列表到剪贴板
+ * @param {string} pathwayId - 通路ID
+ */
+function copyGeneList(pathwayId) {
+    const genes = window._pathwayGenes?.[pathwayId] || [];
+    const geneSymbols = genes.map(g => {
+        if (typeof g === 'string') return g;
+        return g.symbol || g.name || g.id || g;
+    }).filter(Boolean);
+    
+    navigator.clipboard.writeText(geneSymbols.join('\n')).then(() => {
+        showToast('基因列表已复制到剪贴板', 'success');
+    }).catch(() => {
+        // 降级方案
+        const textarea = document.createElement('textarea');
+        textarea.value = geneSymbols.join('\n');
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('基因列表已复制到剪贴板', 'success');
+    });
+}
+
+/**
+ * 显示提示消息
+ * @param {string} message - 提示信息
+ * @param {string} type - 类型：success, error, warning, info
+ */
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    
+    // 设置图标和颜色
+    let icon = 'fa-info-circle';
+    let bgColor = 'bg-blue-600';
+    
+    switch(type) {
+        case 'success':
+            icon = 'fa-check-circle';
+            bgColor = 'bg-green-600';
+            break;
+        case 'error':
+            icon = 'fa-exclamation-circle';
+            bgColor = 'bg-red-600';
+            break;
+        case 'warning':
+            icon = 'fa-exclamation-triangle';
+            bgColor = 'bg-yellow-600';
+            break;
+    }
+    
+    toast.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-[10000] flex items-center gap-2 animate-slide-up`;
+    toast.innerHTML = `<i class="fa ${icon}"></i> ${message}`;
+    
+    document.body.appendChild(toast);
+    
+    // 3秒后自动消失
+    setTimeout(() => {
+        toast.classList.add('animate-fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// 添加必要的CSS动画
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+    
+    .animate-fade-out {
+        animation: fadeOut 0.3s ease-out forwards;
+    }
+    
+    .btn-primary {
+        background-color: #2563eb;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #1d4ed8;
+    }
+    
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+`;
+document.head.appendChild(style);
+
+// 7. 初始化分析按钮
+function initAnalysisButtons() {
+    const runButton = document.getElementById('run-kegg-analysis-btn');
+    const resetButton = document.getElementById('reset-kegg-parameters-btn');
+    const saveButton = document.getElementById('save-kegg-parameters-btn');
+    const progressContainer = document.getElementById('kegg-analysis-progress');
+    const progressBar = document.getElementById('kegg-progress-bar');
+    const progressText = document.getElementById('kegg-progress-text');
+
+    if (!runButton) return;
+
+    // 初始禁用运行按钮
+    runButton.disabled = true;
+
+    // --- 移除了内部的 pollAnalysisStatus 函数表达式 ---
+
+    // 运行分析
+    runButton.addEventListener('click', async function() {
+        // 验证输入
+        if (!await validateInput()) {
+            return;
+        }
+
+        // 显示进度条
+        if (progressContainer) progressContainer.classList.remove('hidden');
+        if (progressBar) progressBar.style.width = '0%';
+        if (progressText) progressText.textContent = '正在启动KEGG分析...';
+
+        // 禁用按钮
+        runButton.disabled = true;
+        runButton.classList.add('opacity-70', 'cursor-not-allowed');
+        runButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 分析中...';
+
+        try {
+            // 调用API运行分析
+            if (progressText) progressText.textContent = '正在提交分析任务...';
+            const analysisResponse = await runKeggAnalysis(currentTaskId);
+
+            // 调用已在外部定义的 pollAnalysisStatus 函数
+            await pollAnalysisStatus(currentTaskId, progressBar, progressText);
+
+            // 获取分析结果
+            if (progressText) progressText.textContent = '正在获取分析结果...';
+            if (progressBar) progressBar.style.width = '95%';
+            analysisResults = await getAnalysisResults(currentTaskId);
+
+            // 更新UI显示结果
+            if (progressText) progressText.textContent = '正在更新显示结果...';
+            if (progressBar) progressBar.style.width = '100%';
+
+            // 可以在这里调用加载结果表或可视化的函数
+            if (analysisResults) {
+                 analysisCompleted = true; // 设置完成标志
+                 // 例如，切换到结果标签页
+                 document.querySelector('.tab-trigger[data-tab="results"]').click();
+             }
+
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            showNotification(`分析失败: ${error.message}`, 'error');
+            // 重新启用按钮
+            runButton.disabled = false;
+            runButton.classList.remove('opacity-70', 'cursor-not-allowed');
+            runButton.innerHTML = '<i class="fa fa-play-circle mr-2"></i> 运行KEGG分析';
+        } finally {
+            // 隐藏进度条或确保按钮最终可用
+            setTimeout(() => {
+                if (progressContainer) progressContainer.classList.add('hidden');
+            }, 2000); // 给一点时间让用户看到完成状态
+        }
+    });
+
+    // 重置参数按钮逻辑 (如果需要)
+    if (resetButton) {
+         resetButton.addEventListener('click', function() {
+             // 重置所有参数到默认值
+             document.getElementById('pval-threshold').value = '0.05';
+             document.getElementById('min-gene-count').value = '5';
+             document.getElementById('max-gene-count').value = '500';
+             document.getElementById('min-enrichment').value = '1.3';
+             document.getElementById('max-pathways').value = '20';
+             // ... 重置其他参数 ...
+             showNotification('参数已重置为默认值', 'info');
+         });
+     }
+
+     // 保存参数按钮逻辑 (如果需要)
+     if (saveButton) {
+         saveButton.addEventListener('click', async function() {
+             const params = collectAnalysisParameters(); // 假设这个函数存在
+             try {
+                 const result = await saveKeggParameters(params);
+                 showNotification(result.message || '参数保存成功', 'success');
+             } catch (error) {
+                 showNotification(`保存参数失败: ${error.message}`, 'error');
+             }
+         });
+     }
+
+} // 结束 initAnalysisButtons 函数
+
+// 将 pollAnalysisStatus 函数移出 initAnalysisButtons 函数体
+async function pollAnalysisStatus(task_id, progressBar, progressText) {
+    let progress = 0;
+    const maxAttempts = 60; // 最多尝试60次（5分钟）
+    let attempts = 0;
+    
+    return new Promise(async (resolve, reject) => {
+        const poll = async () => {
+            attempts++;
+            
+            try {
+                const status = await getAnalysisStatus(task_id);
+                
+                // 更新进度
+                progress = status.progress || progress + 5;
+                progress = Math.min(progress, 90); // 最大到90%
+                if (progressBar) progressBar.style.width = `${progress}%`;
+                if (progressText) progressText.textContent = status.message || `正在分析... ${progress}%`;
+                
+                if (status.status === 'completed') {
+                    resolve();
+                } else if (status.status === 'failed') {
+                    reject(new Error(status.error || '分析失败'));
+                } else if (attempts >= maxAttempts) {
+                    reject(new Error('分析超时，请稍后查看结果'));
+                } else {
+                    // 继续轮询
+                    setTimeout(poll, 5000); // 每5秒轮询一次
+                }
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        await poll();
+    });
+}
+
+// 收集分析参数
+function collectAnalysisParameters() {
+    const inputMethodElement = document.querySelector('input[name="input-method"]:checked');
+    const inputMethod = inputMethodElement ? inputMethodElement.value : 'upload';
+    
+    const params = {
+        input_method: inputMethod,
+        gene_id_type: document.getElementById('gene-id-type')?.value || 'symbol',
+        organism: document.getElementById('organism')?.value || 'hsa',
+        
+        // 分析类型
+        analysis_types: {
+            pathway: document.getElementById('analysis-pathway')?.checked || true,
+            module: document.getElementById('analysis-module')?.checked || false,
+            network: document.getElementById('analysis-network')?.checked || false,
+            disease: document.getElementById('analysis-disease')?.checked || false
+        },
+        
+        // 通路分类
+        pathway_categories: {
+            metabolism: document.getElementById('cat-metabolism')?.checked || true,
+            genetic: document.getElementById('cat-genetic')?.checked || true,
+            environmental: document.getElementById('cat-environmental')?.checked || true,
+            cellular: document.getElementById('cat-cellular')?.checked || true,
+            organismal: document.getElementById('cat-organismal')?.checked || true,
+            disease: document.getElementById('cat-disease')?.checked || false
+        },
+        
+        // 统计参数
+        statistical_params: {
+            test_method: document.getElementById('test-method')?.value || 'hypergeometric',
+            correction_method: document.getElementById('correction-method')?.value || 'fdr_bh',
+            pval_threshold: parseFloat(document.getElementById('pval-threshold')?.value || 0.05),
+            min_gene_count: parseInt(document.getElementById('min-gene-count')?.value || 5),
+            max_gene_count: parseInt(document.getElementById('max-gene-count')?.value || 500),
+            min_enrichment: parseFloat(document.getElementById('min-enrichment')?.value || 1.3)
+        },
+        
+        // 可视化参数
+        visualization_params: {
+            max_pathways: parseInt(document.getElementById('max-pathways')?.value || 20),
+            network_layout: document.getElementById('network-layout')?.value || 'force',
+            color_palette: document.querySelector('.palette-option.border-white')?.getAttribute('data-palette') || 'primary'
+        }
+    };
+    
+    // 根据输入方式添加相应数据
+    if (inputMethod === 'upload' && uploadedFiles['gene-list']) {
+        params.file_uploaded = true;
+        params.task_id = uploadedFiles['gene-list'].taskId;
+    } else if (inputMethod === 'paste') {
+        const geneText = document.getElementById('gene-list-text')?.value.trim() || '';
+        const genes = geneText.split(/[\n,]+/).filter(g => g.trim());
+        params.genes = genes;
+    } else if (inputMethod === 'previous') {
+        const previousResultId = document.getElementById('previous-de-results')?.value;
+        if (previousResultId) {
+            params.previous_result_id = previousResultId;
+            params.log2fc_threshold = parseFloat(document.getElementById('prev-log2fc')?.value || 1);
+            params.pval_threshold = parseFloat(document.getElementById('prev-pval')?.value || 0.05);
+        }
+    }
+    
+    debugLog('收集的分析参数:', params);
+    return params;
+}
+
+// 验证输入
+async function validateInput() {
+    const inputMethodElement = document.querySelector('input[name="input-method"]:checked');
+    if (!inputMethodElement) {
+        showNotification('请选择输入方式', 'error');
+        return false;
+    }
+    
+    const inputMethod = inputMethodElement.value;
+    
+    // 验证上传文件
+    if (inputMethod === 'upload' && !uploadedFiles['gene-list']) {
+        showNotification('请上传基因列表文件', 'error');
+        return false;
+    }
+    
+    // 验证粘贴的基因列表
+    if (inputMethod === 'paste') {
+        const geneText = document.getElementById('gene-list-text')?.value.trim() || '';
+        if (!geneText) {
+            showNotification('请粘贴基因列表', 'error');
+            return false;
+        }
+        
+        const genes = geneText.split(/[\n,]+/).filter(gene => gene.trim());
+        const geneCount = genes.length;
+        if (geneCount < 2) {
+            showNotification('请提供至少2个基因进行分析', 'error');
+            return false;
+        }
+        
+        // 验证基因列表（可选）
+        try {
+            const geneIdType = document.getElementById('gene-id-type')?.value || 'symbol';
+            const organism = document.getElementById('organism')?.value || 'hsa';
+            const validationResult = await validateGeneList(genes, geneIdType, organism);
+            
+            if (validationResult.valid_genes < 2) {
+                showNotification(`只有 ${validationResult.valid_genes} 个有效基因，请检查基因标识符`, 'error');
+                return false;
+            }
+            
+            if (validationResult.invalid_genes.length > 0) {
+                showNotification(`发现 ${validationResult.invalid_genes.length} 个无效基因标识符`, 'warning');
+            }
+        } catch (error) {
+            // 验证失败但仍然可以继续分析
+            debugLog('基因验证失败:', error);
+        }
+    }
+    
+    // 验证之前的结果选择
+    if (inputMethod === 'previous') {
+        const previousResultId = document.getElementById('previous-de-results')?.value;
+        if (!previousResultId) {
+            showNotification('请选择之前的分析结果', 'error');
+            return false;
+        }
+        
+        // 如果是演示选项，不需要进一步验证
+        if (previousResultId === 'demo') {
+            return true;
+        }
+    }
+    
+    return true;
+}
+
+// 更新通路卡片
+function updatePathwayCards(pathways) {
+    const pathwaysGrid = document.getElementById('pathways-grid');
+    if (!pathwaysGrid) return;
+    
+    pathwaysGrid.innerHTML = '';
+    
+    // 只显示前9个通路
+    const displayPathways = pathways.slice(0, 9);
+    
+    displayPathways.forEach((pathway, index) => {
+        const pathwayCard = document.createElement('div');
+        pathwayCard.className = 'pathway-card';
+        
+        // 根据分类设置颜色
+        const categoryColor = getCategoryColor(pathway.category);
+        
+        // 获取前3个基因
+        const topGenes = pathway.genes ? pathway.genes.slice(0, 3) : [];
+        const extraGenes = pathway.genes ? pathway.genes.length - 3 : 0;
+        
+        pathwayCard.innerHTML = `
+            <div class="relative h-40 overflow-hidden rounded-lg mb-3">
+                <img src="https://picsum.photos/seed/${pathway.id || 'pathway' + index}/400/200" 
+                     alt="${pathway.name} visualization" 
+                     class="pathway-image w-full h-full object-cover">
+                <div class="absolute top-2 right-2 ${categoryColor.bg} ${categoryColor.text} text-xs px-2 py-1 rounded-full">
+                    ${pathway.category || 'Unknown'}
+                </div>
+            </div>
+            <h4 class="font-semibold text-gray-800 mb-1">${pathway.name || 'Unknown Pathway'}</h4>
+            <p class="text-sm text-gray-500 mb-2">${pathway.id || 'Unknown ID'} | ${pathway.gene_count || 0} genes</p>
+            <div class="flex items-center text-sm mb-3">
+                <span class="bg-success/10 text-success px-2 py-0.5 rounded mr-2">
+                    <i class="fa fa-arrow-up mr-1"></i> ${pathway.enrichment_score ? pathway.enrichment_score.toFixed(2) : '0.00'}
+                </span>
+                <span class="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                    p = ${formatPValue(pathway.adjusted_pvalue)}
+                </span>
+            </div>
+            <div class="flex flex-wrap gap-1 mb-3">
+                ${topGenes.map(gene => `
+                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">${gene}</span>
+                `).join('')}
+                ${extraGenes > 0 ? `<span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">+${extraGenes}</span>` : ''}
+            </div>
+            <button class="view-pathway-details w-full btn-secondary text-sm py-1">
+                查看详情
+            </button>
+        `;
+        
+        pathwaysGrid.appendChild(pathwayCard);
+        
+        // 绑定查看详情事件
+        const viewButton = pathwayCard.querySelector('.view-pathway-details');
+        viewButton.addEventListener('click', function() {
+            const modalTitle = document.getElementById('pathway-modal-title');
+            const modal = document.getElementById('pathway-modal');
+            
+            if (modalTitle && modal) {
+                modalTitle.textContent = `${pathway.name || 'Unknown'} (${pathway.id || 'Unknown'})`;
+                loadPathwayDetails(pathway.id || 'unknown', pathway.name || 'Unknown Pathway');
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+    
+    // 如果没有通路，显示空状态
+    if (pathways.length === 0) {
+        pathwaysGrid.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-12">
+                <i class="fa fa-info-circle text-4xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">未找到显著富集的通路</p>
+            </div>
+        `;
+    }
+}
+
+// 获取分类颜色
+function getCategoryColor(category) {
+    const colorMap = {
+        'Metabolism': { bg: 'bg-blue-500', text: 'text-white' },
+        'Genetic Information Processing': { bg: 'bg-green-500', text: 'text-white' },
+        'Environmental Information Processing': { bg: 'bg-yellow-500', text: 'text-white' },
+        'Cellular Processes': { bg: 'bg-purple-500', text: 'text-white' },
+        'Organismal Systems': { bg: 'bg-pink-500', text: 'text-white' },
+        'Human Diseases': { bg: 'bg-red-500', text: 'text-white' }
+    };
+    
+    return colorMap[category] || { bg: 'bg-gray-500', text: 'text-white' };
+}
+
+// 格式化p值
+function formatPValue(pvalue) {
+    if (!pvalue) return 'N/A';
+    if (pvalue < 0.0001) {
+        return pvalue.toExponential(1);
+    }
+    return pvalue.toFixed(4);
+}
+
+// 8. 初始化加载更多通路
+function initLoadMorePathways() {
+    const loadMoreButton = document.getElementById('load-more-pathways');
+    if (!loadMoreButton) return;
+    
+    loadMoreButton.addEventListener('click', async function() {
+        if (!analysisResults || !currentTaskId) {
+            showNotification('请先运行分析', 'error');
+            return;
+        }
+        
+        // 显示加载状态
+        this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+        this.disabled = true;
+        
+        try {
+            // 这里可以调用API获取更多通路数据
+            // 模拟获取更多通路
+            setTimeout(() => {
+                // 模拟新通路数据
+                const newPathways = [
+                    {
+                        name: "Apoptosis",
+                        id: "hsa04210",
+                        category: "Cellular Processes",
+                        gene_count: 19,
+                        enrichment_score: 3.89,
+                        adjusted_pvalue: 2.1e-05,
+                        genes: ["TP53", "BCL2", "BAX", "CASP3", "CASP8", "FAS", "FADD", "TNF", "TNFRSF1A"]
+                    },
+                    {
+                        name: "TGF-beta signaling pathway",
+                        id: "hsa04350",
+                        category: "Environmental Information Processing",
+                        gene_count: 15,
+                        enrichment_score: 3.24,
+                        adjusted_pvalue: 4.7e-05,
+                        genes: ["TGFB1", "SMAD3", "SMAD4", "TGFBR1", "TGFBR2", "SMAD2", "SMAD7", "BMP2", "BMP4"]
+                    }
+                ];
+                
+                // 添加到现有通路网格
+                newPathways.forEach((pathway, index) => {
+                    const pathwaysGrid = document.getElementById('pathways-grid');
+                    if (!pathwaysGrid) return;
+                    
+                    const pathwayCard = document.createElement('div');
+                    pathwayCard.className = 'pathway-card';
+                    
+                    const categoryColor = getCategoryColor(pathway.category);
+                    const topGenes = pathway.genes.slice(0, 3);
+                    const extraGenes = pathway.genes.length - 3;
+                    
+                    pathwayCard.innerHTML = `
+                        <div class="relative h-40 overflow-hidden rounded-lg mb-3">
+                            <img src="https://picsum.photos/seed/pathway${Date.now() + index}/400/200" 
+                                 alt="${pathway.name} visualization" 
+                                 class="pathway-image w-full h-full object-cover">
+                            <div class="absolute top-2 right-2 ${categoryColor.bg} ${categoryColor.text} text-xs px-2 py-1 rounded-full">
+                                ${pathway.category}
+                            </div>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-1">${pathway.name}</h4>
+                        <p class="text-sm text-gray-500 mb-2">${pathway.id} | ${pathway.gene_count} genes</p>
+                        <div class="flex items-center text-sm mb-3">
+                            <span class="bg-success/10 text-success px-2 py-0.5 rounded mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i> ${pathway.enrichment_score.toFixed(2)}
+                            </span>
+                            <span class="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                p = ${formatPValue(pathway.adjusted_pvalue)}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            ${topGenes.map(gene => `
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">${gene}</span>
+                            `).join('')}
+                            ${extraGenes > 0 ? `<span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded">+${extraGenes}</span>` : ''}
+                        </div>
+                        <button class="view-pathway-details w-full btn-secondary text-sm py-1">
+                            查看详情
+                        </button>
+                    `;
+                    
+                    pathwaysGrid.appendChild(pathwayCard);
+                    
+                    // 绑定事件
+                    const viewButton = pathwayCard.querySelector('.view-pathway-details');
+                    viewButton.addEventListener('click', function() {
+                        const modalTitle = document.getElementById('pathway-modal-title');
+                        const modal = document.getElementById('pathway-modal');
+                        
+                        if (modalTitle && modal) {
+                            modalTitle.textContent = `${pathway.name} (${pathway.id})`;
+                            loadPathwayDetails(pathway.id, pathway.name);
+                            modal.classList.remove('hidden');
+                            document.body.style.overflow = 'hidden';
+                        }
+                    });
+                });
+                
+                // 恢复按钮状态
+                this.innerHTML = '<i class="fa fa-refresh mr-2"></i> 加载更多通路';
+                this.disabled = false;
+                
+                showNotification('已加载2个新通路', 'success');
+            }, 1000);
+            
+        } catch (error) {
+            debugError('加载更多通路出错:', error);
+            showNotification(`加载失败: ${error.message}`, 'error');
+            
+            // 恢复按钮状态
+            this.innerHTML = '<i class="fa fa-refresh mr-2"></i> 加载更多通路';
+            this.disabled = false;
+        }
+    });
+}
+
+// 9. 初始化网络控制
+function initNetworkControls() {
+    const networkType = document.getElementById('network-type');
+    const layoutControl = document.getElementById('network-layout-control');
+    const nodeColor = document.getElementById('node-color');
+    const nodeSize = document.getElementById('node-size');
+    const zoomIn = document.getElementById('zoom-in-network');
+    const zoomOut = document.getElementById('zoom-out-network');
+    const resetView = document.getElementById('reset-network-view');
+    const downloadNetwork = document.getElementById('download-network');
+    const networkContainer = document.querySelector('.pathway-network');
+    
+    if (!networkContainer) return;
+    
+    // 网络类型切换
+    if (networkType) {
+        networkType.addEventListener('change', updateNetworkVisualization);
+    }
+    
+    // 布局切换
+    if (layoutControl) {
+        layoutControl.addEventListener('change', updateNetworkVisualization);
+    }
+    
+    // 节点颜色切换
+    if (nodeColor) {
+        nodeColor.addEventListener('change', updateNetworkVisualization);
+    }
+    
+    // 节点大小切换
+    if (nodeSize) {
+        nodeSize.addEventListener('change', updateNetworkVisualization);
+    }
+    
+    // 放大
+    if (zoomIn) {
+        zoomIn.addEventListener('click', function() {
+            const currentScale = parseFloat(networkContainer.dataset.scale || 1);
+            const newScale = Math.min(currentScale + 0.2, 2);
+            networkContainer.style.transform = `scale(${newScale})`;
+            networkContainer.dataset.scale = newScale;
+        });
+    }
+    
+    // 缩小
+    if (zoomOut) {
+        zoomOut.addEventListener('click', function() {
+            const currentScale = parseFloat(networkContainer.dataset.scale || 1);
+            const newScale = Math.max(currentScale - 0.2, 0.5);
+            networkContainer.style.transform = `scale(${newScale})`;
+            networkContainer.dataset.scale = newScale;
+        });
+    }
+    
+    // 重置视图
+    if (resetView) {
+        resetView.addEventListener('click', function() {
+            networkContainer.style.transform = 'scale(1)';
+            networkContainer.dataset.scale = 1;
+        });
+    }
+    
+    // 下载网络
+    if (downloadNetwork) {
+        downloadNetwork.addEventListener('click', async function() {
+            if (!currentTaskId) {
+                showNotification('请先运行分析', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('正在下载网络文件...', 'info');
+                await downloadResults(currentTaskId, 'networks');
+                showNotification('网络文件下载成功', 'success');
+            } catch (error) {
+                showNotification(`下载失败: ${error.message}`, 'error');
+            }
+        });
+    }
+}
+
+// 更新网络可视化
+function updateNetworkVisualization() {
+    const networkContainer = document.querySelector('.pathway-network');
+    if (!networkContainer) return;
+    
+    if (!analysisResults) {
+        networkContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full p-8">
+                <i class="fa fa-share-alt text-5xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 text-center">请先运行分析以查看通路网络</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const networkType = document.getElementById('network-type')?.value || 'pathway';
+    const layout = document.getElementById('network-layout-control')?.value || 'force';
+    
+    // 显示加载状态
+    networkContainer.innerHTML = `
+        <div class="flex justify-center items-center h-full">
+            <div class="loader w-10 h-10 rounded-full border-4 border-gray-200 border-t-primary animate-spin"></div>
+        </div>
+    `;
+    
+    // 模拟加载新的网络可视化
+    setTimeout(() => {
+        const seed = `${networkType}-${layout}-${Date.now()}`.substring(0, 20);
+        networkContainer.innerHTML = `
+            <img src="https://picsum.photos/seed/${seed}/1200/500" 
+                 alt="${networkType} network with ${layout} layout" 
+                 class="w-full h-full object-contain">
+        `;
+        // 重置缩放
+        networkContainer.style.transform = 'scale(1)';
+        networkContainer.dataset.scale = 1;
+    }, 800);
+}
+
+// 10. 初始化下载按钮
+function initDownloadButtons() {
+    const downloadButtons = document.querySelectorAll('.download-result-btn');
+    
+    downloadButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            if (!analysisCompleted || !currentTaskId) {
+                showNotification('请先运行分析', 'error');
+                return;
+            }
+            
+            const type = this.getAttribute('data-type');
+            
+            try {
+                showNotification('正在准备下载文件...', 'info');
+                
+                await downloadResults(currentTaskId, type);
+                
+                showNotification('文件下载成功', 'success');
+            } catch (error) {
+                showNotification(`下载失败: ${error.message}`, 'error');
+            }
+        });
+    });
+}
+
+// 11. 初始化基因计数功能
+function initGeneCount() {
+    const countButton = document.getElementById('count-genes-btn');
+    const geneTextArea = document.getElementById('gene-list-text');
+    const countDisplay = document.getElementById('gene-count-display');
+    
+    if (!countButton || !geneTextArea || !countDisplay) return;
+    
+    countButton.addEventListener('click', async function() {
+        const geneText = geneTextArea.value.trim();
+        if (!geneText) {
+            countDisplay.textContent = '未输入基因';
+            countDisplay.classList.remove('hidden');
+            return;
+        }
+        
+        // 分割基因列表（支持换行或逗号分隔）
+        const genes = geneText.split(/[\n,]+/).filter(gene => gene.trim());
+        const uniqueGenes = [...new Set(genes)]; // 去重
+        
+        // 验证基因列表
+        try {
+            const geneIdType = document.getElementById('gene-id-type')?.value || 'symbol';
+            const organism = document.getElementById('organism')?.value || 'hsa';
+            const validationResult = await validateGeneList(genes, geneIdType, organism);
+            
+            countDisplay.innerHTML = `
+                <div class="text-sm">
+                    <p class="text-gray-700">总基因数: ${genes.length}</p>
+                    <p class="text-gray-700">唯一基因: ${uniqueGenes.length}</p>
+                    <p class="text-success">有效基因: ${validationResult.valid_genes || 0}</p>
+                    <p class="text-danger">无效基因: ${validationResult.invalid_genes ? validationResult.invalid_genes.length : 0}</p>
+                    ${genes.length !== uniqueGenes.length ? 
+                        `<p class="text-warning">注: 发现 ${genes.length - uniqueGenes.length} 个重复基因已移除</p>` : ''}
+                </div>
+            `;
+        } catch (error) {
+            countDisplay.innerHTML = `
+                <div class="text-sm">
+                    <p class="text-gray-700">总基因数: ${genes.length}</p>
+                    <p class="text-gray-700">唯一基因: ${uniqueGenes.length}</p>
+                    ${genes.length !== uniqueGenes.length ? 
+                        `<p class="text-warning">注: 发现 ${genes.length - uniqueGenes.length} 个重复基因已移除</p>` : ''}
+                    <p class="text-gray-500">（验证服务暂时不可用）</p>
+                </div>
+            `;
+        }
+        
+        countDisplay.classList.remove('hidden');
+    });
+}
+
+// 12. 初始化颜色选择器
+function initColorPalette() {
+    const paletteOptions = document.querySelectorAll('.palette-option');
+    
+    paletteOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // 移除所有边框高亮
+            paletteOptions.forEach(opt => {
+                opt.classList.remove('border-white');
+                opt.classList.add('border-gray-300');
+            });
+            
+            // 添加当前选择的高亮
+            this.classList.remove('border-gray-300');
+            this.classList.add('border-white');
+        });
+    });
+}
+
+// 13. 加载之前的分析结果
+async function loadPreviousResults() {
+    try {
+        const previousResults = await getPreviousResults();
+        const selectElement = document.getElementById('previous-de-results');
+        
+        if (!selectElement) return;
+        
+        // 检查是否是客户端模式
+        if (previousResults.client_mode) {
+            debugLog('客户端模式：显示特殊的选项');
+            
+            // 在客户端模式下，显示特殊选项
+            selectElement.innerHTML = `
+                <option value="">-- 客户端模式：无历史结果 --</option>
+                <option value="demo">演示：使用示例基因列表</option>
+            `;
+            
+            // 添加客户端模式提示
+            const noteElement = document.createElement('div');
+            noteElement.className = 'text-sm text-gray-500 mt-2';
+            noteElement.innerHTML = `
+                <i class="fa fa-info-circle mr-1"></i>
+                运行在客户端模式，所有数据将临时存储。请下载结果保存到本地。
+            `;
+            selectElement.parentNode.appendChild(noteElement);
+            
+            return;
+        }
+        
+        // 正常模式的处理逻辑
+        if (previousResults.results && previousResults.results.length > 0) {
+            selectElement.innerHTML = '<option value="">-- 选择之前的分析结果 --</option>';
+            
+            previousResults.results.forEach(result => {
+                const option = document.createElement('option');
+                option.value = result.id || result.task_id;
+                option.textContent = `${result.name || '未命名任务'} (${result.date || '未知日期'}, ${result.gene_count || 0} genes)`;
+                selectElement.appendChild(option);
+            });
+        } else {
+            // 尝试获取用户任务列表
+            const userTasks = await listUserKeggTasks();
+            if (userTasks.tasks && userTasks.tasks.length > 0) {
+                selectElement.innerHTML = '<option value="">-- 选择之前的分析结果 --</option>';
+                
+                userTasks.tasks.forEach(task => {
+                    const option = document.createElement('option');
+                    option.value = task.task_id;
+                    option.textContent = `任务 ${task.task_id?.substring(0, 8)} (${task.created_at?.substring(0, 10)}, ${task.gene_count || 0} genes)`;
+                    selectElement.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        debugError('加载历史结果出错:', error);
+        
+        // 在客户端模式下，即使出错也显示选项
+        const selectElement = document.getElementById('previous-de-results');
+        if (selectElement) {
+            selectElement.innerHTML = `
+                <option value="">-- 客户端模式：无历史结果 --</option>
+                <option value="demo">演示：使用示例基因列表</option>
+            `;
+        }
+    }
+}
+
+// 处理演示数据选项
+function initDemoDataHandler() {
+    const previousSelect = document.getElementById('previous-de-results');
+    if (!previousSelect) return;
+    
+    previousSelect.addEventListener('change', function() {
+        if (this.value === 'demo') {
+            // 加载演示基因列表
+            const demoGenes = [
+                "TP53", "BRCA1", "BRCA2", "EGFR", "KRAS", "PIK3CA", "AKT1", "PTEN",
+                "MYC", "CCND1", "CDK4", "CDK6", "RB1", "E2F1", "MDM2", "VEGFA",
+                "HIF1A", "MMP2", "MMP9", "TIMP1", "TIMP2", "COL1A1", "COL3A1",
+                "FN1", "LAMA1", "LAMB1", "LAMC1", "ITGA5", "ITGB1", "CDH1",
+                "CDH2", "SNAI1", "SNAI2", "TWIST1", "VIM", "ZEB1", "ZEB2",
+                "IL6", "IL8", "TNF", "TGFB1", "TGFB2", "TGFB3", "SMAD2",
+                "SMAD3", "SMAD4", "NFKB1", "RELA", "STAT3", "JAK1", "JAK2"
+            ];
+            
+            const geneTextArea = document.getElementById('gene-list-text');
+            if (geneTextArea) {
+                geneTextArea.value = demoGenes.join('\n');
+                
+                // 切换到粘贴输入方式
+                const pasteRadio = document.querySelector('input[name="input-method"][value="paste"]');
+                if (pasteRadio) {
+                    pasteRadio.checked = true;
+                    
+                    const uploadSection = document.getElementById('upload-section');
+                    const pasteSection = document.getElementById('paste-section');
+                    const previousSection = document.getElementById('previous-section');
+                    
+                    if (uploadSection) uploadSection.classList.add('hidden');
+                    if (pasteSection) pasteSection.classList.remove('hidden');
+                    if (previousSection) previousSection.classList.add('hidden');
+                }
+                
+                showNotification('已加载演示基因列表（50个癌症相关基因）', 'info');
+            }
+        }
+    });
+}
+
+// 14. 加载结果表格
+function loadResultsTable() {
+    if (!analysisResults || !analysisResults.results || !analysisResults.results.pathways) return;
+    
+    const tableBody = document.querySelector('tbody');
+    if (!tableBody) return;
+    
+    // 清空现有内容
+    tableBody.innerHTML = '';
+    
+    // 显示前10个通路
+    const displayPathways = analysisResults.results.pathways.slice(0, 10);
+    
+    displayPathways.forEach(pathway => {
+        const row = document.createElement('tr');
+        row.className = 'border-t border-gray-200 hover:bg-gray-50';
+        
+        // 获取前2个基因
+        const topGenes = pathway.genes ? pathway.genes.slice(0, 2) : [];
+        const extraGenes = pathway.genes ? pathway.genes.length - 2 : 0;
+        
+        row.innerHTML = `
+            <td class="py-3 px-4 font-medium">${pathway.name || 'Unknown'}</td>
+            <td class="py-3 px-4">${pathway.id || 'Unknown'}</td>
+            <td class="py-3 px-4">
+                <span class="${getCategoryColor(pathway.category).bg} ${getCategoryColor(pathway.category).text} text-xs px-2 py-1 rounded-full">
+                    ${pathway.category || 'Unknown'}
+                </span>
+            </td>
+            <td class="py-3 px-4">${pathway.gene_count || 0}</td>
+            <td class="py-3 px-4 text-success">${pathway.enrichment_score ? pathway.enrichment_score.toFixed(2) : '0.00'}</td>
+            <td class="py-3 px-4">${formatPValue(pathway.adjusted_pvalue)}</td>
+            <td class="py-3 px-4">
+                <div class="flex flex-wrap gap-1">
+                    ${topGenes.map(gene => `
+                        <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">${gene}</span>
+                    `).join('')}
+                    ${extraGenes > 0 ? `
+                        <span class="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded">+${extraGenes}</span>
+                    ` : ''}
+                </div>
+            </td>
+            <td class="py-3 px-4">
+                <button class="view-pathway-details-row text-primary hover:text-primary/80 mr-2" title="查看详情" data-pathway-id="${pathway.id || ''}" data-pathway-name="${pathway.name || ''}">
+                    <i class="fa fa-eye"></i>
+                </button>
+                <button class="view-pathway-map text-secondary hover:text-secondary/80" title="查看通路图">
+                    <i class="fa fa-map"></i>
+                </button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // 绑定行内查看详情按钮事件
+    document.querySelectorAll('.view-pathway-details-row').forEach(button => {
+        button.addEventListener('click', function() {
+            const pathwayId = this.getAttribute('data-pathway-id');
+            const pathwayName = this.getAttribute('data-pathway-name');
+            
+            const modalTitle = document.getElementById('pathway-modal-title');
+            const modal = document.getElementById('pathway-modal');
+            
+            if (modalTitle && modal) {
+                modalTitle.textContent = `${pathwayName} (${pathwayId})`;
+                loadPathwayDetails(pathwayId, pathwayName);
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+}
+
+// 15. 更新统计摘要
+function updateStatistics(summary) {
+    if (!summary) return;
+    
+    const statElements = document.querySelectorAll('.bg-gray-50.p-4.rounded-xl.border-l-4.border-primary p.text-xl');
+    if (statElements.length >= 4) {
+        statElements[0].textContent = summary.significant_pathways || '0';
+        statElements[1].textContent = summary.significant_modules || '0';
+        statElements[2].textContent = summary.total_genes_analyzed || '0';
+        statElements[3].textContent = `${summary.genes_mapped || '0'} (${summary.mapping_rate || '0'}%)`;
+    }
+}
+
+// ==================== 辅助函数 ====================
+
+// 显示通知
+function showNotification(message, type = 'info') {
+    debugLog('显示通知:', type, message);
+    
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
+    // 设置通知类型
+    notification.className = 'notification';
+    notification.classList.add(`notification-${type}`);
+    
+    // 设置图标和消息
+    let icon;
+    switch(type) {
+        case 'success':
+            icon = 'fa-check-circle';
+            break;
+        case 'error':
+            icon = 'fa-exclamation-circle';
+            break;
+        case 'warning':
+            icon = 'fa-exclamation-triangle';
+            break;
+        default:
+            icon = 'fa-info-circle';
+    }
+    
+    notification.innerHTML = `
+        <div class="flex items-start">
+            <i class="fa ${icon} text-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'primary'} text-xl mr-3 mt-0.5"></i>
+            <div>
+                <p class="text-gray-800">${message}</p>
+            </div>
+            <button class="ml-auto text-gray-400 hover:text-gray-600 close-notification">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    // 显示通知
+    notification.style.transform = 'translateX(0)';
+    notification.style.opacity = '1';
+    
+    // 3秒后自动关闭，错误消息5秒后关闭
+    const timeout = type === 'error' ? 5000 : 3000;
+    const autoClose = setTimeout(hideNotification, timeout);
+    
+    // 点击关闭按钮
+    notification.querySelector('.close-notification').addEventListener('click', function() {
+        clearTimeout(autoClose);
+        hideNotification();
+    });
+}
+
+// 隐藏通知
+function hideNotification() {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
+    notification.style.transform = 'translateX(calc(100% + 20px))';
+    notification.style.opacity = '0';
+}
+</script>
+</body>
+</html>

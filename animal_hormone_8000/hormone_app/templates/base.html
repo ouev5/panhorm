@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Animal Hormone Regulation Database{% endblock %}</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .nav-link {
+                @apply px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors;
+            }
+            .btn-primary {
+                @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors;
+            }
+        }
+/* 导航栏样式 - 深蓝配色 */
+:root {
+    --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+    --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+    --text-color: white;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+    background: var(--nav-bg);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    color: var(--text-color);
+    margin-right: 2rem;
+}
+
+.logo-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--logo-bg);
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.logo-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.logo-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+    line-height: 1;
+    font-family: 'Arial', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.logo-subtext {
+    font-size: 1rem;
+    color: var(--text-color);
+    line-height: 1;
+    margin-top: 0.2rem;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.6px;
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-left ul, .nav-right ul {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-left a, .nav-right a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+}
+
+.nav-left a:hover, .nav-right a:hover {
+    background: var(--hover-bg);
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+/* 活动状态样式 */
+.nav-left a.active, .nav-right a.active {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+}
+
+.nav-right {
+    margin-left: auto;
+}
+
+.nav-icon {
+    margin-right: 0.6rem;
+    font-size: 1.1rem;
+}
+
+/* 汉堡菜单 - 移动设备 */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .nav-left ul, .nav-right ul {
+        display: none;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    /* 移动导航样式 */
+    .mobile-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--nav-bg);
+        box-shadow: var(--shadow);
+        padding: 1rem 1.5rem;
+        display: none;
+    }
+    
+    .mobile-nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .mobile-nav a {
+        text-decoration: none;
+        color: var(--text-color);
+        font-weight: 500;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+    }
+    
+    .mobile-nav a:hover {
+        background: var(--hover-bg);
+    }
+}
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">  <!-- 打开a标签 -->
+                        <div class="logo-icon">
+                            <span class="logo-text">AH</span>
+                            <span class="logo-subtext">Animal Hormone</span>
+                        </div>
+                    </a>  <!-- 闭合a标签（这里是需要补充的） -->
+                </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <!-- 用户操作区 - 整合到导航右侧 -->
+                <div class="nav-right">
+                    <ul>
+                        {% if user.is_authenticated %}
+                            {% if user.is_staff %}
+                                <li><a href="{% url 'hormone_app:admin_dashboard' %}"><span class="nav-icon fa fa-cog"></span>Admin Panel</a></li>
+                            {% endif %}
+                            <li><span class="nav-icon fa fa-user"></span>Welcome, {{ user.username }}</li>
+                            <li>
+                                <form action="{% url 'hormone_app:logout' %}" method="post" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="nav-link text-red-200 hover:text-white hover:bg-red-600/20">
+                                        <span class="nav-icon fa fa-sign-out"></span>Logout
+                                    </button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="flex-grow w-full">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 底部联系信息 -->
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Animal Hormone Database</h3>
+                    <p class="text-gray-400 text-sm">
+                        This database is dedicated to collecting, organizing, and sharing research literature and experimental data related to animal hormones, providing researchers with convenient information retrieval and analysis tools.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors">Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors">Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors">Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors">AI</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o mr-2"></i>
+                            <a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone mr-2"></i>
+                            <span>+86 15393345650</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-map-marker mr-2"></i>
+                            <span>Inner Mongolia University of Science and Technology</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Animal Hormone Database. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- 基础脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+    

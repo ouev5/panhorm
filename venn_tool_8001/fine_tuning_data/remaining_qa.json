@@ -1,0 +1,232 @@
+[
+  {
+    "instruction": "TP53基因详解",
+    "input": "",
+    "output": "TP53是重要的肿瘤抑制基因：\n\n**基本信息**：\n- 别名：p53\n- 染色体：17p13.1\n- 功能：DNA损伤应答、细胞周期调控、凋亡\n\n**相关疾病**：\n- 多种癌症突变\n- Li-Fraumeni综合征\n\n**信号通路**：\n- p53信号通路\n- 细胞凋亡\n- DNA损伤修复\n\n**分析建议**：\n关注DNA damage response通路"
+  },
+  {
+    "instruction": "BRCA1基因详解",
+    "input": "",
+    "output": "BRCA1是乳腺癌易感基因：\n\n**基本信息**：\n- 功能：DNA修复、基因组稳定\n- 遗传模式：常染色体显性\n\n**相关疾病**：\n- 乳腺癌\n- 卵巢癌\n- 前列腺癌\n\n**信号通路**：\n- 同源重组修复\n- 细胞周期检查点\n\n**临床意义**：\nPARP抑制剂敏感性"
+  },
+  {
+    "instruction": "EGFR基因详解",
+    "input": "",
+    "output": "EGFR是表皮生长因子受体：\n\n**基本信息**：\n- 家族：ERBB家族\n- 功能：细胞增殖、分化、存活\n\n**相关疾病**：\n- 肺癌\n- 结直肠癌\n- 胶质母细胞瘤\n\n**信号通路**：\n- MAPK通路\n- PI3K-Akt通路\n- JAK-STAT通路\n\n**靶向药物**：\n吉非替尼、厄洛替尼等"
+  },
+  {
+    "instruction": "MYC基因详解",
+    "input": "",
+    "output": "MYC是重要的转录因子：\n\n**基本信息**：\n- 类型：原癌基因\n- 功能：转录调控、细胞增殖\n\n**相关疾病**：\n- 多种血液肿瘤\n- 实体肿瘤\n\n**信号通路**：\n- 细胞周期\n- 细胞凋亡\n- 代谢重编程\n\n**研究热点**：\nMYC靶向治疗"
+  },
+  {
+    "instruction": "PI3K-Akt通路详解",
+    "input": "",
+    "output": "PI3K-Akt信号通路：\n\n**核心组成**：\n- PI3K：磷脂酰肌醇3激酶\n- AKT：蛋白激酶B\n- mTOR：哺乳动物雷帕霉素靶蛋白\n\n**主要功能**：\n- 细胞存活\n- 细胞生长\n- 代谢调节\n\n**相关疾病**：\n- 癌症\n- 糖尿病\n- 神经退行性疾病\n\n**药物靶点**：\nPI3K抑制剂、AKT抑制剂、mTOR抑制剂"
+  },
+  {
+    "instruction": "MAPK通路详解",
+    "input": "",
+    "output": "MAPK信号通路：\n\n**核心级联**：\n- Ras → Raf → MEK → ERK\n- 三级激酶级联\n\n**主要功能**：\n- 细胞增殖\n- 分化\n- 存活\n\n**相关疾病**：\n- 癌症（RAS/BRAF突变）\n- 发育障碍\n\n**靶向药物**：\nBRAF抑制剂、MEK抑制剂"
+  },
+  {
+    "instruction": "Wnt通路详解",
+    "input": "",
+    "output": "Wnt信号通路：\n\n**主要分支**：\n- 经典通路（β-catenin依赖）\n- 非经典通路\n\n**核心成分**：\n- Wnt配体\n- Frizzled受体\n- β-catenin\n\n**生物学功能**：\n- 发育调控\n- 干细胞维持\n- 组织再生\n\n**相关疾病**：\n- 癌症\n- 骨疾病\n- 神经疾病"
+  },
+  {
+    "instruction": "NF-κB通路详解",
+    "input": "",
+    "output": "NF-κB信号通路：\n\n**核心组成**：\n- NF-κB转录因子家族\n- IκB抑制蛋白\n- IKK激酶复合物\n\n**激活方式**：\n- 经典通路\n- 替代通路\n\n**生物学功能**：\n- 炎症反应\n- 免疫应答\n- 细胞存活\n\n**相关疾病**：\n- 炎症性疾病\n- 自身免疫病\n- 癌症"
+  },
+  {
+    "instruction": "如何选择合适的研究基因？",
+    "input": "",
+    "output": "研究基因选择策略：\n\n**基于富集结果**：\n1. 选择显著富集通路中的基因\n2. 多通路共有的基因\n3. Adj P值最小的通路\n\n**基于网络分析**：\n1. STRING网络中心节点\n2. 高度连接的基因\n3. 关键调控因子\n\n**基于表达**：\n1. 高表达基因\n2. 差异表达显著\n3. 组织特异性"
+  },
+  {
+    "instruction": "如何设计验证实验？",
+    "input": "",
+    "output": "验证实验设计：\n\n**表达验证**：\n1. qPCR验证mRNA\n2. Western blot验证蛋白\n3. IHC染色定位\n\n**功能验证**：\n1. 敲低/过表达\n2. 细胞表型分析\n3. 动物模型验证\n\n**机制验证**：\n1. 下游通路检测\n2. 相互作用验证\n3. 表型回复实验"
+  },
+  {
+    "instruction": "如何解读矛盾的结果？",
+    "input": "",
+    "output": "矛盾结果解读：\n\n**分析原因**：\n1. 样本差异\n2. 技术平台差异\n3. 分析方法差异\n\n**解决策略**：\n1. 重复验证\n2. 多方法比较\n3. 增加样本量\n\n**报告原则**：\n诚实报告矛盾，讨论可能原因"
+  },
+  {
+    "instruction": "如何进行跨物种分析？",
+    "input": "",
+    "output": "跨物种分析方法：\n\n**基因映射**：\n1. 同源基因鉴定\n2. Ensembl比对\n3. OrthoDB查询\n\n**通路保守性**：\n1. 比较通路组成\n2. 分析进化保守\n3. 评估功能保守\n\n**注意事项**：\n- 物种特异性差异\n- 注释质量差异\n"
+  },
+  {
+    "instruction": "常用的基因功能数据库有哪些？",
+    "input": "",
+    "output": "常用基因功能数据库：\n\n**注释数据库**：\n1. Gene Ontology (GO)\n2. KEGG\n3. Reactome\n4. BioCyc\n\n**相互作用数据库**：\n1. STRING\n2. BioGRID\n3. IntAct\n\n**表达数据库**：\n1. GTEx\n2. TCGA\n3. GEO\n\n**单细胞数据库**：\n1. Tabula Sapiens\n2. Human Cell Atlas\n3. CellxGene"
+  },
+  {
+    "instruction": "如何使用GEO数据库？",
+    "input": "",
+    "output": "GEO数据库使用：\n\n**数据检索**：\n1. 关键词搜索\n2. 筛选条件\n3. 选择数据集\n\n**数据下载**：\n1. 原始数据\n2. 处理后数据\n3. 元信息\n\n**数据分析**：\n1. 差异表达\n2. 富集分析\n3. 整合分析"
+  },
+  {
+    "instruction": "如何使用TCGA数据库？",
+    "input": "",
+    "output": "TCGA数据库使用：\n\n**数据类型**：\n1. RNA-seq\n2. 突变数据\n3. 临床数据\n\n**访问方式**：\n1. GDC Portal\n2. cBioPortal\n3. UCSC Xena\n\n**分析应用**：\n1. 差异表达\n2. 生存分析\n3. 突变分析"
+  },
+  {
+    "instruction": "如何使用GTEx数据库？",
+    "input": "",
+    "output": "GTEx数据库使用：\n\n**数据内容**：\n1. 正常组织表达\n2. 多组织样本\n3. eQTL数据\n\n**应用场景**：\n1. 组织特异性表达\n2. 基因调控研究\n3. 正常参考\n\n**访问方式**：\n1. GTEx Portal\n2. UCSC Xena\n3. EBI Expression Atlas"
+  },
+  {
+    "instruction": "如何理解基因表达的生物学意义？",
+    "input": "",
+    "output": "基因表达生物学意义需要结合功能注释、通路分析、文献调研和实验验证综合判断。"
+  },
+  {
+    "instruction": "如何评估分析结果的可靠性？",
+    "input": "",
+    "output": "结果可靠性评估：检查数据质量、验证分析方法、交叉验证、独立验证数据集。"
+  },
+  {
+    "instruction": "如何选择合适的统计方法？",
+    "input": "",
+    "output": "统计方法选择：考虑数据类型、样本量、分布假设、多重检验校正等因素。"
+  },
+  {
+    "instruction": "如何处理批次效应？",
+    "input": "",
+    "output": "批次效应处理：ComBat校正、RUV方法、PCA调整、limma批次校正。"
+  },
+  {
+    "instruction": "如何进行数据标准化？",
+    "input": "",
+    "output": "数据标准化方法：TPM、FPKM、CPM、z-score、quantile normalization等。"
+  },
+  {
+    "instruction": "如何选择参考基因组？",
+    "input": "",
+    "output": "参考基因组选择：最新版本、研究常用版本、注释完整性、兼容性考虑。"
+  },
+  {
+    "instruction": "如何理解FDR和q-value？",
+    "input": "",
+    "output": "FDR/q-value是错误发现率控制的指标，用于多重检验校正，比原始P值更可靠。"
+  },
+  {
+    "instruction": "如何进行功效分析？",
+    "input": "",
+    "output": "功效分析评估检测真实效应的能力，考虑样本量、效应大小、显著性水平。"
+  },
+  {
+    "instruction": "如何设计实验对照？",
+    "input": "",
+    "output": "实验对照设计：阴性对照、阳性对照、技术重复、生物学重复。"
+  },
+  {
+    "instruction": "如何避免假阳性结果？",
+    "input": "",
+    "output": "避免假阳性：使用校正P值、独立验证、增加样本、严格阈值。"
+  },
+  {
+    "instruction": "如何解读聚类结果？",
+    "input": "",
+    "output": "聚类结果解读：评估聚类稳定性、生物学意义、与已知分类一致性。"
+  },
+  {
+    "instruction": "如何选择聚类算法？",
+    "input": "",
+    "output": "聚类算法选择：K-means、层次聚类、DBSCAN等，根据数据特点选择。"
+  },
+  {
+    "instruction": "如何评估聚类质量？",
+    "input": "",
+    "output": "聚类质量评估：轮廓系数、Calinski-Harabasz指数、Davies-Bouldin指数。"
+  },
+  {
+    "instruction": "如何进行功能注释？",
+    "input": "",
+    "output": "功能注释方法：GO注释、KEGG通路、蛋白结构域、文献挖掘。"
+  },
+  {
+    "instruction": "如何理解通路富集？",
+    "input": "",
+    "output": "通路富集是识别基因集在通路中过度出现的统计方法，揭示功能机制。"
+  },
+  {
+    "instruction": "如何构建调控网络？",
+    "input": "",
+    "output": "调控网络构建：整合表达数据、转录因子、相互作用数据、先验知识。"
+  },
+  {
+    "instruction": "如何分析基因模块？",
+    "input": "",
+    "output": "基因模块分析：WGCNA等方法识别共表达基因簇，分析模块功能。"
+  },
+  {
+    "instruction": "如何识别关键基因？",
+    "input": "",
+    "output": "关键基因识别：度中心性、介数中心性、差异表达、通路重要性。"
+  },
+  {
+    "instruction": "如何进行基因集分析？",
+    "input": "",
+    "output": "基因集分析方法：GSEA、ORA、GSVA等，用于功能分析。"
+  },
+  {
+    "instruction": "如何使用R语言分析？",
+    "input": "",
+    "output": "R语言分析：Bioconductor包如DESeq2、edgeR、clusterProfiler等。"
+  },
+  {
+    "instruction": "如何使用Python分析？",
+    "input": "",
+    "output": "Python分析：scanpy、scanpy、gseapy等包用于生信分析。"
+  },
+  {
+    "instruction": "如何可视化基因表达？",
+    "input": "",
+    "output": "可视化工具：ggplot2、matplotlib、seaborn、plotly等制作图表。"
+  },
+  {
+    "instruction": "如何制作科研图表？",
+    "input": "",
+    "output": "科研图表制作：清晰、准确、美观，符合期刊要求，添加适当标注。"
+  },
+  {
+    "instruction": "如何整理分析结果？",
+    "input": "",
+    "output": "分析结果整理：系统记录、分类保存、建立索引、版本管理。"
+  },
+  {
+    "instruction": "如何撰写方法部分？",
+    "input": "",
+    "output": "方法部分撰写：详细描述步骤、参数、工具版本、数据来源。"
+  },
+  {
+    "instruction": "如何报告统计结果？",
+    "input": "",
+    "output": "统计结果报告：报告效应大小、置信区间、P值、校正方法。"
+  },
+  {
+    "instruction": "如何引用数据库？",
+    "input": "",
+    "output": "数据库引用：正确引用数据来源、版本号、访问日期。"
+  },
+  {
+    "instruction": "如何声明利益冲突？",
+    "input": "",
+    "output": "利益冲突声明：如实披露财务关系、合作关系、潜在冲突。"
+  },
+  {
+    "instruction": "如何共享数据？",
+    "input": "",
+    "output": "数据共享：上传公共数据库、提供补充材料、遵守FAIR原则。"
+  },
+  {
+    "instruction": "如何遵守伦理规范？",
+    "input": "",
+    "output": "伦理规范：遵守机构伦理要求、保护受试者隐私、获取知情同意。"
+  }
+]

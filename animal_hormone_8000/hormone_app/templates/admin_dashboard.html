@@ -1,0 +1,489 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- 添加CSRF令牌 -->
+{% csrf_token %}
+
+<div class="admin-dashboard">
+    <!-- 顶部统计卡片 -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon" style="background-color: #4CAF50;">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>注册用户</h3>
+                <p>{{ user_count }}</p>
+                <small class="text-gray-500">总用户数量</small>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background-color: #2196F3;">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="stat-content">
+                <h3>核心数据条目</h3>
+                <p>{{ receptor_full_count|add:receptor_info_count|add:related_gene_count }}</p>
+                <small class="text-gray-500">三个核心表总数据量</small>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background-color: #FF9800;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3>今日访问</h3>
+                <p>{{ today_visits }}</p>
+                <small class="text-gray-500">访问量统计</small>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background-color: #E91E63;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>在线时长</h3>
+                <p id="onlineTime">0分钟</p>
+                <small class="text-gray-500">本次登录</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. 激素-受体完整信息表 -->
+    <div class="management-section">
+        <div class="section-header">
+            <h2>激素-受体完整信息</h2>
+            <div>
+                <a href="/admin/hormone_app/hormonereceptorfull/add/" class="inline-flex items-center gap-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium">
+                    <i class="fas fa-plus"></i> 添加数据
+                </a>
+                <a href="/admin/hormone_app/hormonereceptorfull/" class="inline-flex items-center gap-1 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
+                    <i class="fas fa-list"></i> 完整管理
+                </a>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>激素名称</th>
+                        <th>激素物种</th>
+                        <th>受体名称</th>
+                        <th>受体物种</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in receptor_full_list %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.hormone_name }}</td>
+                        <td>{{ item.hormone_species_name }}</td>
+                        <td>{{ item.receptor_name|default:"未知" }}</td>
+                        <td>{{ item.receptor_species_name|default:"未知" }}</td>
+                        <td>
+                            <a href="/admin/hormone_app/hormonereceptorfull/{{ item.id }}/change/" class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <a href="/admin/hormone_app/hormonereceptorfull/{{ item.id }}/delete/" class="inline-flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">
+                                <i class="fas fa-trash"></i> 删除
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-gray-400">暂无数据</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. 激素受体信息表 -->
+    <div class="management-section">
+        <div class="section-header">
+            <h2>激素受体信息</h2>
+            <div>
+                <a href="/admin/hormone_app/hormonereceptorinfo/add/" class="inline-flex items-center gap-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium">
+                    <i class="fas fa-plus"></i> 添加数据
+                </a>
+                <a href="/admin/hormone_app/hormonereceptorinfo/" class="inline-flex items-center gap-1 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
+                    <i class="fas fa-list"></i> 完整管理
+                </a>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>PubChem ID</th>
+                        <th>激素名称</th>
+                        <th>受体名称</th>
+                        <th>受体物种</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in receptor_info_list %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.pubchem_id }}</td>
+                        <td>{{ item.hormone_name }}</td>
+                        <td>{{ item.receptor_name }}</td>
+                        <td>{{ item.receptor_species_name }}</td>
+                        <td>
+                            <a href="/admin/hormone_app/hormonereceptorinfo/{{ item.id }}/change/" class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <a href="/admin/hormone_app/hormonereceptorinfo/{{ item.id }}/delete/" class="inline-flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">
+                                <i class="fas fa-trash"></i> 删除
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-gray-400">暂无数据</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. 激素相关基因表 -->
+    <div class="management-section">
+        <div class="section-header">
+            <h2>激素相关基因</h2>
+            <div>
+                <a href="/admin/hormone_app/hormonerelatedgene/add/" class="inline-flex items-center gap-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium">
+                    <i class="fas fa-plus"></i> 添加数据
+                </a>
+                <a href="/admin/hormone_app/hormonerelatedgene/" class="inline-flex items-center gap-1 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
+                    <i class="fas fa-list"></i> 完整管理
+                </a>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>激素名称</th>
+                        <th>相关基因</th>
+                        <th>PMID</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in related_gene_list %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.hormone_name }}</td>
+                        <td>{{ item.related_genes }}</td>
+                        <td>{{ item.pmid }}</td>
+                        <td>
+                            <a href="/admin/hormone_app/hormonerelatedgene/{{ item.id }}/change/" class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <a href="/admin/hormone_app/hormonerelatedgene/{{ item.id }}/delete/" class="inline-flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs">
+                                <i class="fas fa-trash"></i> 删除
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-gray-400">暂无数据</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 用户管理部分（保留） -->
+    <div class="management-section">
+        <div class="section-header">
+            <h2>用户管理</h2>
+            <div>
+                <a href="/admin/auth/user/" class="inline-flex items-center gap-1 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium">
+                    <i class="fas fa-user-cog"></i> 在Django Admin中管理
+                </a>
+                <button class="inline-flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium" onclick="document.getElementById('addUserModal').classList.remove('hidden')">
+                    添加用户
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>注册时间</th>
+                        <th>最后登录</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.date_joined|date:"Y-m-d H:i" }}</td>
+                        <td>{{ user.last_login|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <span class="px-2 py-0.5 text-xs rounded-full {% if user.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                {{ user.is_active|yesno:"活跃,禁用" }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/admin/auth/user/{{ user.id }}/change/" class="inline-flex items-center gap-1 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <button class="inline-flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs" onclick="deleteUser('{{ user.id }}')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 添加用户模态框（保留） -->
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div >
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div class="flex items-center justify-between p-4 border-b">
+                <h5 class="modal-title" id="addUserModalLabel">添加新用户</h5>
+                <button type="button" class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100" onclick="this.closest('.fixed').classList.add('hidden')" aria-label="Close"></button>
+            </div>
+            <div class="p-4">
+                <form id="addUserForm">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                        <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="email" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                        <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="password" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+                        <input type="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" name="confirm_password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="flex justify-end gap-2 p-4 border-t">
+                <button type="button" class="inline-flex items-center gap-1 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 text-sm font-medium" onclick="this.closest('.fixed').classList.add('hidden')">取消</button>
+                <button type="button" class="inline-flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium" onclick="submitAddUser()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 自定义样式（保留，新增表格适配） -->
+<style>
+    .admin-dashboard {
+        padding: 2rem;
+        background-color: #f8f9fa;
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+    }
+
+    .stat-icon i {
+        font-size: 1.8rem;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-content h3 {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .stat-content p {
+        margin: 0.3rem 0;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .stat-content small {
+        font-size: 0.8rem;
+    }
+
+    .management-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-box {
+        width: 300px;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+    }
+
+    /* 确保表格内容过长时自动换行 */
+    .table td {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+</style>
+
+<!-- 添加Font Awesome图标库 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<!-- 自定义脚本（保留） -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 计算在线时长
+    let startTime = new Date();
+    setInterval(() => {
+        let now = new Date();
+        let diff = Math.floor((now - startTime) / 60000); // 转换为分钟
+        let hours = Math.floor(diff / 60);
+        let minutes = diff % 60;
+        let timeText = hours > 0 ? 
+            `${hours}小时${minutes}分钟` : 
+            `${minutes}分钟`;
+        document.getElementById('onlineTime').textContent = timeText;
+    }, 60000); // 每分钟更新一次
+
+    // 获取CSRF令牌
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // 添加用户的函数
+    window.submitAddUser = function() {
+        const form = document.getElementById('addUserForm');
+        const password = form.querySelector('[name=password]').value;
+        const confirmPassword = form.querySelector('[name=confirm_password]').value;
+        
+        if (password !== confirmPassword) {
+            alert('两次输入的密码不一致！');
+            return;
+        }
+
+        const formData = new FormData(form);
+        
+        fetch('{% url "hormone_app:add_user" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('添加用户成功！');
+                location.reload();
+            } else {
+                alert('添加用户失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('添加用户失败：' + error);
+        });
+    };
+
+    // 删除用户函数
+    window.deleteUser = function(userId) {
+        if (confirm('确定要删除这个用户吗？')) {
+            const url = "{% url 'hormone_app:delete_user' user_id=0 %}".replace('0', userId);
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络错误');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('删除成功！');
+                    location.reload();
+                } else {
+                    alert('删除失败：' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('删除失败：' + error.message);
+            });
+        }
+    };
+});
+</script>
+{% endblock %}

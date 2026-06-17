@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GH–Acromegaly End-to-End Case Workflow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .mini-node{position:absolute;border-radius:9999px;padding:.45rem .7rem;font-size:.78rem;font-weight:700;box-shadow:0 8px 20px rgba(15,23,42,.12)}
+    .step-card{background:white;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.25rem;box-shadow:0 8px 25px rgba(15,23,42,.06)}
+    .metric{background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem}
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <section class="rounded-[2rem] overflow-hidden shadow-2xl bg-white border border-white mb-8">
+      <div class="bg-gradient-to-r from-indigo-700 via-violet-700 to-rose-600 p-8 md:p-10 text-white">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-sm mb-4">
+              <i class="fa fa-flask"></i> Real-world research case workflow · Figure 7
+            </div>
+            <h1 class="text-3xl md:text-5xl font-black leading-tight">GH signaling analysis in Acromegaly</h1>
+            <p class="mt-4 max-w-4xl text-indigo-50 leading-7">
+              为展示平台在真实世界研究中的实用性，本页面按肢端肥大症（DOID:12074）中生长激素（GH）信号的完整案例流程组织：从数据检索、网络探索、通路富集、靶点预测，到 RAG 文献综合与自动报告生成。
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-3 min-w-[280px]">
+            <div class="bg-white/15 rounded-2xl p-4 border border-white/20"><p class="text-xs text-indigo-100">Hormone</p><p class="text-2xl font-black">GH</p><p class="text-xs">UniProt: P01241</p></div>
+            <div class="bg-white/15 rounded-2xl p-4 border border-white/20"><p class="text-xs text-indigo-100">Receptor</p><p class="text-2xl font-black">GHR</p><p class="text-xs">UniProt: P10912</p></div>
+            <div class="bg-white/15 rounded-2xl p-4 border border-white/20"><p class="text-xs text-indigo-100">Disease</p><p class="text-2xl font-black">DOID:12074</p><p class="text-xs">Acromegaly</p></div>
+            <div class="bg-white/15 rounded-2xl p-4 border border-white/20"><p class="text-xs text-indigo-100">Species scope</p><p class="text-2xl font-black">646</p><p class="text-xs">case display</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid lg:grid-cols-3 gap-6 mb-8">
+      <div class="step-card">
+        <div class="flex items-center gap-3 mb-3"><span class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">1</span><h2 class="text-xl font-bold">激素与受体检索</h2></div>
+        <p class="text-sm leading-7 text-slate-600">查询 GH（UniProt: P01241）检索到其同源受体 GHR（UniProt: P10912）。跨物种保守性分析显示 GH–GHR 对在数据库覆盖的 646 个物种中保守，哺乳动物序列同源性 ≥ 80%。</p>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="metric"><p class="text-xs text-slate-500">GH</p><p class="font-black text-indigo-600 text-xl">P01241</p></div>
+          <div class="metric"><p class="text-xs text-slate-500">GHR</p><p class="font-black text-rose-600 text-xl">P10912</p></div>
+          <div class="metric"><p class="text-xs text-slate-500">Conserved species</p><p class="font-black text-emerald-600 text-xl">646</p></div>
+          <div class="metric"><p class="text-xs text-slate-500">Mammalian identity</p><p class="font-black text-amber-600 text-xl">≥80%</p></div>
+        </div>
+      </div>
+
+      <div class="step-card lg:col-span-2">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold">2</span><h2 class="text-xl font-bold">网络探索（Figure 7A）</h2></div>
+          <span class="text-xs px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100">Interactive network view</span>
+        </div>
+        <div class="relative h-[310px] rounded-2xl bg-gradient-to-br from-slate-50 to-indigo-50 border border-slate-200 overflow-hidden">
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 310">
+            <line x1="390" y1="145" x2="210" y2="75" stroke="#818cf8" stroke-width="3"/>
+            <line x1="390" y1="145" x2="575" y2="70" stroke="#fb7185" stroke-width="3"/>
+            <line x1="390" y1="145" x2="170" y2="220" stroke="#10b981" stroke-width="3"/>
+            <line x1="390" y1="145" x2="600" y2="220" stroke="#f59e0b" stroke-width="3"/>
+            <line x1="390" y1="145" x2="390" y2="260" stroke="#8b5cf6" stroke-width="3"/>
+            <line x1="575" y1="70" x2="600" y2="220" stroke="#fb7185" stroke-dasharray="8 6" stroke-width="2"/>
+          </svg>
+          <div class="mini-node bg-indigo-600 text-white left-[46%] top-[39%] text-base">GH–GHR</div>
+          <div class="mini-node bg-white text-indigo-700 left-[20%] top-[17%] border border-indigo-100">IGF1</div>
+          <div class="mini-node bg-white text-rose-700 right-[18%] top-[16%] border border-rose-100">STAT5B</div>
+          <div class="mini-node bg-white text-emerald-700 left-[14%] bottom-[18%] border border-emerald-100">JAK2</div>
+          <div class="mini-node bg-white text-amber-700 right-[15%] bottom-[18%] border border-amber-100">PI3K / AKT</div>
+          <div class="mini-node bg-white text-violet-700 left-[45%] bottom-[8%] border border-violet-100">SOCS2</div>
+        </div>
+        <p class="text-sm text-slate-500 mt-3">网络视图突出 GH 信号关键下游基因 IGF1、STAT5B、SOCS2，并展示 JAK2 与 PI3K/AKT 通路节点，便于快速定位反馈调控因子。</p>
+      </div>
+    </section>
+
+    <section class="grid lg:grid-cols-2 gap-6 mb-8">
+      <div class="step-card">
+        <div class="flex items-center gap-3 mb-4"><span class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">3</span><h2 class="text-xl font-bold">通路富集分析</h2></div>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span>JAK-STAT signaling pathway</span><b>FDR = 2.3 × 10⁻¹²</b></div>
+            <div class="h-4 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:96%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span>PI3K-Akt signaling pathway</span><b>FDR = 4.5 × 10⁻⁹</b></div>
+            <div class="h-4 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 rounded-full" style="width:88%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1"><span>Growth hormone receptor signaling</span><b>high confidence</b></div>
+            <div class="h-4 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-rose-500 rounded-full" style="width:82%"></div></div>
+          </div>
+        </div>
+        <p class="text-sm text-slate-500 mt-4">富集结果重现肢端肥大症公认相关通路，用于支撑从检索基因集到机制解释的分析流程。</p>
+      </div>
+
+      <div class="step-card">
+        <div class="flex items-center gap-3 mb-4"><span class="w-9 h-9 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold">4</span><h2 class="text-xl font-bold">GeneReg 靶点预测</h2></div>
+        <div class="overflow-hidden rounded-2xl border border-slate-200">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700"><tr><th class="text-left p-3">Target</th><th class="p-3">Weighted</th><th class="p-3">ChIP-seq</th><th class="p-3">Motif</th><th class="p-3">Evidence</th></tr></thead>
+            <tbody>
+              <tr class="border-t bg-amber-50/60"><td class="p-3 font-bold">GHR</td><td class="p-3 text-center font-bold text-amber-700">95.2</td><td class="p-3 text-center">0.87</td><td class="p-3 text-center">0.91</td><td class="p-3 text-center text-emerald-600">confirmed</td></tr>
+              <tr class="border-t"><td class="p-3 font-bold">IGF1R</td><td class="p-3 text-center font-bold text-indigo-700">82.6</td><td class="p-3 text-center">0.74</td><td class="p-3 text-center">0.80</td><td class="p-3 text-center">PMID:30443250</td></tr>
+              <tr class="border-t"><td class="p-3 font-bold">SOCS2</td><td class="p-3 text-center font-bold text-violet-700">78.3</td><td class="p-3 text-center">0.69</td><td class="p-3 text-center">0.76</td><td class="p-3 text-center">candidate</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-slate-500 mt-4">GHR 被展示为首要靶点，IGF1R 与 SOCS2 作为高置信候选靶点，用于承接治疗假设生成。</p>
+      </div>
+    </section>
+
+    <section class="grid lg:grid-cols-5 gap-6 mb-8">
+      <div class="step-card lg:col-span-3">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-cyan-600 text-white flex items-center justify-center font-bold">5</span><h2 class="text-xl font-bold">RAG 辅助文献综合（Figure 7B）</h2></div>
+          <span class="text-xs px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-100">Query: 当前治疗策略</span>
+        </div>
+        <div class="rounded-2xl bg-slate-900 text-slate-100 p-5 shadow-inner">
+          <p class="text-sm text-cyan-300 mb-3"><i class="fa fa-user-doctor mr-2"></i>Question: current treatment strategies for acromegaly</p>
+          <div class="grid md:grid-cols-3 gap-3 text-sm">
+            <div class="rounded-xl bg-white/10 p-4 border border-white/10"><b>Somatostatin analogs</b><p class="text-slate-300 mt-2">First-line medical control of GH secretion.</p></div>
+            <div class="rounded-xl bg-white/10 p-4 border border-white/10"><b>GH receptor antagonist</b><p class="text-slate-300 mt-2">Pegvisomant blocks peripheral GH action.</p></div>
+            <div class="rounded-xl bg-white/10 p-4 border border-white/10"><b>Dopamine agonists</b><p class="text-slate-300 mt-2">Useful in selected mixed-secretion contexts.</p></div>
+          </div>
+          <p class="text-xs text-slate-400 mt-4">Claims are displayed with PubMed-linked evidence in the final report view.</p>
+        </div>
+      </div>
+
+      <div class="step-card lg:col-span-2">
+        <div class="flex items-center gap-3 mb-4"><span class="w-9 h-9 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold">6</span><h2 class="text-xl font-bold">报告生成（Supplementary Fig. S8）</h2></div>
+        <div class="rounded-2xl border border-violet-100 bg-violet-50 p-5">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-20 rounded-lg bg-white border border-violet-200 shadow flex items-center justify-center text-violet-600 text-3xl"><i class="fa fa-file-pdf"></i></div>
+            <div>
+              <h3 class="font-bold">Structured PDF report</h3>
+              <p class="text-sm text-slate-600 mt-1">Network graph · enrichment result · target table · literature synthesis</p>
+              <button class="mt-3 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold shadow">Generate report</button>
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-slate-500 mt-4">自动报告模块将所有分析结果汇编成可即时分享的结构化 PDF。</p>
+      </div>
+    </section>
+
+    <section class="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-6 md:p-8">
+      <div class="grid lg:grid-cols-2 gap-8">
+        <div>
+          <h2 class="text-2xl font-black mb-3">Case conclusion</h2>
+          <p class="leading-8 text-slate-600">本案例展示了平台加速完整研究周期的能力，涵盖从探索性数据检索和机制分析，到治疗靶点识别和证据综合的全过程。页面内容按截图展示需求组织，适合对应论文图 7A、图 7B 与补充图 S8 的视觉材料。</p>
+        </div>
+        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5">
+          <h3 class="font-bold mb-3">Suggested figure caption</h3>
+          <p class="text-sm leading-7 text-slate-600"><b>Figure 7.</b> End-to-end GH–acromegaly case workflow. The platform links hormone/receptor retrieval, network exploration, pathway enrichment, GeneReg target prediction, RAG-assisted literature synthesis, and structured report generation to support therapeutic hypothesis development.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

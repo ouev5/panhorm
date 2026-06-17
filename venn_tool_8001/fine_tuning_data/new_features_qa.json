@@ -1,0 +1,64 @@
+{
+  "documents": [
+    {
+      "id": "genereg_intro",
+      "title": "GeneReg目标基因预测功能介绍",
+      "content": "GeneReg是一个基于加权评分系统的转录因子-靶基因调控关系预测模块（v2.2）。该模块整合了三个维度的证据：(1) ChIP-seq证据（权重0.50）：基于ENCODE和ChIP-Atlas数据库的438个转录因子、5235个BED文件的峰值数据，根据峰值与TSS距离、信号质量等打分；(2) Motif序列匹配（权重0.25）：基于JASPAR 2024位置权重矩阵的匹配打分；(3) 文献证据（权重0.25）：基于PubMed文献共现频率的打分。最终加权得分≥60判定为阳性预测，在27基因标准测试集上达到100%准确率（F1=1.0）。"
+    },
+    {
+      "id": "genereg_usage",
+      "title": "如何使用GeneReg目标基因预测",
+      "content": "使用GeneReg预测功能：输入基因名称（如BRCA1）和激素受体名称（如AR、ESR1），系统会自动计算三维加权得分。结果页面展示：ChIP-seq峰值图谱（显示峰值位置、信号强度）、Motif序列匹配结果（PWM匹配得分、序列logo）、文献证据（支持调控关系的PubMed文献）。对于激素受体（如AR），系统额外整合Co-factor分析提高预测准确性。系统还引入了结合密度指数和分层惩罚策略，对被动结合（passive binding）降分20%-45%。"
+    },
+    {
+      "id": "literature_search_intro",
+      "title": "AI文献检索功能介绍",
+      "content": "AI文献检索模块是一个基于PubMed和DeepSeek大语言模型的智能文献检索系统。核心功能包括：(1) 智能查询优化：DeepSeek自动将用户查询翻译并优化为PubMed布尔检索式；(2) 深度检索模式：AI生成3-5个语义多样化的检索词，分别检索后合并去重，显著提高召回率；(3) 基因中心文献挖掘：从检索结果中提取基因名称、关联类型和实验证据，构建基因-疾病关联网络；(4) 结果包含PMID、标题、期刊、发表年份和AI生成的相关性摘要。系统使用PubMed E-utilities API (esearch + efetch)进行文献检索。"
+    },
+    {
+      "id": "literature_search_usage",
+      "title": "如何使用AI文献检索",
+      "content": "AI文献检索使用方法：在检索框输入查询内容（支持中英文），例如「胰岛素相关基因」或「PCOS biomarkers」。系统会自动优化检索词并在PubMed中检索。深度检索模式会从多个角度检索，合并去重后返回更全面的结果。基因检索模式可以直接提取文献中与特定基因相关的信息，包括基因名称、关联类型（Strong/Moderate/Weak）和证据来源。检索结果可以下载。"
+    },
+    {
+      "id": "autoba_intro",
+      "title": "autoBA自动化多组学分析功能介绍",
+      "content": "autoBA是一个AI驱动的自动化多组学分析模块。基于Flask (v3.1.3)和scanpy (v1.12.1)构建，集成DeepSeek大语言模型实现自然语言交互式分析。支持的分析流程包括：(1) RNA-seq差异表达分析：自动生成火山图（log2FC vs -log10 p-value），可配置显著性阈值；(2) 单细胞降维分析：UMAP/t-SNE可视化，支持Leiden/Louvain聚类，可按聚类、基因表达或元数据着色；(3) 自动化多步分析：结合表达分析和功能注释。所有可视化使用matplotlib (v3.10.8)和seaborn (v0.13.2)生成，支持PNG和SVG格式导出。"
+    },
+    {
+      "id": "autoba_usage",
+      "title": "如何使用autoBA自动化分析",
+      "content": "autoBA使用方法：在AI对话界面描述分析需求，例如「帮我生成火山图」或「对数据进行UMAP降维」。AI助手会自动选择合适的分析流程、配置参数并执行分析。支持迭代优化：可以要求调整参数（如改变p值阈值、更换着色方式）。分析结果包含统计摘要（差异基因数量、Top富集通路等）、可下载的结果文件（CSV格式）和出版级图表。"
+    },
+    {
+      "id": "gene_insights_hub",
+      "title": "Gene Insights Hub多源数据集成分析平台",
+      "content": "Gene Insights Hub是一个集成了七大功能模块的多源数据分析平台：(1) 多集合Venn图和UpSet图分析：支持多基因集合的交集、并集和差集分析；(2) GO/KEGG功能富集分析：通过Enrichr API进行功能富集，支持柱状图、气泡图和饼图可视化；(3) STRING蛋白质互作网络：交互式力导向图展示蛋白-蛋白互作关系；(4) Sankey-气泡富集图：结合桑基图和气泡图的KEGG通路流程可视化；(5) 单细胞基因表达背景分析：基于scanpy和Leiden/Louvain聚类，支持人类（Tabula Sapiens, 94836细胞）和小鼠（Tabula Muris Senis, 93792细胞）参考图谱的UMAP/t-SNE降维和基因表达查询；(6) 多物种切换框架；(7) 激素数据库基因搜索。"
+    },
+    {
+      "id": "single_cell_analysis",
+      "title": "单细胞基因表达分析功能",
+      "content": "单细胞基因表达分析模块基于scanpy (v1.12.1)构建，提供两种功能：(1) 背景分析：在参考图谱（人类Tabula Sapiens 94836细胞34562基因，小鼠Tabula Muris Senis 93792细胞）上查询基因在不同细胞类型中的表达水平，支持UMAP/t-SNE可视化；(2) 基因查询：输入基因名查看其在各细胞类型中的表达分布。聚类算法使用Leiden/Louvain，质量控制标准为n_genes>200, n_counts>500, 线粒体基因比例<10%。支持多物种（人类、小鼠、果蝇、斑马鱼）切换。"
+    },
+    {
+      "id": "platform_architecture",
+      "title": "AHormoneDB平台技术架构",
+      "content": "AHormoneDB采用微服务架构，包含六个独立服务模块：(1) 主数据库门户（Django v4.2）：动物激素数据库核心，MySQL v8.x存储，Django ORM数据访问；(2) Gene Insights Hub（Flask v3.1.3 + Gunicorn v25.3.0）：多源数据集成分析；(3) AI客服（FastAPI v0.136.0 + Uvicorn v0.44.0）：基于RAG的智能问答；(4) GeneReg预测（FastAPI v0.136.0）：加权评分靶基因预测；(5) autoBA自动化分析（Flask v3.1.3）：AI驱动的多组学分析；(6) 文献检索（FastAPI v0.136.0）：AI增强的PubMed文献检索。所有服务通过RESTful API通信，共享DeepSeek大语言模型API集成层。部署在8核Intel Xeon、16GB RAM服务器上，Nginx作为反向代理。"
+    },
+    {
+      "id": "deepseek_model",
+      "title": "平台使用的AI模型",
+      "content": "AHormoneDB平台使用的AI模型：(1) 大语言模型：DeepSeek (deepseek-v4-pro)，用于AI客服问答、文献检索查询优化、GeneReg置信度调整、autoBA分析规划等场景；(2) Embedding模型：sentence-transformers (all-MiniLM-L6-v2, 384维)，用于主站RAG和客服RAG的语义检索向量编码；(3) 命名实体识别：BioBERT (biobert-base-cased-v1.1)，用于文献挖掘中的基因和疾病实体识别（F1=0.91）。向量检索使用FAISS（主站）和NumPy余弦相似度（客服）。"
+    },
+    {
+      "id": "enrichment_analysis",
+      "title": "GO和KEGG富集分析",
+      "content": "富集分析模块通过Enrichr API进行GO生物学过程和KEGG通路富集分析。分析结果支持多种可视化方式：柱状图（Bar Chart）展示富集程度和统计显著性、气泡图（Bubble Chart）同时展示基因比例和显著性、饼图（Pie Chart）展示分类分布。显著性检验使用超几何检验，阈值FDR<0.05。KEGG通路富集结果还可以通过Sankey-气泡图展示通路间的层级关系和基因流动。结果支持PNG和SVG格式导出。"
+    },
+    {
+      "id": "string_network",
+      "title": "STRING蛋白互作网络分析",
+      "content": "STRING蛋白互作网络模块通过STRING API (v12.0)构建蛋白质-蛋白质相互作用网络，置信度阈值设为0.4。网络以交互式力导向图（Force-directed graph）展示，支持缩放、拖拽和节点搜索。每个节点代表一个蛋白质，边代表已知的或预测的相互作用关系，边的粗细反映置信度。用户可以从基因列表一键生成蛋白互作网络，也可以点击节点查看详细的蛋白信息和互作证据。"
+    }
+  ]
+}

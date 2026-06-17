@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Methylation Analysis Platform</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入Plotly图表库 -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF', // 主色
+                        secondary: '#36CFC9', // 辅助色
+                        accent: '#722ED1',
+                        neutral: '#F5F7FA', // 背景色：浅灰
+                        success: '#52C41A',
+                        warning: '#FAAD14',
+                        danger: '#FF4D4F',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .form-input-focus { 
+                @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none; 
+            }
+            .btn-primary { 
+                @apply bg-primary text-white px-6 py-2 rounded-full shadow-md hover:bg-primary/90 transition-all flex items-center justify-center; 
+            }
+            .btn-secondary { 
+                @apply bg-white text-primary border border-primary px-6 py-2 rounded-full shadow-sm hover:bg-primary/5 transition-all; 
+            }
+            .sidebar-link { 
+                @apply flex items-center gap-3 px-5 py-3 rounded-r-full text-gray-100 hover:bg-white hover:text-primary hover:font-semibold transition-all; 
+            }
+            .sidebar-link.active { 
+                @apply bg-white text-primary font-semibold; 
+            }
+            .file-drop-area { 
+                @apply relative border-2 border-primary/30 rounded-xl p-6 text-center transition-all hover:border-primary hover:bg-primary/5; 
+            }
+            .file-drop-area.active { 
+                @apply border-primary bg-primary/5; 
+            }
+            .progress-container { 
+                @apply h-2 bg-gray-200 rounded-full overflow-hidden w-full my-4; 
+            }
+            .progress-bar { 
+                @apply h-full bg-primary transition-all duration-300; 
+            }
+            .notification { 
+                @apply fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform transition-all duration-300 ease-in-out z-50 max-w-sm; 
+            }
+            .notification-success { @apply border-l-4 border-success; }
+            .notification-error { @apply border-l-4 border-danger; }
+            .notification-info { @apply border-l-4 border-primary; }
+            .tab-content { @apply hidden; }
+            .tab-content.active { @apply block; }
+            .param-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 border border-gray-100; }
+            .visual-card { @apply bg-white rounded-xl shadow-sm p-4 mb-4 cursor-pointer hover:shadow-md transition-all; }
+        }
+    </style>
+    
+    <style>
+        :root {
+            --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+            --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+            --text-color: white;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            margin-right: 2rem;
+        }
+
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--logo-bg);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            line-height: 1;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-subtext {
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1;
+            margin-top: 0.2rem;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.6px;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left ul, .nav-right ul {
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-left a, .nav-right a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+
+        .nav-left a:hover, .nav-right a:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        /* 活动状态样式 */
+        .nav-left a.active, .nav-right a.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+        }
+
+        .nav-right {
+            margin-left: auto;
+        }
+
+        .nav-icon {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        /* 汉堡菜单 - 移动设备 */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-left ul, .nav-right ul {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            /* 移动导航样式 */
+            .mobile-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--nav-bg);
+                box-shadow: var(--shadow);
+                padding: 1rem 1.5rem;
+                display: none;
+            }
+            
+            .mobile-nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .mobile-nav a {
+                text-decoration: none;
+                color: var(--text-color);
+                font-weight: 500;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                font-size: 1rem;
+            }
+            
+            .mobile-nav a:hover {
+                background: var(--hover-bg);
+            }
+        }
+        
+        /* 页脚样式（黑色背景） */
+        footer {
+            background: #000; /* 黑色背景 */
+            color: #fff; /* 白色文字 */
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 0.7rem;
+        }
+        
+        .footer-column ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #fff; /* hover时文字变白 */
+        }
+        
+        .footer-bottom {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-neutral text-gray-800 min-h-screen flex flex-col">
+    <!-- 1. 顶部导航栏 -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                    <a href="{% url 'hormone_app:home' %}">  <!-- 打开a标签 -->
+                        <div class="logo-icon">
+                            <span class="logo-text">AH</span>
+                            <span class="logo-subtext">Animal Hormone</span>
+                        </div>
+                    </a>  <!-- 闭合a标签（这里是需要补充的） -->
+                </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+                <button class="menu-toggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <!-- 移动导航菜单 -->
+            <div class="mobile-nav">
+                <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 2. 主内容区（侧边栏 + 标签页内容） -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 侧边栏导航 -->
+            <aside class="lg:w-1/5 w-full lg:h-[calc(100vh-7rem)] sticky top-24 self-start">
+                <div class="bg-primary/10 rounded-xl p-4 shadow-sm">
+                    <h3 class="text-primary font-semibold text-lg mb-4 px-2">Analysis Pipeline</h3>
+                    <ul class="space-y-1">
+                        <li><a href="#data-input" class="sidebar-link active tab-trigger" data-tab="data-input">
+                            <i class="fa fa-upload w-5 text-center"></i> Data Input
+                        </a></li>
+                        <li><a href="#quality-control" class="sidebar-link tab-trigger" data-tab="quality-control">
+                            <i class="fa fa-check-square-o w-5 text-center"></i> Quality Control
+                        </a></li>
+                        <li><a href="#preprocessing" class="sidebar-link tab-trigger" data-tab="preprocessing">
+                            <i class="fa fa-cogs w-5 text-center"></i> Preprocessing
+                        </a></li>
+                        <li><a href="#differential" class="sidebar-link tab-trigger" data-tab="differential">
+                            <i class="fa fa-line-chart w-5 text-center"></i> Differential Methylation
+                        </a></li>
+                        <li><a href="#region-analysis" class="sidebar-link tab-trigger" data-tab="region-analysis">
+                            <i class="fa fa-map-o w-5 text-center"></i> Regional Analysis
+                        </a></li>
+                        <li><a href="#correlation" class="sidebar-link tab-trigger" data-tab="correlation">
+                            <i class="fa fa-link w-5 text-center"></i> Expression Correlation
+                        </a></li>
+                        <li><a href="#enrichment" class="sidebar-link tab-trigger" data-tab="enrichment">
+                            <i class="fa fa-search-plus w-5 text-center"></i> Functional Enrichment
+                        </a></li>
+                        <li><a href="#visualization" class="sidebar-link tab-trigger" data-tab="visualization">
+                            <i class="fa fa-pie-chart w-5 text-center"></i> Visualization
+                        </a></li>
+                        <li><a href="#results" class="sidebar-link tab-trigger" data-tab="results">
+                            <i class="fa fa-table w-5 text-center"></i> Results
+                        </a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- 标签页内容区（核心功能模块） -->
+            <div class="lg:w-4/5 w-full">
+                <!-- 平台介绍 -->
+                <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                    <h2 class="text-2xl font-bold text-primary mb-3">DNA Methylation Analysis Platform</h2>
+                    <p class="text-gray-600 mb-2">
+                        This platform provides comprehensive tools for analyzing DNA methylation patterns to understand epigenetic regulation mechanisms.
+                        From quality control to differential methylation analysis and functional interpretation, our workflow
+                        helps you uncover epigenetic insights from your methylation sequencing experiments.
+                    </p>
+                    <p class="text-primary font-medium">
+                        Decoding epigenetic regulation through methylation pattern analysis.
+                    </p>
+                </div>
+
+                <!-- 2.1 数据输入模块 -->
+                <div id="data-input" class="tab-content active">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-upload mr-2"></i> Data Input
+                        </h3>
+                        <p class="text-gray-600 mb-6">Upload your DNA methylation data and associated metadata files.</p>
+
+                        <!-- 拖放上传区域 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- 主要甲基化数据上传 -->
+                            <div class="file-drop-area" data-file-type="methyl-data">
+                                <input type="file" class="file-input hidden" accept=".bed,.bismark,.csv,.tsv" data-target="methyl-data">
+                                <i class="fa fa-database text-5xl text-primary/50 mb-3"></i>
+                                <p class="text-gray-700 mb-2">Methylation Data</p>
+                                <p class="text-gray-500 text-sm mb-4">Supported formats: .bed, .bismark, .csv, .tsv</p>
+                                <label class="btn-primary inline-flex cursor-pointer text-sm px-4 py-2">
+                                    <i class="fa fa-upload mr-2"></i> Select File
+                                </label>
+                                <!-- 已选文件显示 -->
+                                <div class="selected-file-name hidden mt-4">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="methyl-data-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 样本元数据上传 -->
+                            <div class="file-drop-area" data-file-type="metadata">
+                                <input type="file" class="file-input hidden" accept=".csv,.tsv,.txt" data-target="metadata">
+                                <i class="fa fa-table text-5xl text-primary/50 mb-3"></i>
+                                <p class="text-gray-700 mb-2">Sample Metadata</p>
+                                <p class="text-gray-500 text-sm mb-4">Sample information with group assignments</p>
+                                <label class="btn-primary inline-flex cursor-pointer text-sm px-4 py-2">
+                                    <i class="fa fa-upload mr-2"></i> Select File
+                                </label>
+                                <!-- 已选文件显示 -->
+                                <div class="selected-file-name hidden mt-4">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="metadata-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 基因组区域上传 -->
+                            <div class="file-drop-area" data-file-type="regions">
+                                <input type="file" class="file-input hidden" accept=".bed,.gff,.gtf" data-target="regions">
+                                <i class="fa fa-map-o text-5xl text-primary/50 mb-3"></i>
+                                <p class="text-gray-700 mb-2">Genomic Regions (Optional)</p>
+                                <p class="text-gray-500 text-sm mb-4">Regions of interest (BED, GFF, GTF)</p>
+                                <label class="btn-primary inline-flex cursor-pointer text-sm px-4 py-2">
+                                    <i class="fa fa-upload mr-2"></i> Select File
+                                </label>
+                                <div class="selected-file-name hidden mt-4">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="regions-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 表达数据上传（可选，用于关联分析） -->
+                            <div class="file-drop-area" data-file-type="expression">
+                                <input type="file" class="file-input hidden" accept=".csv,.tsv,.txt" data-target="expression">
+                                <i class="fa fa-line-chart text-5xl text-primary/50 mb-3"></i>
+                                <p class="text-gray-700 mb-2">Expression Data (Optional)</p>
+                                <p class="text-gray-500 text-sm mb-4">Gene expression data for correlation analysis</p>
+                                <label class="btn-primary inline-flex cursor-pointer text-sm px-4 py-2">
+                                    <i class="fa fa-upload mr-2"></i> Select File
+                                </label>
+                                <div class="selected-file-name hidden mt-4">
+                                    <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                        <span class="file-name text-gray-700 flex items-center">
+                                            <i class="fa fa-file-o mr-2 text-primary"></i>
+                                            <span id="expression-file-name"></span>
+                                        </span>
+                                        <button class="remove-file text-gray-400 hover:text-danger">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 数据格式说明 -->
+                        <div class="mt-8 bg-gray-50 rounded-xl p-4">
+                            <p class="text-gray-700 font-medium mb-3">Required Data Format (BED)</p>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border border-gray-200 rounded-lg text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-700">
+                                            <th class="py-2 px-3 text-left">Column</th>
+                                            <th class="py-2 px-3 text-left">Description</th>
+                                            <th class="py-2 px-3 text-left">Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="py-2 px-3 border-t">Chromosome</td>
+                                            <td class="py-2 px-3 border-t">Chromosome name</td>
+                                            <td class="py-2 px-3 border-t">chr1</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="py-2 px-3 border-t">Start</td>
+                                            <td class="py-2 px-3 border-t">Start position (0-based)</td>
+                                            <td class="py-2 px-3 border-t">10000</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2 px-3 border-t">End</td>
+                                            <td class="py-2 px-3 border-t">End position</td>
+                                            <td class="py-2 px-3 border-t">10001</td>
+                                        </tr>
+                                        <tr class="bg-gray-50">
+                                            <td class="py-2 px-3 border-t">Methylation Level</td>
+                                            <td class="py-2 px-3 border-t">Beta value (0-1)</td>
+                                            <td class="py-2 px-3 border-t">0.85</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-2 px-3 border-t">Coverage</td>
+                                            <td class="py-2 px-3 border-t">Number of reads</td>
+                                            <td class="py-2 px-3 border-t">12</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.2 质量控制模块 -->
+                <div id="quality-control" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-check-square-o mr-2"></i> Quality Control Parameters
+                        </h3>
+                        <p class="text-gray-600 mb-6">Set thresholds for filtering low-quality methylation data.</p>
+
+                        <!-- 样本过滤参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Sample Quality Filters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum CpG Sites per Sample</label>
+                                    <input type="number" id="minCpGsPerSample" value="50000" min="10000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Mean Coverage</label>
+                                    <input type="number" id="minMeanCoverage" value="5" min="1" max="20" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Maximum Methylation Deviation</label>
+                                    <input type="number" id="maxMethDeviation" value="0.3" step="0.05" min="0.1" max="0.5" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Z-score threshold for global methylation</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Detection P-value Threshold</label>
+                                    <input type="number" id="detectionPvalThresh" value="0.01" step="0.001" min="0.001" max="0.05" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CpG位点过滤参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">CpG Site Filters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Coverage per CpG</label>
+                                    <input type="number" id="minCoveragePerCpG" value="3" min="1" max="10" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Samples with Data</label>
+                                    <input type="number" id="minSamplesWithData" value="70" min="50" max="100" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Percentage of samples required to have data</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Exclude Probes with SNPs</label>
+                                    <select id="excludeSnpProbes" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="yes">Yes, exclude all probes with SNPs</option>
+                                        <option value="common">Exclude probes with common SNPs (MAF > 0.05)</option>
+                                        <option value="no">No, keep all probes</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">SNP Distance Threshold</label>
+                                    <input type="number" id="snpDistanceThresh" value="5" min="0" max="50" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Base pairs around probe to check for SNPs</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 批次效应评估 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Batch Effect Assessment</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Batch Variable (from metadata)</label>
+                                    <input type="text" id="batchVariable" placeholder="e.g. 'batch' or 'slide'" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">PCA Components for Batch Check</label>
+                                    <input type="number" id="pcaComponentsBatch" value="10" min="5" max="20" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.3 预处理模块 -->
+                <div id="preprocessing" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-cogs mr-2"></i> Data Preprocessing
+                        </h3>
+                        <p class="text-gray-600 mb-6">Normalization and preprocessing of methylation data.</p>
+
+                        <!-- 归一化方法 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Normalization Method</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-gray-700 text-sm mb-1">Select Normalization Approach</label>
+                                    <select id="normMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="quantile">Quantile Normalization</option>
+                                        <option value="swan">SWAN (Subset Quantile Within Array Normalization)</option>
+                                        <option value="dasen">Dasen Normalization</option>
+                                        <option value="noob">NOOB (Normal-exponential Out-of-Band)</option>
+                                        <option value="none">None (raw beta values)</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="batch-correction-params" class="col-span-1 md:col-span-2 mt-3 p-3 bg-gray-50 rounded-lg">
+                                    <h5 class="font-medium text-gray-700 mb-2">Batch Correction Method</h5>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-700 text-sm mb-1">Method</label>
+                                            <select id="batchMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                                <option value="combat">ComBat</option>
+                                                <option value="sva">SVA (Surrogate Variable Analysis)</option>
+                                                <option value="none">None</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 text-sm mb-1">Number of Surrogate Variables</label>
+                                            <input type="number" id="numSurrogateVars" value="5" min="2" max="20" 
+                                                class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                                <p class="text-xs text-gray-500 mt-1">For SVA method only</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 数据转换 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Data Transformation</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Value Transformation</label>
+                                    <select id="valueTransformation" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="beta">Beta values (0-1)</option>
+                                        <option value="mvalue">M values (logit transformed)</option>
+                                        <option value="both">Both beta and M values</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Probe Masking</label>
+                                    <select id="probeMasking" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="cross-reactive">Exclude cross-reactive probes</option>
+                                        <option value="sex-chromosomes">Exclude sex chromosome probes</option>
+                                        <option value="both">Exclude both cross-reactive and sex chromosome probes</option>
+                                        <option value="none">No probe masking</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 平滑化选项（针对RRBS或WGBS数据） -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Smoothing Options (for WGBS/RRBS)</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Smoothing Method</label>
+                                    <select id="smoothingMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="none">None</option>
+                                        <option value="loess">LOESS smoothing</option>
+                                        <option value="gaussian">Gaussian kernel smoothing</option>
+                                        <option value="moving-average">Moving average</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Window Size (bp)</label>
+                                    <input type="number" id="smoothingWindow" value="1000" min="100" max="10000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.4 差异甲基化分析模块 -->
+                <div id="differential" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-line-chart mr-2"></i> Differential Methylation Analysis
+                        </h3>
+                        <p class="text-gray-600 mb-6">Identify differentially methylated positions (DMPs) and regions (DMRs).</p>
+
+                        <!-- 比较设置 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Comparison Settings</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Group Variable (from metadata)</label>
+                                    <input type="text" id="groupVariable" placeholder="e.g. 'treatment'" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Reference Group</label>
+                                    <input type="text" id="referenceGroup" placeholder="e.g. 'control'" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Test Method</label>
+                                    <select id="testMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="limma">Limma (moderated t-test)</option>
+                                        <option value="methylkit">MethylKit (Fisher's exact test)</option>
+                                        <option value="dss">DSS (Wald test)</option>
+                                        <option value="edgeR">edgeR (for count data)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Adjust for Covariates</label>
+                                    <input type="text" id="covariates" placeholder="e.g. 'age,sex'" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Comma-separated from metadata</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DMP阈值设置 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">DMP Thresholds</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Adjusted P-value Cutoff</label>
+                                    <input type="number" id="pvalCutoff" value="0.05" step="0.01" min="0.001" max="0.1" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Absolute Beta Change</label>
+                                    <input type="number" id="betaChangeCutoff" value="0.2" step="0.05" min="0.1" max="0.5" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum M Value Change</label>
+                                    <input type="number" id="mvalueChangeCutoff" value="0.5" step="0.1" min="0.2" max="2" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Multiple Testing Correction</label>
+                                    <select id="correctionMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="fdr_bh">Benjamini-Hochberg (FDR)</option>
+                                        <option value="bonferroni">Bonferroni</option>
+                                        <option value="holm">Holm-Bonferroni</option>
+                                        <option value="qvalue">q-value</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DMR分析参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">DMR Analysis Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">DMR Detection Method</label>
+                                    <select id="dmrMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="bumphunter">Bumphunter</option>
+                                        <option value="dmrseq">DMRseq</option>
+                                        <option value="methylkit">MethylKit</option>
+                                        <option value="comb-p">Comb-p</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Maximum Gap Between CpGs (bp)</label>
+                                    <input type="number" id="maxGap" value="500" min="100" max="2000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Number of CpGs per DMR</label>
+                                    <input type="number" id="minCpGsDMR" value="3" min="2" max="20" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Region Length (bp)</label>
+                                    <input type="number" id="minRegionLength" value="50" min="10" max="1000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.5 区域分析模块 -->
+                <div id="region-analysis" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-map-o mr-2"></i> Regional Methylation Analysis
+                        </h3>
+                        <p class="text-gray-600 mb-6">Analyze methylation patterns across different genomic regions.</p>
+
+                        <!-- 基因组区域设置 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Genomic Regions to Analyze</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Predefined Regions</label>
+                                    <select id="predefinedRegions" multiple class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="promoter" selected>Promoters (TSS ± 2kb)</option>
+                                        <option value="cgi" selected>CpG Islands</option>
+                                        <option value="cgi-shore" selected>CpG Island Shores (±2kb)</option>
+                                        <option value="cgi-shelf" selected>CpG Island Shelves (±4-2kb)</option>
+                                        <option value="exon" selected>Exons</option>
+                                        <option value="intron" selected>Introns</option>
+                                        <option value="gene-body" selected>Gene Bodies</option>
+                                        <option value="enhancer" selected>Enhancers</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Custom Regions (from uploaded file)</label>
+                                    <select id="customRegions" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="none">None</option>
+                                        <option value="uploaded">Use uploaded regions file</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 基因启动子分析 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Promoter Region Analysis</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Promoter Definition</label>
+                                    <select id="promoterDefinition" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="tss-2kb-1kb">TSS ± 2kb</option>
+                                        <option value="tss-1kb-0kb">TSS -1kb to +0kb</option>
+                                        <option value="tss-0kb-1kb">TSS +0kb to +1kb</option>
+                                        <option value="tss-5kb-1kb">TSS -5kb to +1kb</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Gene Annotation Source</label>
+                                    <select id="geneAnnotation" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="ensembl">Ensembl</option>
+                                        <option value="refseq">RefSeq</option>
+                                        <option value="gencode">GENCODE</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 染色体分布分析 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Chromosomal Distribution</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Chromosome Bin Size (kb)</label>
+                                    <input type="number" id="chromBinSize" value="100" min="10" max="1000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Include Sex Chromosomes</label>
+                                    <select id="includeSexChromosomes" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.6 表达相关性模块 -->
+                <div id="correlation" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-link mr-2"></i> Methylation-Expression Correlation
+                        </h3>
+                        <p class="text-gray-600 mb-6">Analyze relationships between methylation levels and gene expression.</p>
+
+                        <!-- 关联分析设置 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Correlation Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Correlation Method</label>
+                                    <select id="correlationMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="pearson">Pearson correlation</option>
+                                        <option value="spearman">Spearman rank correlation</option>
+                                        <option value="both">Both Pearson and Spearman</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Genomic Window for Correlation</label>
+                                    <input type="number" id="correlationWindow" value="10000" min="1000" max="100000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Base pairs around gene TSS</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Correlation Coefficient</label>
+                                    <input type="number" id="minCorrelation" value="0.3" step="0.1" min="0.1" max="1.0" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Correlation P-value Cutoff</label>
+                                    <input type="number" id="correlationPval" value="0.05" step="0.01" min="0.001" max="0.1" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 基因表达数据设置 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Expression Data Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Expression Data Type</label>
+                                    <select id="expressionType" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="mrna">mRNA expression</option>
+                                        <option value="transcript">Transcript expression</option>
+                                        <option value="protein">Protein levels</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Expression Normalization</label>
+                                    <select id="expressionNorm" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="log2-tpm">Log2(TPM + 1)</option>
+                                        <option value="log2-fpkm">Log2(FPKM + 1)</option>
+                                        <option value="vst">Variance-stabilized</option>
+                                        <option value="none">None (use as provided)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 甲基化-表达关系模型 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Regression Models</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="simpleRegression" checked class="rounded text-primary">
+                                    <label for="simpleRegression" class="text-gray-700">Simple linear regression</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="multipleRegression" class="rounded text-primary">
+                                    <label for="multipleRegression" class="text-gray-700">Multiple regression (adjust for covariates)</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="segmentedRegression" class="rounded text-primary">
+                                    <label for="segmentedRegression" class="text-gray-700">Segmented regression (for non-linear relationships)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.7 功能富集分析模块 -->
+                <div id="enrichment" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-search-plus mr-2"></i> Functional Enrichment Analysis
+                        </h3>
+                        <p class="text-gray-600 mb-6">Perform enrichment analysis on genes associated with differential methylation.</p>
+
+                        <!-- 富集设置 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Enrichment Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Gene Set Source</label>
+                                    <select id="geneSetSource" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="dmp-genes">Genes near DMPs</option>
+                                        <option value="dmr-genes">Genes overlapping DMRs</option>
+                                        <option value="correlated-genes">Methylation-expression correlated genes</option>
+                                        <option value="user-genes">User provided genes</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Gene Distance for DMPs (kb)</label>
+                                    <input type="number" id="geneDistance" value="10" min="1" max="100" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                    <p class="text-xs text-gray-500 mt-1">Maximum distance from gene for DMP association</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Enrichment Database</label>
+                                    <select id="enrichmentDb" multiple class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="go-bp" selected>Gene Ontology (Biological Process)</option>
+                                        <option value="go-cc" selected>Gene Ontology (Cellular Component)</option>
+                                        <option value="go-mf">Gene Ontology (Molecular Function)</option>
+                                        <option value="kegg" selected>KEGG Pathways</option>
+                                        <option value="reactome">Reactome Pathways</option>
+                                        <option value="msigdb">MSigDB Collections</option>
+                                        <option value="tfbs">TF Binding Sites</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Species</label>
+                                    <select id="enrichmentSpecies" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="human">Human (Homo sapiens)</option>
+                                        <option value="mouse">Mouse (Mus musculus)</option>
+                                        <option value="rat">Rat (Rattus norvegicus)</option>
+                                        <option value="zebrafish">Zebrafish (Danio rerio)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 富集分析参数 -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Enrichment Analysis Parameters</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Enrichment Test Method</label>
+                                    <select id="enrichmentMethod" class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                        <option value="hypergeometric">Hypergeometric test</option>
+                                        <option value="fisher">Fisher's exact test</option>
+                                        <option value="gsea">Gene Set Enrichment Analysis (GSEA)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Adjusted P-value Cutoff</label>
+                                    <input type="number" id="enrichPvalCutoff" value="0.05" step="0.01" min="0.001" max="0.1" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Minimum Genes per Term</label>
+                                    <input type="number" id="minGenesPerTerm" value="5" min="2" max="50" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm mb-1">Maximum Genes per Term</label>
+                                    <input type="number" id="maxGenesPerTerm" value="500" min="100" max="2000" 
+                                           class="w-full px-3 py-2 border rounded-lg form-input-focus">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 自定义基因集上传（可选） -->
+                        <div class="param-card">
+                            <h4 class="font-semibold text-primary mb-3">Custom Gene Sets (Optional)</h4>
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">Upload Custom Gene Set File</label>
+                                <div class="file-drop-area" data-file-type="custom-genesets">
+                                    <input type="file" class="file-input hidden" accept=".gmt,.csv,.tsv" data-target="custom-genesets">
+                                    <div class="flex flex-col items-center justify-center py-4">
+                                        <i class="fa fa-file-text-o text-2xl text-primary/50 mb-2"></i>
+                                        <p class="text-gray-600 text-sm">GMT, CSV, or TSV format gene sets</p>
+                                        <label class="btn-secondary mt-2 text-sm px-3 py-1 cursor-pointer">
+                                            <i class="fa fa-upload mr-1"></i> Select File
+                                        </label>
+                                    </div>
+                                    <div class="selected-file-name hidden mt-2">
+                                        <div class="bg-gray-100 p-2 rounded-lg text-sm flex items-center justify-between">
+                                            <span class="file-name text-gray-700 flex items-center">
+                                                <i class="fa fa-file-o mr-2 text-primary"></i>
+                                                <span id="custom-genesets-file-name"></span>
+                                            </span>
+                                            <button class="remove-file text-gray-400 hover:text-danger">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.8 可视化模块 -->
+                <div id="visualization" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-pie-chart mr-2"></i> Data Visualization
+                        </h3>
+                        <p class="text-gray-600 mb-6">Select and view interactive visualizations of your methylation analysis results.</p>
+
+                        <!-- 可视化卡片网格 -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 甲基化分布 -->
+                            <div class="visual-card" data-plot-type="methylation-distribution">
+                                <div class="text-center">
+                                    <i class="fa fa-histogram text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Methylation Distribution</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Beta value distribution across samples</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 主成分分析 -->
+                            <div class="visual-card" data-plot-type="pca-analysis">
+                                <div class="text-center">
+                                    <i class="fa fa-scatter-plot text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">PCA of Methylation</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Sample clustering by methylation profiles</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 差异甲基化位点 -->
+                            <div class="visual-card" data-plot-type="dmp-volcano">
+                                <div class="text-center">
+                                    <i class="fa fa-volcano text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">DMP Volcano Plot</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Differentially methylated positions</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 差异甲基化区域 -->
+                            <div class="visual-card" data-plot-type="dmr-browser">
+                                <div class="text-center">
+                                    <i class="fa fa-map text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">DMR Genome Browser</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Visualize DMRs in genomic context</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 染色体分布 -->
+                            <div class="visual-card" data-plot-type="chromosomal-distribution">
+                                <div class="text-center">
+                                    <i class="fa fa-chromosome text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Chromosomal Distribution</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Methylation patterns by chromosome</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 区域甲基化 -->
+                            <div class="visual-card" data-plot-type="regional-methylation">
+                                <div class="text-center">
+                                    <i class="fa fa-area-chart text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Regional Methylation</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Profiles across gene regions</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 甲基化-表达相关性 -->
+                            <div class="visual-card" data-plot-type="meth-expression">
+                                <div class="text-center">
+                                    <i class="fa fa-correlation text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Methylation-Expression</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Correlation scatter plots</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 富集分析结果 -->
+                            <div class="visual-card" data-plot-type="enrichment-barplot">
+                                <div class="text-center">
+                                    <i class="fa fa-bar-chart text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Enrichment Results</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Top enriched functional terms</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+
+                            <!-- 热图 -->
+                            <div class="visual-card" data-plot-type="methylation-heatmap">
+                                <div class="text-center">
+                                    <i class="fa fa-fire text-3xl text-primary mb-2"></i>
+                                    <h5 class="font-semibold text-gray-800 mb-1">Methylation Heatmap</h5>
+                                    <p class="text-gray-500 text-xs mb-3">Clustered DMP/DMR patterns</p>
+                                    <button class="view-plot-btn btn-primary text-sm px-3 py-1">View Plot</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 图表模态框 -->
+                        <div id="plot-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+                            <div class="bg-white rounded-xl max-w-4xl w-full max-h-[80vh] overflow-auto">
+                                <div class="p-4 border-b flex justify-between items-center">
+                                    <h4 class="font-semibold text-primary" id="modal-plot-title">Plot Title</h4>
+                                    <button id="close-modal" class="text-gray-500 hover:text-danger">
+                                        <i class="fa fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                                <div class="p-6" id="modal-plot-content">
+                                    <!-- 图表内容将动态加载 -->
+                                    <div class="text-center text-gray-500" id="plot-loading">
+                                        <i class="fa fa-spinner fa-spin text-2xl mb-2"></i>
+                                        <p>Loading visualization...</p>
+                                    </div>
+                                    <div id="plot-container" class="w-full h-[500px]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.9 结果模块 -->
+                <div id="results" class="tab-content">
+                    <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+                        <h3 class="text-xl font-bold text-primary mb-4 flex items-center">
+                            <i class="fa fa-table mr-2"></i> Analysis Results
+                        </h3>
+                        <p class="text-gray-600 mb-6">View and download your DNA methylation analysis results.</p>
+
+                        <!-- 结果状态提示 -->
+                        <div id="results-empty" class="text-center py-10 bg-gray-50 rounded-xl">
+                            <i class="fa fa-file-text-o text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">No results available yet. Please upload data and run analysis first.</p>
+                        </div>
+
+                        <!-- 结果内容 -->
+                        <div id="results-content" class="hidden">
+                            <!-- 基础统计结果 -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Total CpGs Analyzed</p>
+                                    <p class="text-xl font-bold text-primary" id="total-cpgs">-</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Differentially Methylated Positions</p>
+                                    <p class="text-xl font-bold text-primary" id="total-dmps">-</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Differentially Methylated Regions</p>
+                                    <p class="text-xl font-bold text-primary" id="total-dmrs">-</p>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-primary">
+                                    <p class="text-gray-500 text-sm mb-1">Associated Genes</p>
+                                    <p class="text-xl font-bold text-primary" id="associated-genes">-</p>
+                                </div>
+                            </div>
+
+                            <!-- 结果表格：顶部DMPs -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-primary mb-3">Top Differentially Methylated Positions</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-gray-700 text-sm">
+                                                <th class="py-3 px-4 text-left">Chromosome</th>
+                                                <th class="py-3 px-4 text-left">Position</th>
+                                                <th class="py-3 px-4 text-left">Gene</th>
+                                                <th class="py-3 px-4 text-left">Region</th>
+                                                <th class="py-3 px-4 text-left">Beta Change</th>
+                                                <th class="py-3 px-4 text-left">Adjusted P-value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dmp-table" class="text-gray-700 text-sm">
+                                            <!-- 表格内容动态生成 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 结果表格：顶部DMRs -->
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-primary mb-3">Top Differentially Methylated Regions</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                        <thead>
+                                            <tr class="bg-gray-50 text-gray-700 text-sm">
+                                                <th class="py-3 px-4 text-left">Chromosome</th>
+                                                <th class="py-3 px-4 text-left">Start-End</th>
+                                                <th class="py-3 px-4 text-left">Gene</th>
+                                                <th class="py-3 px-4 text-left">CpGs</th>
+                                                <th class="py-3 px-4 text-left">Mean Beta Change</th>
+                                                <th class="py-3 px-4 text-left">Adjusted P-value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dmr-table" class="text-gray-700 text-sm">
+                                            <!-- 表格内容动态生成 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 结果文件下载 -->
+                            <div class="bg-gray-50 p-4 rounded-xl">
+                                <h4 class="font-semibold text-primary mb-3">Download Results</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="all">
+                                        <i class="fa fa-download"></i> All Results (ZIP)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="dmps">
+                                        <i class="fa fa-download"></i> DMPs (CSV)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="dmrs">
+                                        <i class="fa fa-download"></i> DMRs (BED/CSV)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="methyl-values">
+                                        <i class="fa fa-download"></i> Methylation Values (CSV)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="enrichment">
+                                        <i class="fa fa-download"></i> Enrichment Results (CSV)
+                                    </button>
+                                    <button class="download-result-btn btn-secondary text-sm flex items-center justify-center gap-2" data-type="visualizations">
+                                        <i class="fa fa-download"></i> All Plots (PDF)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 全局操作按钮 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 justify-center">
+                    <button id="run-analysis-btn" class="btn-primary w-full sm:w-auto" disabled>
+                        <i class="fa fa-play-circle mr-2"></i> Run Analysis
+                    </button>
+                    <button id="reset-parameters-btn" class="btn-secondary w-full sm:w-auto">
+                        <i class="fa fa-refresh mr-2"></i> Reset Parameters
+                    </button>
+                    <button id="download-all-results-btn" class="btn-secondary w-full sm:w-auto" disabled>
+                        <i class="fa fa-download mr-2"></i> Download All Results
+                    </button>
+                </div>
+
+                <!-- 分析进度条 -->
+                <div id="analysis-progress" class="hidden mt-6">
+                    <p class="text-gray-700 text-sm mb-1" id="progress-text">Starting analysis...</p>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. 通知组件 -->
+    <div id="notification" class="notification fade-in"></div>
+
+    <!-- 4. 页脚（黑色背景） -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Animal Hormone Database</h3>
+                    <p class="text-gray-400 text-sm">
+                        This database is dedicated to collecting, organizing, and sharing research literature and experimental data related to animal hormones, providing researchers with convenient information retrieval and analysis tools.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors">Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors">Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors">Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors">AI</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o mr-2"></i>
+                            <a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone mr-2"></i>
+                            <span>+86 15393345650</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-map-marker mr-2"></i>
+                            <span>Inner Mongolia University of Science and Technology</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Animal Hormone Database. All rights reserved.
+            </div>
+        </div>
+    </footer>
+<!-- 5. JavaScript 逻辑 -->
+<script>
+    // 全局变量：存储上传文件信息
+    let uploadedFiles = {};
+    // 标记分析是否完成
+    let analysisCompleted = false;
+    let currentTaskId = null;
+    
+    // 常量定义
+    const API_BASE_URL = '/hormone_app/api/dna-tasks';
+    const ANALYSIS_PAGE_URL = '/hormone_app/dna-methylation-analysis/';
+
+    // DOM 加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化移动菜单
+        initMobileMenu();
+        // 标签页切换逻辑
+        initTabSwitch();
+        // 文件上传逻辑
+        initFileUpload();
+        // 运行分析逻辑
+        initRunAnalysis();
+        // 参数依赖逻辑
+        initParameterDependencies();
+        // 可视化图表模态框逻辑
+        initPlotModal();
+        // 结果下载逻辑
+        initDownloadResults();
+        // 重置参数按钮
+        initResetParameters();
+        // 检查URL中是否有任务ID
+        checkUrlForTaskId();
+    });
+
+    // 初始化移动菜单
+    function initMobileMenu() {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileNav = document.querySelector('.mobile-nav');
+        
+        menuToggle.addEventListener('click', function() {
+            mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+        });
+    }
+
+    // 1. 标签页切换
+    function initTabSwitch() {
+        const tabTriggers = document.querySelectorAll('.tab-trigger');
+        tabTriggers.forEach(trigger => {
+            trigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                // 获取目标标签页ID
+                const targetTab = this.getAttribute('data-tab') || this.getAttribute('href').substring(1);
+                // 移除所有激活状态
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+                // 激活目标标签页
+                document.getElementById(targetTab).classList.add('active');
+                // 激活侧边栏对应链接
+                document.querySelector(`.sidebar-link[data-tab="${targetTab}"]`).classList.add('active');
+                
+                // 关闭移动菜单（如果打开）
+                document.querySelector('.mobileNav').style.display = 'none';
+            });
+        });
+    }
+
+    // 2. 文件上传逻辑
+    function initFileUpload() {
+        const fileDropAreas = document.querySelectorAll('.file-drop-area');
+        const fileInputs = document.querySelectorAll('.file-input');
+        const removeButtons = document.querySelectorAll('.remove-file');
+
+        // 为每个拖放区域添加事件监听
+        fileDropAreas.forEach(area => {
+            // 拖放事件
+            area.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('active');
+            });
+
+            area.addEventListener('dragleave', function() {
+                this.classList.remove('active');
+            });
+
+            area.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('active');
+                
+                const fileType = this.getAttribute('data-file-type');
+                if (e.dataTransfer.files.length) {
+                    handleFile(fileType, e.dataTransfer.files[0]);
+                }
+            });
+
+            // 点击上传区域触发文件选择
+            area.addEventListener('click', function(e) {
+                if (!e.target.closest('.selected-file-name') && !e.target.closest('.remove-file')) {
+                    const fileInput = this.querySelector('.file-input');
+                    fileInput.click();
+                }
+            });
+        });
+
+        // 文件选择事件
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const target = this.getAttribute('data-target');
+                if (this.files.length) {
+                    handleFile(target, this.files[0]);
+                }
+            });
+        });
+
+        // 移除文件事件
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const fileNameElement = this.closest('.selected-file-name');
+                const fileType = fileNameElement.closest('.file-drop-area').getAttribute('data-file-type');
+                
+                // 隐藏文件名显示
+                fileNameElement.classList.add('hidden');
+                // 清空文件输入
+                fileNameElement.closest('.file-drop-area').querySelector('.file-input').value = '';
+                // 从上传文件对象中移除
+                delete uploadedFiles[fileType];
+                
+                // 更新运行按钮状态
+                updateRunButtonState();
+                
+                // 显示通知
+                showNotification('File removed successfully', 'info');
+            });
+        });
+    }
+
+    // 处理文件上传
+    async function handleFile(fileType, file) {
+        // 验证文件类型
+        if (!isValidFile(fileType, file)) {
+            showNotification('Invalid file format for ' + fileType, 'error');
+            return;
+        }
+        
+        // 如果已有任务ID，则上传到现有任务
+        if (currentTaskId) {
+            await uploadFileToTask(currentTaskId, fileType, file);
+        } else {
+            // 否则存储文件信息等待任务创建
+            uploadedFiles[fileType] = file;
+            
+            // 显示文件名
+            const fileNameElement = document.getElementById(`${fileType}-file-name`);
+            if (fileNameElement) {
+                fileNameElement.textContent = file.name;
+                fileNameElement.closest('.selected-file-name').classList.remove('hidden');
+            }
+            
+            // 更新运行按钮状态
+            updateRunButtonState();
+            
+            // 显示通知
+            showNotification(`File "${file.name}" uploaded successfully`, 'success');
+        }
+    }
+
+    // 上传文件到任务
+    async function uploadFileToTask(taskId, fileType, file) {
+        try {
+            showNotification(`Uploading ${file.name}...`, 'info');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('file_type', fileType);
+            
+            const response = await fetch(`${API_BASE_URL}/${taskId}/upload/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // 显示文件名
+            const fileNameElement = document.getElementById(`${fileType}-file-name`);
+            if (fileNameElement) {
+                fileNameElement.textContent = file.name;
+                fileNameElement.closest('.selected-file-name').classList.remove('hidden');
+            }
+            
+            // 存储文件信息
+            uploadedFiles[fileType] = file;
+            
+            // 更新运行按钮状态
+            updateRunButtonState();
+            
+            showNotification(`File "${file.name}" uploaded successfully`, 'success');
+            
+        } catch (error) {
+            console.error('File upload error:', error);
+            showNotification(`Upload failed: ${error.message}`, 'error');
+        }
+    }
+
+    // 验证文件类型
+    function isValidFile(fileType, file) {
+        const fileName = file.name.toLowerCase();
+        
+        switch(fileType) {
+            case 'methyl-data':
+                return fileName.endsWith('.bed') || fileName.endsWith('.bismark') || 
+                       fileName.endsWith('.csv') || fileName.endsWith('.tsv');
+            case 'metadata':
+            case 'expression':
+                return fileName.endsWith('.csv') || fileName.endsWith('.tsv') || fileName.endsWith('.txt');
+            case 'regions':
+                return fileName.endsWith('.bed') || fileName.endsWith('.gff') || fileName.endsWith('.gtf');
+            case 'custom-genesets':
+                return fileName.endsWith('.gmt') || fileName.endsWith('.csv') || fileName.endsWith('.tsv');
+            default:
+                return true;
+        }
+    }
+
+    // 3. 运行分析逻辑
+    function initRunAnalysis() {
+        const runButton = document.getElementById('run-analysis-btn');
+        
+        runButton.addEventListener('click', async function() {
+            // 检查是否上传了必要的文件
+            if (!hasRequiredFiles()) {
+                showNotification('Please upload methylation data and metadata files', 'error');
+                return;
+            }
+            
+            try {
+                // 创建任务
+                const taskId = await createAnalysisTask();
+                currentTaskId = taskId;
+                
+                // 显示进度条
+                const progressContainer = document.getElementById('analysis-progress');
+                const progressBar = document.getElementById('progress-bar');
+                const progressText = document.getElementById('progress-text');
+                
+                progressContainer.classList.remove('hidden');
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Starting analysis...';
+                
+                // 禁用运行按钮
+                runButton.disabled = true;
+                
+                // 上传所有文件
+                await uploadAllFiles(taskId);
+                
+                // 运行分析
+                await runAnalysisTask(taskId);
+                
+                // 更新进度
+                progressText.textContent = 'Analysis in progress...';
+                progressBar.style.width = '30%';
+                
+                // 轮询分析状态
+                const result = await pollAnalysisStatus(taskId);
+                
+                // 显示结果
+                displayAnalysisResult(result);
+                
+                // 更新进度
+                progressText.textContent = 'Analysis completed successfully!';
+                progressBar.style.width = '100%';
+                
+                // 标记分析完成
+                analysisCompleted = true;
+                
+                // 启用下载按钮
+                document.getElementById('download-all-results-btn').disabled = false;
+                
+                // 更新URL以包含任务ID
+                updateUrlWithTaskId(taskId);
+                
+                // 显示通知
+                showNotification('Analysis completed successfully', 'success');
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                const progressText = document.getElementById('progress-text');
+                if (progressText) {
+                    progressText.textContent = 'Analysis failed';
+                }
+                showNotification('Analysis failed: ' + error.message, 'error');
+            } finally {
+                const runButton = document.getElementById('run-analysis-btn');
+                if (runButton) {
+                    runButton.disabled = false;
+                }
+            }
+        });
+    }
+
+    // 创建分析任务
+    async function createAnalysisTask() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    analysis_type: 'dna_methylation',
+                    description: 'DNA Methylation Analysis'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Task creation failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            showNotification('Analysis task created successfully', 'success');
+            return data.task_id;
+            
+        } catch (error) {
+            console.error('Task creation error:', error);
+            throw error;
+        }
+    }
+
+    // 上传所有文件
+    async function uploadAllFiles(taskId) {
+    const uploadPromises = Object.entries(uploadedFiles).map(async ([fileType, file]) => {
+        console.log(`上传文件: ${fileType}, 文件名: ${file.name}`);
+        const result = await uploadFileToTask(taskId, fileType, file);
+        console.log(`文件上传结果:`, result);
+        return result;
+    });
+    
+    await Promise.all(uploadPromises);
+    console.log('所有文件上传完成');
+}
+
+    // 运行分析任务
+    async function runAnalysisTask(taskId) {
+        try {
+            // 收集所有参数
+            const params = collectAllParameters();
+            
+            const response = await fetch(`${API_BASE_URL}/${taskId}/run/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(params)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Analysis start failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            showNotification('Analysis started successfully', 'success');
+            return data;
+            
+        } catch (error) {
+            console.error('Analysis start error:', error);
+            throw error;
+        }
+    }
+
+    // 轮询分析状态
+    // 在 pollAnalysisStatus 函数中添加更好的错误处理
+async function pollAnalysisStatus(taskId) {
+    const maxAttempts = 60; // 5分钟超时（5秒 * 60次）
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/${taskId}/status/`);
+            if (!response.ok) {
+                throw new Error(`Status check failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // 更新进度条
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            if (data.status === 'completed') {
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Analysis completed!';
+                
+                // 获取最终结果
+                return await getAnalysisResults(taskId);
+                
+            } else if (data.status === 'running') {
+                const progress = data.progress || 30;
+                progressBar.style.width = `${progress}%`;
+                progressText.textContent = `Analyzing... ${progress}%`;
+                
+                // 等待5秒后重试
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                attempts++;
+                
+            } else if (data.status === 'failed') {
+                // 显示具体错误信息
+                const errorMsg = data.error || 'Analysis failed';
+                console.error('Analysis failed with error:', errorMsg);
+                throw new Error(errorMsg);
+                
+            } else {
+                // 等待2秒后重试
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                attempts++;
+            }
+            
+        } catch (error) {
+            console.error('Status polling error:', error);
+            
+            // 如果是分析失败，直接抛出
+            if (error.message.includes('Analysis failed') || error.message.includes('failed')) {
+                throw error;
+            }
+            
+            // 其他错误等待重试
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            attempts++;
+        }
+    }
+    
+    throw new Error('Analysis timeout');
+}
+
+    // 获取分析结果
+    async function getAnalysisResults(taskId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/${taskId}/results/`);
+            if (!response.ok) {
+                throw new Error(`Results fetch failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            return data;
+            
+        } catch (error) {
+            console.error('Results fetch error:', error);
+            throw error;
+        }
+    }
+
+    // 收集所有参数
+    function collectAllParameters() {
+        return {
+            // Quality Control
+            min_cpgs_per_sample: parseInt(document.getElementById('minCpGsPerSample').value),
+            min_mean_coverage: parseFloat(document.getElementById('minMeanCoverage').value),
+            max_meth_deviation: parseFloat(document.getElementById('maxMethDeviation').value),
+            detection_pval_thresh: parseFloat(document.getElementById('detectionPvalThresh').value),
+            min_coverage_per_cpg: parseInt(document.getElementById('minCoveragePerCpG').value),
+            min_samples_with_data: parseFloat(document.getElementById('minSamplesWithData').value),
+            exclude_snp_probes: document.getElementById('excludeSnpProbes').value,
+            snp_distance_thresh: parseInt(document.getElementById('snpDistanceThresh').value),
+            batch_variable: document.getElementById('batchVariable').value,
+            pca_components_batch: parseInt(document.getElementById('pcaComponentsBatch').value),
+            
+            // Preprocessing
+            norm_method: document.getElementById('normMethod').value,
+            batch_method: document.getElementById('batchMethod').value,
+            num_surrogate_vars: parseInt(document.getElementById('numSurrogateVars').value),
+            value_transformation: document.getElementById('valueTransformation').value,
+            probe_masking: document.getElementById('probeMasking').value,
+            smoothing_method: document.getElementById('smoothingMethod').value,
+            smoothing_window: parseInt(document.getElementById('smoothingWindow').value),
+            
+            // Differential Methylation
+            group_variable: document.getElementById('groupVariable').value,
+            reference_group: document.getElementById('referenceGroup').value,
+            test_method: document.getElementById('testMethod').value,
+            covariates: document.getElementById('covariates').value,
+            pval_cutoff: parseFloat(document.getElementById('pvalCutoff').value),
+            beta_change_cutoff: parseFloat(document.getElementById('betaChangeCutoff').value),
+            mvalue_change_cutoff: parseFloat(document.getElementById('mvalueChangeCutoff').value),
+            correction_method: document.getElementById('correctionMethod').value,
+            dmr_method: document.getElementById('dmrMethod').value,
+            max_gap: parseInt(document.getElementById('maxGap').value),
+            min_cpgs_dmr: parseInt(document.getElementById('minCpGsDMR').value),
+            min_region_length: parseInt(document.getElementById('minRegionLength').value),
+            
+            // Regional Analysis
+            predefined_regions: Array.from(document.getElementById('predefinedRegions').selectedOptions).map(option => option.value),
+            custom_regions: document.getElementById('customRegions').value,
+            promoter_definition: document.getElementById('promoterDefinition').value,
+            gene_annotation: document.getElementById('geneAnnotation').value,
+            chrom_bin_size: parseInt(document.getElementById('chromBinSize').value),
+            include_sex_chromosomes: document.getElementById('includeSexChromosomes').value,
+            
+            // Correlation Analysis
+            correlation_method: document.getElementById('correlationMethod').value,
+            correlation_window: parseInt(document.getElementById('correlationWindow').value),
+            min_correlation: parseFloat(document.getElementById('minCorrelation').value),
+            correlation_pval: parseFloat(document.getElementById('correlationPval').value),
+            expression_type: document.getElementById('expressionType').value,
+            expression_norm: document.getElementById('expressionNorm').value,
+            simple_regression: document.getElementById('simpleRegression').checked,
+            multiple_regression: document.getElementById('multipleRegression').checked,
+            segmented_regression: document.getElementById('segmentedRegression').checked,
+            
+            // Enrichment Analysis
+            gene_set_source: document.getElementById('geneSetSource').value,
+            gene_distance: parseInt(document.getElementById('geneDistance').value),
+            enrichment_db: Array.from(document.getElementById('enrichmentDb').selectedOptions).map(option => option.value),
+            enrichment_species: document.getElementById('enrichmentSpecies').value,
+            enrichment_method: document.getElementById('enrichmentMethod').value,
+            enrich_pval_cutoff: parseFloat(document.getElementById('enrichPvalCutoff').value),
+            min_genes_per_term: parseInt(document.getElementById('minGenesPerTerm').value),
+            max_genes_per_term: parseInt(document.getElementById('maxGenesPerTerm').value)
+        };
+    }
+
+    // 显示分析结果
+    function displayAnalysisResult(result) {
+        // 显示结果内容，隐藏空状态
+        document.getElementById('results-empty').classList.add('hidden');
+        document.getElementById('results-content').classList.remove('hidden');
+        
+        // 填充统计数据
+        document.getElementById('total-cpgs').textContent = result.total_cpgs ? result.total_cpgs.toLocaleString() : '0';
+        document.getElementById('total-dmps').textContent = result.total_dmps ? result.total_dmps.toLocaleString() : '0';
+        document.getElementById('total-dmrs').textContent = result.total_dmrs ? result.total_dmrs.toLocaleString() : '0';
+        document.getElementById('associated-genes').textContent = result.associated_genes ? result.associated_genes.toLocaleString() : '0';
+        
+        // 填充DMP表格
+        const dmpTable = document.getElementById('dmp-table');
+        dmpTable.innerHTML = '';
+        
+        if (result.dmps && result.dmps.length > 0) {
+            result.dmps.forEach(dmp => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-2 px-4 border-t">${dmp.chr || dmp.chromosome || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmp.position ? dmp.position.toLocaleString() : dmp.pos || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmp.gene || dmp.gene_symbol || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmp.region || dmp.region_type || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t ${dmp.beta > 0 ? 'text-danger' : 'text-success'}">${dmp.beta ? (dmp.beta > 0 ? '+' : '') + dmp.beta.toFixed(3) : 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmp.p_value ? dmp.p_value.toExponential(2) : dmp.pval || 'N/A'}</td>
+                `;
+                dmpTable.appendChild(row);
+            });
+        } else {
+            dmpTable.innerHTML = '<tr><td colspan="6" class="py-2 px-4 border-t text-center">No DMPs found</td></tr>';
+        }
+        
+        // 填充DMR表格
+        const dmrTable = document.getElementById('dmr-table');
+        dmrTable.innerHTML = '';
+        
+        if (result.dmrs && result.dmrs.length > 0) {
+            result.dmrs.forEach(dmr => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-2 px-4 border-t">${dmr.chr || dmr.chromosome || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmr.start ? dmr.start.toLocaleString() : 'N/A'}-${dmr.end ? dmr.end.toLocaleString() : 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmr.gene || dmr.gene_symbol || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmr.cpgs || dmr.num_cpgs || 'N/A'}</td>
+                    <td class="py-2 px-4 border-t ${dmr.beta > 0 ? 'text-danger' : 'text-success'}">${dmr.beta ? (dmr.beta > 0 ? '+' : '') + dmr.beta.toFixed(3) : 'N/A'}</td>
+                    <td class="py-2 px-4 border-t">${dmr.p_value ? dmr.p_value.toExponential(2) : dmr.pval || 'N/A'}</td>
+                `;
+                dmrTable.appendChild(row);
+            });
+        } else {
+            dmrTable.innerHTML = '<tr><td colspan="6" class="py-2 px-4 border-t text-center">No DMRs found</td></tr>';
+        }
+    }
+
+    // 检查是否有必要的文件
+    function hasRequiredFiles() {
+        return uploadedFiles['methyl-data'] && uploadedFiles['metadata'];
+    }
+
+    // 更新运行按钮状态
+    function updateRunButtonState() {
+        const runButton = document.getElementById('run-analysis-btn');
+        if (runButton) {
+            runButton.disabled = !hasRequiredFiles();
+        }
+    }
+
+    // 4. 参数依赖逻辑
+    function initParameterDependencies() {
+        // 批次校正方法依赖
+        const batchMethod = document.getElementById('batchMethod');
+        const numSurrogateVars = document.getElementById('numSurrogateVars');
+        
+        if (batchMethod && numSurrogateVars) {
+            batchMethod.addEventListener('change', function() {
+                numSurrogateVars.disabled = this.value !== 'sva';
+            });
+            
+            // 初始检查
+            numSurrogateVars.disabled = batchMethod.value !== 'sva';
+        }
+        
+        // 基因集来源依赖
+        const geneSetSource = document.getElementById('geneSetSource');
+        const geneDistance = document.getElementById('geneDistance');
+        
+        if (geneSetSource && geneDistance) {
+            geneSetSource.addEventListener('change', function() {
+                geneDistance.disabled = this.value !== 'dmp-genes';
+            });
+            
+            // 初始检查
+            geneDistance.disabled = geneSetSource.value !== 'dmp-genes';
+        }
+    }
+
+    // 5. 可视化图表模态框逻辑
+    function initPlotModal() {
+        const plotButtons = document.querySelectorAll('.view-plot-btn');
+        const modal = document.getElementById('plot-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalTitle = document.getElementById('modal-plot-title');
+        const plotLoading = document.getElementById('plot-loading');
+        const plotContainer = document.getElementById('plot-container');
+        
+        // 打开模态框
+        plotButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                if (!currentTaskId) {
+                    showNotification('Please run analysis first to view plots', 'error');
+                    return;
+                }
+                
+                const plotType = this.closest('.visual-card').getAttribute('data-plot-type');
+                
+                // 设置标题
+                modalTitle.textContent = getPlotTitle(plotType);
+                
+                // 显示加载状态
+                plotLoading.classList.remove('hidden');
+                plotContainer.classList.add('hidden');
+                
+                // 显示模态框
+                modal.classList.remove('hidden');
+                
+                try {
+                    // 获取图表数据
+                    const plotData = await getPlotData(currentTaskId, plotType);
+                    
+                    // 隐藏加载状态
+                    plotLoading.classList.add('hidden');
+                    plotContainer.classList.remove('hidden');
+                    
+                    // 绘制图表
+                    drawPlot(plotType, plotData, plotContainer);
+                } catch (error) {
+                    console.error('Error loading plot:', error);
+                    plotLoading.classList.add('hidden');
+                    plotContainer.classList.remove('hidden');
+                    plotContainer.innerHTML = '<p class="text-center text-red-500">Error loading plot: ' + error.message + '</p>';
+                }
+            });
+        });
+        
+        // 关闭模态框
+        if (closeModal) {
+            closeModal.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        // 点击模态框外部关闭
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+    }
+
+    // 获取图表数据
+    async function getPlotData(taskId, plotType) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/${taskId}/plots/${plotType}/`);
+            if (!response.ok) {
+                throw new Error(`Plot data fetch failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            return data;
+            
+        } catch (error) {
+            console.error('Plot data error:', error);
+            throw error;
+        }
+    }
+
+    // 获取图表标题
+    function getPlotTitle(plotType) {
+        const titles = {
+            'methylation-distribution': 'Methylation Beta Value Distribution',
+            'pca-analysis': 'Principal Component Analysis of Methylation Data',
+            'dmp-volcano': 'Volcano Plot of Differentially Methylated Positions',
+            'dmr-browser': 'Genome Browser View of Differentially Methylated Regions',
+            'chromosomal-distribution': 'Chromosomal Distribution of Methylation',
+            'regional-methylation': 'Methylation Profiles Across Genomic Regions',
+            'meth-expression': 'Methylation-Expression Correlation',
+            'enrichment-barplot': 'Functional Enrichment Analysis Results',
+            'methylation-heatmap': 'Heatmap of Methylation Patterns'
+        };
+        
+        return titles[plotType] || 'Methylation Analysis Visualization';
+    }
+
+    // 绘制图表
+    function drawPlot(plotType, plotData, container) {
+        // 清空容器
+        container.innerHTML = '';
+        
+        // 检查是否直接返回了HTML
+        if (plotData.html) {
+            container.innerHTML = plotData.html;
+            return;
+        }
+        
+        // 如果是Plotly格式的数据
+        if (plotData.data && plotData.layout) {
+            Plotly.newPlot(container, plotData.data, plotData.layout);
+            return;
+        }
+        
+        // 如果是简单的图像URL
+        if (plotData.image_url) {
+            const img = document.createElement('img');
+            img.src = plotData.image_url;
+            img.className = 'w-full h-auto';
+            container.appendChild(img);
+            return;
+        }
+        
+        // 默认显示原始数据
+        container.innerHTML = '<pre class="p-4 bg-gray-100 rounded overflow-auto">' + JSON.stringify(plotData, null, 2) + '</pre>';
+    }
+
+    // 6. 结果下载逻辑
+    function initDownloadResults() {
+        // 单个文件下载
+        const downloadButtons = document.querySelectorAll('.download-result-btn');
+        
+        downloadButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const type = this.getAttribute('data-type');
+                
+                if (!analysisCompleted || !currentTaskId) {
+                    showNotification('Please run the analysis first', 'error');
+                    return;
+                }
+                
+                try {
+                    await downloadResultByType(type);
+                } catch (error) {
+                    console.error('Download error:', error);
+                    showNotification('Download failed: ' + error.message, 'error');
+                }
+            });
+        });
+        
+        // 全部下载按钮
+        const downloadAllButton = document.getElementById('download-all-results-btn');
+        if (downloadAllButton) {
+            downloadAllButton.addEventListener('click', async function() {
+                if (!analysisCompleted || !currentTaskId) {
+                    showNotification('Please run the analysis first', 'error');
+                    return;
+                }
+                
+                try {
+                    await downloadAllResults();
+                } catch (error) {
+                    console.error('Download all error:', error);
+                    showNotification('Download failed: ' + error.message, 'error');
+                }
+            });
+        }
+    }
+
+    // 按类型下载结果
+    async function downloadResultByType(type) {
+        try {
+            showNotification(`Downloading ${getDownloadTypeName(type)}...`, 'info');
+            
+            const response = await fetch(`${API_BASE_URL}/${currentTaskId}/download-by-type/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ result_type: type })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Download failed: ${response.statusText}`);
+            }
+            
+            // 处理下载
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 从响应头获取文件名
+            const contentDisposition = response.headers.get('content-disposition');
+            let filename = `methylation_${type}_results.zip`;
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification(`${getDownloadTypeName(type)} downloaded successfully`, 'success');
+            
+        } catch (error) {
+            console.error('Download error:', error);
+            throw error;
+        }
+    }
+
+    // 下载所有结果
+    async function downloadAllResults() {
+        try {
+            showNotification('Preparing all results for download...', 'info');
+            
+            const response = await fetch(`${API_BASE_URL}/${currentTaskId}/download-all/`);
+            
+            if (!response.ok) {
+                throw new Error(`Download failed: ${response.statusText}`);
+            }
+            
+            // 处理下载
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 从响应头获取文件名
+            const contentDisposition = response.headers.get('content-disposition');
+            let filename = 'methylation_all_results.zip';
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('All results downloaded successfully', 'success');
+            
+        } catch (error) {
+            console.error('Download all error:', error);
+            throw error;
+        }
+    }
+
+    // 获取下载类型名称
+    function getDownloadTypeName(type) {
+        const names = {
+            'all': 'all results',
+            'dmps': 'DMP results',
+            'dmrs': 'DMR results',
+            'methyl-values': 'methylation values',
+            'enrichment': 'enrichment results',
+            'visualizations': 'all visualizations'
+        };
+        
+        return names[type] || 'results';
+    }
+
+    // 7. 重置参数按钮
+    function initResetParameters() {
+        const resetButton = document.getElementById('reset-parameters-btn');
+        
+        if (resetButton) {
+            resetButton.addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset all parameters to default values?')) {
+                    // 重置所有输入字段
+                    resetFormFields();
+                    
+                    // 清除上传的文件
+                    clearUploadedFiles();
+                    
+                    // 重置结果
+                    resetResults();
+                    
+                    // 重置分析状态
+                    analysisCompleted = false;
+                    currentTaskId = null;
+                    
+                    const downloadAllButton = document.getElementById('download-all-results-btn');
+                    if (downloadAllButton) {
+                        downloadAllButton.disabled = true;
+                    }
+                    
+                    // 隐藏进度条
+                    const progressContainer = document.getElementById('analysis-progress');
+                    if (progressContainer) {
+                        progressContainer.classList.add('hidden');
+                    }
+                    
+                    // 更新运行按钮状态
+                    updateRunButtonState();
+                    
+                    // 更新URL移除任务ID
+                    updateUrlWithoutTaskId();
+                    
+                    showNotification('Parameters reset to default values', 'info');
+                }
+            });
+        }
+    }
+
+    // 重置表单字段
+    function resetFormFields() {
+        // 重置输入框
+        document.querySelectorAll('input[type="number"], input[type="text"]').forEach(input => {
+            // 保存默认值
+            const defaultValue = input.getAttribute('value') || '';
+            input.value = defaultValue;
+        });
+        
+        // 重置下拉菜单
+        document.querySelectorAll('select').forEach(select => {
+            // 选择第一个选项或有selected属性的选项
+            const defaultOption = select.querySelector('option[selected]') || select.querySelector('option');
+            if (defaultOption) {
+                defaultOption.selected = true;
+            }
+        });
+        
+        // 重置复选框
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // 重新应用参数依赖
+        initParameterDependencies();
+    }
+
+    // 清除上传的文件
+    function clearUploadedFiles() {
+        // 清空上传文件对象
+        uploadedFiles = {};
+        
+        // 隐藏所有文件名显示
+        document.querySelectorAll('.selected-file-name').forEach(element => {
+            element.classList.add('hidden');
+        });
+        
+        // 清空所有文件输入
+        document.querySelectorAll('.file-input').forEach(input => {
+            input.value = '';
+        });
+    }
+
+    // 重置结果
+    function resetResults() {
+        const resultsEmpty = document.getElementById('results-empty');
+        const resultsContent = document.getElementById('results-content');
+        
+        if (resultsEmpty) resultsEmpty.classList.remove('hidden');
+        if (resultsContent) resultsContent.classList.add('hidden');
+    }
+
+    // 8. 工具函数
+
+    // 获取CSRF令牌
+    function getCsrfToken() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        return csrfToken ? csrfToken.value : '';
+    }
+
+    // 检查URL中是否有任务ID
+    function checkUrlForTaskId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get('task_id');
+        
+        if (taskId) {
+            currentTaskId = taskId;
+            loadExistingTask(taskId);
+        }
+    }
+
+    // 加载现有任务
+    async function loadExistingTask(taskId) {
+        try {
+            showNotification('Loading existing analysis...', 'info');
+            
+            // 获取任务状态
+            const response = await fetch(`${API_BASE_URL}/${taskId}/status/`);
+            if (!response.ok) {
+                throw new Error(`Task load failed: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.status === 'completed') {
+                // 获取结果
+                const result = await getAnalysisResults(taskId);
+                displayAnalysisResult(result);
+                analysisCompleted = true;
+                
+                const downloadAllButton = document.getElementById('download-all-results-btn');
+                if (downloadAllButton) {
+                    downloadAllButton.disabled = false;
+                }
+                
+                showNotification('Existing analysis loaded successfully', 'success');
+            } else if (data.status === 'running') {
+                // 显示进度并开始轮询
+                const progressContainer = document.getElementById('analysis-progress');
+                const progressBar = document.getElementById('progress-bar');
+                const progressText = document.getElementById('progress-text');
+                
+                if (progressContainer) {
+                    progressContainer.classList.remove('hidden');
+                    progressBar.style.width = `${data.progress || 0}%`;
+                    progressText.textContent = `Loading analysis... ${data.progress || 0}%`;
+                }
+                
+                // 继续轮询
+                pollAnalysisStatus(taskId).then(result => {
+                    displayAnalysisResult(result);
+                    analysisCompleted = true;
+                    
+                    const downloadAllButton = document.getElementById('download-all-results-btn');
+                    if (downloadAllButton) {
+                        downloadAllButton.disabled = false;
+                    }
+                }).catch(error => {
+                    showNotification('Failed to load existing analysis: ' + error.message, 'error');
+                });
+            } else {
+                showNotification('Analysis is ' + data.status, 'info');
+            }
+            
+        } catch (error) {
+            console.error('Task load error:', error);
+            showNotification('Failed to load existing analysis: ' + error.message, 'error');
+        }
+    }
+
+    // 更新URL以包含任务ID
+    function updateUrlWithTaskId(taskId) {
+        const url = new URL(window.location);
+        url.searchParams.set('task_id', taskId);
+        window.history.pushState({}, '', url);
+    }
+
+    // 更新URL移除任务ID
+    function updateUrlWithoutTaskId() {
+        const url = new URL(window.location);
+        url.searchParams.delete('task_id');
+        window.history.pushState({}, '', url);
+    }
+
+    // 显示通知
+    function showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        if (!notification) return;
+        
+        // 设置通知内容和类型
+        notification.innerHTML = `
+            <div class="flex items-start gap-3">
+                <i class="fa ${getNotificationIcon(type)} text-xl mt-0.5"></i>
+                <div>
+                    <p class="text-gray-800">${message}</p>
+                </div>
+                <button class="close-notification text-gray-400 hover:text-gray-600 ml-auto">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        // 设置通知类型样式
+        notification.className = 'notification';
+        notification.classList.add(`notification-${type}`);
+        
+        // 显示通知
+        notification.style.transform = 'translateY(0)';
+        notification.style.opacity = '1';
+        
+        // 添加关闭按钮事件
+        notification.querySelector('.close-notification').addEventListener('click', function() {
+            hideNotification();
+        });
+        
+        // 3秒后自动隐藏
+        setTimeout(hideNotification, 3000);
+    }
+
+    // 获取通知图标
+    function getNotificationIcon(type) {
+        const icons = {
+            'success': 'fa-check-circle text-success',
+            'error': 'fa-times-circle text-danger',
+            'info': 'fa-info-circle text-primary'
+        };
+        
+        return icons[type] || 'fa-info-circle text-primary';
+    }
+
+    // 隐藏通知
+    function hideNotification() {
+        const notification = document.getElementById('notification');
+        if (!notification) return;
+        
+        notification.style.transform = 'translateY(-20px)';
+        notification.style.opacity = '0';
+    }
+</script>
+</body>
+</html>

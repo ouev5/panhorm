@@ -1,0 +1,12 @@
+{
+  "total_genes": 100,
+  "significant": 0,
+  "up_regulated": 0,
+  "down_regulated": 0,
+  "pval_cutoff": 0.05,
+  "log2fc_cutoff": 1,
+  "n_control": 25,
+  "n_treatment": 25,
+  "method": "DESeq2",
+  "output_files": ["deseq2_results.csv", "normalized_counts.csv", "volcano_plot.png", "ma_plot.png", "heatmap.png"]
+}

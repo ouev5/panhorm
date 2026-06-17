@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSRF token -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>AI Biomedical QA - Gene Analysis Toolkit</title>
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        neutral: '#F5F7FA',
+                        success: '#52C41A',
+                        warning: '#FAAD14',
+                        danger: '#FF4D4F',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .function-card {
+                @apply bg-white rounded-xl shadow-md p-6 border-t-4 transition-all duration-300 hover:shadow-lg;
+            }
+            .function-icon {
+                @apply w-16 h-16 rounded-full flex items-center justify-center mb-3 text-xl;
+            }
+        }
+        /* 导航样式（保持不变） */
+        :root {
+            --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+            --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+            --text-color: white;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            margin-right: 2rem;
+        }
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--logo-bg);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .logo-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            line-height: 1;
+            font-family: 'Arial', sans-serif;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .logo-subtext {
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1;
+            margin-top: 0.2rem;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: 0.6px;
+        }
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+        .nav-left ul, .nav-right ul {
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-left a, .nav-right a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+        .nav-left a:hover, .nav-right a:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+        .nav-left a.active, .nav-right a.active {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+        }
+        .nav-right {
+            margin-left: auto;
+        }
+        .nav-icon {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .nav-left ul, .nav-right ul {
+                display: none;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .mobile-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--nav-bg);
+                box-shadow: var(--shadow);
+                padding: 1rem 1.5rem;
+                display: none;
+            }
+            .mobile-nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .mobile-nav a {
+                text-decoration: none;
+                color: var(--text-color);
+                font-weight: 500;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                font-size: 1rem;
+            }
+            .mobile-nav a:hover {
+                background: var(--hover-bg);
+            }
+        }
+
+        /* 通知样式 */
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+        #notification.active {
+            transform: translateX(0);
+        }
+        .notification-success {
+            border-left: 4px solid #52C41A;
+        }
+        .notification-error {
+            border-left: 4px solid #FF4D4F;
+        }
+        .notification-warning {
+            border-left: 4px solid #FAAD14;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 聊天样式 */
+        .chat-container {
+            background-color: #f7f9fc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        .chat-header {
+            background-color: #165DFF;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .model-selector {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .model-selector option {
+            background: #1e3a8a;
+        }
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .message {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            position: relative;
+            word-wrap: break-word;
+        }
+        @media (max-width: 640px) {
+            .message {
+                max-width: 90%;
+            }
+        }
+        .user-message {
+            background-color: #165DFF;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .ai-message {
+            background-color: white;
+            color: #333;
+            align-self: flex-start;
+            border: 1px solid #e1e5eb;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .user-message-wrapper {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+        .ai-message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.8rem 1.2rem;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background-color: #165DFF;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        @keyframes typing {
+            0% { transform: translateY(0px); }
+            28% { transform: translateY(-5px); }
+            44% { transform: translateY(0px); }
+        }
+        .chat-input-area {
+            border-top: 1px solid #e1e5eb;
+            padding: 1rem 1.5rem;
+            background-color: white;
+        }
+        .advanced-options {
+            background-color: #f7f9fc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .option-toggle {
+            color: #165DFF;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.8rem;
+        }
+        #submitBtn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(22, 93, 255, 0.3);
+            transition: all 0.2s ease;
+        }
+        #submitBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 8px rgba(22, 93, 255, 0.4);
+        }
+        #submitBtn:active {
+            transform: scale(0.98);
+        }
+        .send-text {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 4px;
+            display: none;
+        }
+        @media (min-width: 640px) {
+            #submitBtn {
+                width: auto;
+                border-radius: 25px;
+                padding: 0 16px;
+            }
+            .send-text {
+                display: inline;
+            }
+        }
+        /* PDF按钮样式 */
+        .pdf-button {
+            background-color: #52C41A;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .pdf-button:hover {
+            background-color: #389e0d;
+        }
+        .pdf-button:disabled {
+            background-color: #a8c787;
+            cursor: not-allowed;
+        }
+        .message-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .ai-message:hover .message-actions {
+            opacity: 1;
+        }
+        .action-btn {
+            background-color: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .action-btn:hover {
+            background-color: rgba(0,0,0,0.2);
+            color: #333;
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 1.5rem;
+            max-width: 24rem;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">
+                        <div class="logo-icon">
+                            <span class="logo-text">AH</span>
+                            <span class="logo-subtext">Animal Hormone</span>
+                        </div>
+                    </a>
+                </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="active"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+                <button class="menu-toggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <!-- 移动端导航 -->
+            <div class="mobile-nav">
+                <ul>
+                    <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                    <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                    <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                    <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                    <li><a href="{% url 'hormone_app:ai' %}" class="active"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="container mx-auto px-4 py-8 max-w-4xl">
+            <header class="mb-8 text-center">
+                <h1 class="text-3xl font-bold text-blue-800">AI Biomedical Intelligent QA</h1>
+                <p class="text-gray-600 mt-2">Chat with AI assistant to get professional answers to biomedical questions</p>
+            </header>
+
+            <!-- 聊天容器 -->
+            <div class="chat-container mb-6">
+                <div class="chat-header">
+                    <div><i class="fa fa-robot mr-2"></i>AI Assistant</div>
+                    <a href="{% url 'hormone_app:page11' %}" class="flex items-center gap-2">
+                        <h2 class="text-xl font-semibold text-white border border-white/30 bg-white/10 rounded px-3 py-1.5 hover:bg-white/20 transition-colors mb-0">see</h2>
+                    </a>
+                    <div class="flex items-center gap-2">
+                        <select id="modelSelector" class="model-selector">
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="biogpt">BioGPT</option>
+                        </select>
+                        <button id="generatePdfBtn" class="pdf-button" disabled>
+                            <i class="fa fa-file-pdf-o"></i>
+                            <span>Generate PDF</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 聊天消息区 -->
+                <div id="chatMessages" class="chat-messages">
+                    <!-- 初始欢迎消息 -->
+                    <div class="ai-message-wrapper">
+                        <img src="https://picsum.photos/id/1005/36/36" alt="AI Avatar" class="message-avatar">
+                        <div class="message ai-message">
+                            Hello! I'm the AI Biomedical Assistant, specialized in answering biomedical questions. Please enter your question, and I'll do my best to provide you with a professional answer.
+                            <div class="message-actions">
+                                <button class="action-btn" title="Generate PDF" onclick="generateMessagePdf(this)">
+                                    <i class="fa fa-file-pdf-o"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 输入区域 -->
+                <div class="chat-input-area">
+                    <!-- 高级选项切换 -->
+                    <div class="option-toggle" id="optionToggle">
+                        <i class="fa fa-sliders"></i> Advanced Options
+                    </div>
+                    
+                    <!-- 高级参数（默认隐藏） -->
+                    <div id="advancedOptions" class="advanced-options hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label for="queryType" class="block text-gray-700 font-medium mb-2 text-sm">Query Type (查询类型)</label>
+                                <select id="queryType" class="w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="hormone">Hormone (激素名称)</option>
+                                    <option value="gene">Gene (基因名称)</option>
+                                    <option value="disease">Disease (疾病名称)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="maxLength" class="block text-gray-700 font-medium mb-2 text-sm">Max Length:</label>
+                                <input type="number" id="maxLength" class="w-full p-2 border border-gray-300 rounded-md" value="200" min="50" max="500">
+                            </div>
+                            <div>
+                                <label for="numBeams" class="block text-gray-700 font-medium mb-2 text-sm">Number of Beams:</label>
+                                <input type="number" id="numBeams" class="w-full p-2 border border-gray-300 rounded-md" value="5" min="2" max="10">
+                            </div>
+                            <div>
+                                <label for="matchType" class="block text-gray-700 font-medium mb-2 text-sm">Match Type (匹配类型)</label>
+                                <select id="matchType" class="w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="fuzzy">Fuzzy Match (模糊匹配)</option>
+                                    <option value="exact">Exact Match (精确匹配)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <textarea id="inputText" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Please enter your question... (Support hormone/gene/disease query)"></textarea>
+                        <button id="submitBtn" class="bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 self-end">
+                            <i class="fa fa-paper-plane"></i>
+                            <span class="send-text">Send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 通知区域 -->
+    <div id="notification" class="notification fade-in"></div>
+    
+    <!-- PDF生成手动输入模态框 -->
+    <div id="pdfModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-96">
+            <h3 class="text-lg font-semibold mb-4">Generate PDF Report</h3>
+            <div class="mb-4">
+                <label for="modalQueryType" class="block text-gray-700 font-medium mb-2">Query Type</label>
+                <select id="modalQueryType" class="w-full p-2 border border-gray-300 rounded-md">
+                    <option value="hormone">Hormone (激素)</option>
+                    <option value="gene">Gene (基因)</option>
+                    <option value="disease">Disease (疾病)</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="modalQueryValue" class="block text-gray-700 font-medium mb-2">Standard Name</label>
+                <input type="text" id="modalQueryValue" class="w-full p-2 border border-gray-300 rounded-md" placeholder="e.g., Insulin, BRCA1, Diabetes">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button id="modalCancelBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Cancel</button>
+                <button id="modalConfirmBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Generate</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Animal Hormone Database</h3>
+                    <p class="text-gray-400 text-sm">
+                        This database is dedicated to collecting, organizing, and sharing research literature and experimental data related to animal hormones, providing researchers with convenient information retrieval and analysis tools.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors">Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors">Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors">Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors">AI</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o mr-2"></i>
+                            <a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone mr-2"></i>
+                            <span>+86 15393345650</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-map-marker mr-2"></i>
+                            <span>Inner Mongolia University of Science and Technology</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Animal Hormone Database. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 交互逻辑 -->
+<script>
+    // 获取指定名称的 Cookie 值
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // 获取 CSRF token（直接从 Cookie 读取）
+    function getCSRFToken() {
+        return getCookie('csrftoken');
+    }
+    
+    // HTML特殊字符转义（防止XSS攻击）
+    function escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // 通知功能
+    function showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        const notificationTypes = {
+            success: 'notification-success',
+            error: 'notification-error',
+            warning: 'notification-warning',
+            info: ''
+        };
+        
+        notification.className = 'notification fade-in';
+        if (notificationTypes[type]) {
+            notification.classList.add(notificationTypes[type]);
+        }
+        
+        notification.innerHTML = `
+            <div class="flex items-start">
+                <div class="flex-shrink-0 pt-0.5">
+                    ${getNotificationIcon(type)}
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">${message}</p>
+                </div>
+                <button class="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            notification.classList.add('active');
+        }, 10);
+        
+        const closeButton = notification.querySelector('button');
+        closeButton.addEventListener('click', () => {
+            notification.classList.remove('active');
+        });
+        
+        setTimeout(() => {
+            notification.classList.remove('active');
+        }, 5000);
+    }
+
+    function getNotificationIcon(type) {
+        const icons = {
+            success: '<i class="fa fa-check-circle text-success text-lg"></i>',
+            error: '<i class="fa fa-exclamation-circle text-danger text-lg"></i>',
+            warning: '<i class="fa fa-exclamation-triangle text-warning text-lg"></i>',
+            info: '<i class="fa fa-info-circle text-primary text-lg"></i>'
+        };
+        return icons[type] || icons.info;
+    }
+
+    // 存储聊天历史
+    let chatHistory = [];
+
+    // --- 模态框相关 ---
+    const pdfModal = document.getElementById('pdfModal');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    const modalQueryType = document.getElementById('modalQueryType');
+    const modalQueryValue = document.getElementById('modalQueryValue');
+
+    function showPdfModal() {
+        pdfModal.classList.remove('hidden');
+        modalQueryValue.value = ''; // 清空之前输入
+    }
+
+    function hidePdfModal() {
+        pdfModal.classList.add('hidden');
+    }
+
+    modalCancelBtn.addEventListener('click', hidePdfModal);
+
+    modalConfirmBtn.addEventListener('click', function() {
+        const queryType = modalQueryType.value;
+        const queryValue = modalQueryValue.value.trim();
+        if (!queryValue) {
+            alert('Please enter a standard name');
+            return;
+        }
+        hidePdfModal();
+        // 使用当前页面上选中的匹配类型（也可以固定为fuzzy，这里使用页面选择）
+        const matchType = document.getElementById('matchType').value;
+        generatePdfWithParams(queryType, queryValue, matchType);
+    });
+
+    // 使用手动参数生成PDF
+    function generatePdfWithParams(queryType, queryValue, matchType) {
+        const generatePdfBtn = document.getElementById('generatePdfBtn');
+        generatePdfBtn.disabled = true;
+        generatePdfBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Generating...';
+
+        // 构建参数名
+        let queryParamName = '';
+        switch(queryType) {
+            case 'hormone':
+                queryParamName = 'hormone';
+                break;
+            case 'gene':
+                queryParamName = 'gene';
+                break;
+            case 'disease':
+                queryParamName = 'disease';
+                break;
+            default:
+                queryParamName = 'hormone';
+        }
+
+        const url = `{% url 'hormone_app:generate_hormone_report' %}?${queryParamName}=${encodeURIComponent(queryValue)}&match_type=${encodeURIComponent(matchType)}`;
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `${queryType.charAt(0).toUpperCase() + queryType.slice(1)}_Report_${new Date().toISOString().slice(0,10)}.pdf`;
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="(.+)"/);
+                if (match && match[1]) {
+                    filename = decodeURIComponent(escape(match[1]));
+                }
+            }
+            return { blob: response.blob(), filename };
+        })
+        .then(({ blob, filename }) => {
+            blob.then(pdfBlob => {
+                const url = window.URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                showNotification('PDF report generated successfully', 'success');
+            });
+        })
+        .catch(error => {
+            showNotification(`Failed to generate PDF: ${error.message}`, 'error');
+        })
+        .finally(() => {
+            generatePdfBtn.disabled = false;
+            generatePdfBtn.innerHTML = '<i class="fa fa-file-pdf-o"></i> Generate PDF';
+        });
+    }
+
+    // 主PDF按钮：显示模态框
+    function generatePdf() {
+        if (chatHistory.length === 0) {
+            showNotification('No chat history to generate PDF', 'warning');
+            return;
+        }
+        showPdfModal(); // 弹出模态框让用户手动输入
+    }
+
+    // 为单个消息生成PDF（自动提取实体）
+    function generateMessagePdf(button) {
+        const messageWrapper = button.closest('.ai-message-wrapper');
+        if (!messageWrapper) return;
+        
+        // 直接从包装器读取存储的用户消息
+        const userMessage = messageWrapper.getAttribute('data-user-message') || 'Query';
+
+        // 调用后端实体提取接口
+        fetch('/hormone_app/api/extract_entity/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ question: userMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200 && data.data.length > 0) {
+                // 取第一个实体作为默认值（可考虑让用户选择）
+                const entity = data.data[0];
+                modalQueryType.value = entity.type;
+                modalQueryValue.value = entity.name;
+            } else {
+                // 未提取到，留空让用户手动输入
+                modalQueryType.value = 'hormone';
+                modalQueryValue.value = '';
+            }
+            // 显示模态框
+            showPdfModal();
+        })
+        .catch(error => {
+            console.error('Entity extraction failed:', error);
+            modalQueryType.value = 'hormone';
+            modalQueryValue.value = '';
+            showPdfModal();
+        });
+    }
+
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 移动端菜单交互
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileNav = document.querySelector('.mobile-nav');
+        
+        if (menuToggle && mobileNav) {
+            menuToggle.addEventListener('click', function() {
+                mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.querySelectorAll('.mobile-nav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileNav.style.display = 'none';
+                });
+            });
+        }
+
+        // 高级选项切换
+        const optionToggle = document.getElementById('optionToggle');
+        const advancedOptions = document.getElementById('advancedOptions');
+        
+        optionToggle.querySelector('i').className = 'fa fa-chevron-down';
+        
+        optionToggle.addEventListener('click', function() {
+            advancedOptions.classList.toggle('hidden');
+            const icon = optionToggle.querySelector('i');
+            if (advancedOptions.classList.contains('hidden')) {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        });
+
+        // 聊天交互逻辑
+        const inputText = document.getElementById('inputText');
+        const maxLength = document.getElementById('maxLength');
+        const numBeams = document.getElementById('numBeams');
+        const matchType = document.getElementById('matchType');
+        const queryType = document.getElementById('queryType');
+        const submitBtn = document.getElementById('submitBtn');
+        const chatMessages = document.getElementById('chatMessages');
+        const modelSelector = document.getElementById('modelSelector');
+        const generatePdfBtn = document.getElementById('generatePdfBtn');
+        
+        // 模型选择器变化时启用/禁用PDF按钮
+        modelSelector.addEventListener('change', function() {
+            generatePdfBtn.disabled = chatHistory.length === 0;
+        });
+        
+        // PDF按钮点击事件
+        generatePdfBtn.addEventListener('click', generatePdf);
+
+        // 添加消息到聊天区域
+        function addMessage(content, isUser = false) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = isUser ? 'user-message-wrapper' : 'ai-message-wrapper';
+            
+            const avatarSrc = isUser ? 'https://picsum.photos/id/1012/36/36' : 'https://picsum.photos/id/1005/36/36';
+            const avatarAlt = isUser ? 'User Avatar' : 'AI Avatar';
+            const messageClass = isUser ? 'message user-message' : 'message ai-message';
+            
+            const escapedContent = escapeHtml(content).replace(/\n/g, '<br>');
+            
+            let messageActions = '';
+            if (!isUser) {
+                messageActions = `
+                    <div class="message-actions">
+                        <button class="action-btn" title="Generate PDF" onclick="generateMessagePdf(this)">
+                            <i class="fa fa-file-pdf-o"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            messageWrapper.innerHTML = `
+                <img src="${avatarSrc}" alt="${avatarAlt}" class="message-avatar">
+                <div class="${messageClass}">
+                    ${escapedContent}
+                    ${messageActions}
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageWrapper);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            
+            if (isUser) {
+                // 保存用户消息到历史
+                chatHistory.push({
+                    userMessage: content,
+                    aiMessage: '',
+                    queryType: queryType.value,
+                    matchType: matchType.value
+                });
+            } else {
+                if (chatHistory.length > 0) {
+                    // 更新最后一条AI回复
+                    chatHistory[chatHistory.length - 1].aiMessage = content;
+                    
+                    // ★ 将对应的用户消息保存到消息包装器上
+                    const userMsg = chatHistory[chatHistory.length - 1].userMessage;
+                    messageWrapper.setAttribute('data-user-message', userMsg);
+                }
+                // 启用PDF按钮（只要有过对话）
+                generatePdfBtn.disabled = false;
+            }
+        }
+
+        // 显示输入中指示器
+        function showTypingIndicator() {
+            if (document.getElementById('typingIndicator')) return;
+            
+            const typingWrapper = document.createElement('div');
+            typingWrapper.className = 'ai-message-wrapper';
+            typingWrapper.id = 'typingIndicator';
+            
+            typingWrapper.innerHTML = `
+                <img src="https://picsum.photos/id/1005/36/36" alt="AI Avatar" class="message-avatar">
+                <div class="ai-message">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingWrapper);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) typingIndicator.remove();
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const text = inputText.value.trim();
+            if (!text) {
+                showNotification('Please enter a valid question', 'warning');
+                return;
+            }
+
+            if (submitBtn.disabled) return;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i><span class="send-text">Sending...</span>';
+
+            addMessage(text, true);
+            inputText.value = '';
+            inputText.focus();
+            showTypingIndicator();
+
+            try {
+                const selectedModel = modelSelector.value;
+                const apiUrl = selectedModel === 'deepseek' 
+                    ? "{% url 'hormone_app:deepseek_chat' %}" 
+                    : "{% url 'hormone_app:get_biogpt_response' %}";
+
+                const timeout = 250000;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+                const requestData = {
+                    input_text: text,
+                    max_new_tokens: Math.min(Math.max(parseInt(maxLength.value) || 200, 50), 300),
+                    num_beams: Math.min(Math.max(parseInt(numBeams.value) || 5, 2), 5),
+                    match_type: matchType.value.toLowerCase(),
+                    query_type: queryType.value.toLowerCase()
+                };
+
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData),
+                    signal: controller.signal,
+                    credentials: 'include'
+                })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    removeTypingIndicator();
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa fa-paper-plane"></i><span class="send-text">Send</span>';
+                    
+                    if (selectedModel === 'deepseek') {
+                        if (data.code === 200) {
+                            const answer = data.data?.answer || 'No answer received';
+                            addMessage(answer);
+                            showNotification('Answer generated successfully', 'success');
+                        } else {
+                            addMessage(data.msg || 'Generation failed, please try again');
+                            showNotification(data.msg || 'Generation failed', 'error');
+                        }
+                    } else {
+                        if (data.status === 'success') {
+                            addMessage(data.response);
+                            showNotification('Answer generated successfully', 'success');
+                        } else {
+                            addMessage(data.message || 'Generation failed, please try again');
+                            showNotification(data.message || 'Generation failed', 'error');
+                        }
+                    }
+                })
+                .catch(err => {
+                    clearTimeout(timeoutId);
+                    removeTypingIndicator();
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa fa-paper-plane"></i><span class="send-text">Send</span>';
+                    
+                    if (err.name === 'AbortError') {
+                        addMessage('Request timed out. Please try a shorter question or try again later.');
+                        showNotification('Request timed out', 'error');
+                    } else if (err.message.includes('Failed to fetch')) {
+                        addMessage('Could not connect to the server. Please check your network.');
+                        showNotification('Network error', 'error');
+                    } else {
+                        addMessage(`Error: ${err.message}`);
+                        showNotification('Error: ' + err.message, 'error');
+                    }
+                });
+            } catch (err) {
+                removeTypingIndicator();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa fa-paper-plane"></i><span class="send-text">Send</span>';
+                
+                addMessage(`Error: ${err.message}`);
+                showNotification('Error: ' + err.message, 'error');
+            }
+        }
+
+        submitBtn.addEventListener('click', sendMessage);
+        
+        inputText.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    });
+</script>
+</body>
+</html>

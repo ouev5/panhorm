@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ hormone_name }} - Comprehensive Hormone Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 18pt;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .header-info {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 12pt;
+            font-weight: 600;
+            color: white;
+            background-color: #3498db;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section-title::before {
+            content: "#";
+            margin-right: 8px;
+            font-weight: bold;
+        }
+        
+        .record-count {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 10px;
+            padding-left: 5px;
+            border-left: 3px solid #eee;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 9pt;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+            padding: 10px 8px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .data-table td {
+            padding: 10px 8px;
+            border: 1px solid #dee2e6;
+            vertical-align: top;
+            color: #333;
+        }
+        
+        .even-row {
+            background-color: #f9f9f9;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            margin: 20px 0;
+        }
+        
+        .long-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 9pt;
+        }
+
+        .page-number {
+            position: fixed;
+            bottom: 1cm;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 8pt;
+            color: #6c757d;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 8pt;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-number">Page <span class="page-counter">1</span></div>
+
+    <div class="header">
+        <h1>{{ hormone_name }} - Hormone Data Report</h1>
+        <div class="header-info">
+            <span>Generated at: {{ current_time|escape }}</span>
+            <span>Data Source: Hormone Database</span>
+            <span>Total Records: {{ total_records|escape }}</span>
+        </div>
+    </div>
+
+    {% if related_genes %}
+    <div class="section">
+        <div class="section-title">1. Related Genes Data</div>
+        <div class="record-count">{{ related_genes|length|escape }} records in total</div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Serial No.</th>
+                    <th>Hormone Name</th>
+                    <th>Related Genes</th>
+                    <th>PubMed ID</th>
+                    <th>Related Diseases</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in related_genes %}
+                <tr class="{% if forloop.counter|divisibleby:2 %}even-row{% endif %}">
+                    <td>{{ forloop.counter|escape }}</td>
+                    <td>{{ item.Hormone_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Related_Genes|default:"N/A"|escape }}</td>
+                    <td>{{ item.PMID|default:"N/A"|escape }}</td>
+                    <td>{{ item.Related_Diseases|default:"N/A"|escape }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if receptor_full %}
+    <div class="section">
+        <div class="section-title">2. Hormone-Receptor Full Information</div>
+        <div class="record-count">{{ receptor_full|length|escape }} records in total</div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Serial No.</th>
+                    <th>Hormone Name</th>
+                    <th>Hormone Species</th>
+                    <th>Hormone UniProt ID</th>
+                    <th>Receptor Name</th>
+                    <th>Receptor Species</th>
+                    <th>Receptor Coding Genes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in receptor_full %}
+                <tr class="{% if forloop.counter|divisibleby:2 %}even-row{% endif %}">
+                    <td>{{ forloop.counter|escape }}</td>
+                    <td>{{ item.Hormone_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Hormone_Species_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Hormone_UniProt_ID|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_Species_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_Coding_Genes|default:"N/A"|escape }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if receptor_info %}
+    <div class="section">
+        <div class="section-title">3. Hormone Receptor Detailed Information</div>
+        <div class="record-count">{{ receptor_info|length|escape }} records in total</div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Serial No.</th>
+                    <th>Hormone Name</th>
+                    <th>PubChem ID</th>
+                    <th>Receptor Name</th>
+                    <th>Receptor UniProt ID</th>
+                    <th>Receptor Species</th>
+                    <th>Receptor Coding Genes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in receptor_info %}
+                <tr class="{% if forloop.counter|divisibleby:2 %}even-row{% endif %}">
+                    <td>{{ forloop.counter|escape }}</td>
+                    <td>{{ item.Hormone_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.PubChem_ID|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_UniProt_ID|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_Species_Name|default:"N/A"|escape }}</td>
+                    <td>{{ item.Receptor_Coding_Genes|default:"N/A"|escape }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if total_records == 0 %}
+    <div class="no-data">
+        No data found for "{{ hormone_name|escape }}"
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Hormone Database System | Generated on {{ current_time|date:"Y-m-d" }}</p>
+        <p>© 2025 Hormone Database System. All rights reserved.</p>
+    </div>
+</body>
+</html>

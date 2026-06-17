@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "什么是UniProt数据库？",
+    "input": "",
+    "output": "UniProt数据库说明：\n\n**定义**：\nUniversal Protein Resource，通用蛋白质资源数据库。\n\n**组成**：\n1. Swiss-Prot：人工注释，高质量\n2. TrEMBL：自动注释\n\n**包含信息**：\n- 蛋白质序列\n- 功能注释\n- 结构信息\n- 亚细胞定位\n- 翻译后修饰\n\n**用途**：\n- 蛋白质功能查询\n- 序列分析\n- 数据库引用"
+  },
+  {
+    "instruction": "什么是PubMed？",
+    "input": "",
+    "output": "PubMed说明：\n\n**定义**：\n生物医学文献数据库，由NCBI维护。\n\n**内容**：\n- MEDLINE收录文献\n- 生命科学期刊\n- 引用超过3000万篇\n\n**搜索功能**：\n- 关键词搜索\n- 作者搜索\n- 期刊搜索\n- PMID定位\n\n**平台关联**：\n激素数据库中的PMID可链接到PubMed原文"
+  },
+  {
+    "instruction": "什么是PubMed ID (PMID)？",
+    "input": "",
+    "output": "PMID说明：\n\n**定义**：\nPubMed数据库中每篇文献的唯一标识符。\n\n**格式**：\n数字，如：12345678\n\n**用途**：\n1. 快速定位文献\n2. 引用文献\n3. 数据库关联\n\n**查找方式**：\n- PubMed网站搜索\n- 数据库链接\n\n**平台应用**：\n激素数据中的PMID可直接跳转原文"
+  },
+  {
+    "instruction": "什么是Entrez Gene ID？",
+    "input": "",
+    "output": "Entrez Gene ID说明：\n\n**定义**：\nNCBI Entrez基因数据库中基因的唯一标识符。\n\n**格式**：\n数字，如：7157 (TP53)\n\n**用途**：\n1. 基因唯一标识\n2. 数据库间关联\n3. 程序化访问\n\n**与其他ID关系**：\n- 可转换为基因符号\n- 可转换为Ensembl ID\n\n**查询方式**：\nNCBI Gene数据库搜索"
+  },
+  {
+    "instruction": "什么是Ensembl基因ID？",
+    "input": "",
+    "output": "Ensembl ID说明：\n\n**定义**：\nEnsembl数据库中基因的唯一标识符。\n\n**格式**：\nENSG + 数字，如：ENSG00000141510 (TP53)\n\n**前缀含义**：\n- ENSG：基因\n- ENST：转录本\n- ENSP：蛋白质\n\n**用途**：\n1. 基因组分析\n2. 转录组数据处理\n3. 数据库关联\n\n**转换**：\n可在Ensembl网站进行ID转换"
+  },
+  {
+    "instruction": "什么是基因符号(Gene Symbol)？",
+    "input": "",
+    "output": "基因符号说明：\n\n**定义**：\n基因的标准缩写名称，由HGNC命名。\n\n**特点**：\n1. 简洁易记\n2. 大写字母\n3. 官方唯一\n\n**示例**：\n- TP53：肿瘤蛋白p53\n- BRCA1：乳腺癌相关基因\n- EGFR：表皮生长因子受体\n\n**命名机构**：\nHGNC (HUGO Gene Nomenclature Committee)\n\n**平台使用**：\n富集分析建议使用官方基因符号"
+  },
+  {
+    "instruction": "什么是HGNC？",
+    "input": "",
+    "output": "HGNC说明：\n\n**定义**：\nHUGO Gene Nomenclature Committee，人类基因命名委员会。\n\n**职责**：\n1. 分配官方基因符号\n2. 标准化基因名称\n3. 维护基因命名数据库\n\n**命名规则**：\n1. 简洁、唯一\n2. 避免冲突\n3. 反映功能\n\n**重要性**：\n- 基因研究标准化\n- 数据库统一\n- 文献交流"
+  },
+  {
+    "instruction": "什么是PubChem？",
+    "input": "",
+    "output": "PubChem说明：\n\n**定义**：\n小分子化合物数据库，由NCBI维护。\n\n**内容**：\n1. 化合物结构\n2. 生物活性数据\n3. 文献关联\n\n**子数据库**：\n1. Substance：提交的物质\n2. Compound：标准化化合物\n3. BioAssay：生物活性数据\n\n**平台应用**：\n激素数据库中包含PubChem ID"
+  },
+  {
+    "instruction": "什么是STRING数据库？",
+    "input": "",
+    "output": "STRING数据库说明：\n\n**定义**：\n蛋白质相互作用数据库。\n\n**内容**：\n- 实验验证的相互作用\n- 预测的相互作用\n- 相互作用置信度分数\n\n**证据来源**：\n1. 实验数据\n2. 文献挖掘\n3. 共表达\n4. 基因组上下文\n\n**平台使用**：\n富集分析后可跳转STRING查看蛋白互作网络"
+  },
+  {
+    "instruction": "什么是GEO数据库？",
+    "input": "",
+    "output": "GEO数据库说明：\n\n**定义**：\nGene Expression Omnibus，基因表达综合数据库。\n\n**内容**：\n1. 基因表达数据\n2. 芯片数据\n3. RNA-seq数据\n4. 单细胞数据\n\n**数据类型**：\n- Series (GSE)：研究项目\n- Sample (GSM)：样本\n- Platform (GPL)：平台\n\n**用途**：\n- 公共数据下载\n- 分析方法验证\n- 元分析"
+  }
+]

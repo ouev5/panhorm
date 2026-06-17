@@ -1,0 +1,24 @@
+#viz-container {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#chart {
+    display: block;
+    margin: 0 auto;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #666;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: 'Segoe UI';
+    font-size: 12px;
+    fill: #333;
+}

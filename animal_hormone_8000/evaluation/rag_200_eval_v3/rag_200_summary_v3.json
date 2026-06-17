@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-05-31T12:30:59",
+  "rubric": "v3 field-anchored gold answers; one JSON per question",
+  "n_total": 200,
+  "n_done": 200,
+  "overall_score": 0.7349569542124543,
+  "relevance": 0.9268623511904762,
+  "completeness": 0.6420021153846155,
+  "accuracy": 0.5720379304029304,
+  "pass_threshold": 0.75,
+  "pass_count": 100,
+  "pass_rate": 0.5,
+  "rag_hallucination_rate": 0.4019559065934066,
+  "direct_hallucination_rate": 0.7369571503496504,
+  "rag_hallucination_flag_rate": 0.445,
+  "direct_hallucination_flag_rate": 0.785,
+  "hallucination_flag_p_value": 2.8017509144912656e-12,
+  "traceability": 0.74725,
+  "by_type": {
+    "factual": {
+      "n": 50,
+      "f1": 0.7606061172620572,
+      "overall": 0.841334336996337
+    },
+    "species_specific": {
+      "n": 50,
+      "f1": 0.6069298795868798,
+      "overall": 0.7489086855366855
+    },
+    "association": {
+      "n": 50,
+      "f1": 0.20077696540098244,
+      "overall": 0.5287347383727384
+    },
+    "synthesis": {
+      "n": 50,
+      "f1": 0.7797449095291421,
+      "overall": 0.820850055944056
+    }
+  }
+}

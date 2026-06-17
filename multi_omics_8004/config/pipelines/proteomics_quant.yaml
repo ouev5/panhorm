@@ -1,0 +1,38 @@
+name: proteomics_quant
+description: 蛋白质组定量流程（MaxQuant/OpenMS）
+task_type: deterministic
+
+required_inputs:
+  - raw_files
+  - fasta_file
+  - parameter_file
+
+output_patterns:
+  - proteinGroups.txt
+  - peptides.txt
+
+steps:
+  - step_id: 1
+    tool_name: maxquant
+    tool_version: 2.0.3.0
+    command_template: MaxQuantCmd.exe --parameter-file={parameter_file} --fasta={fasta_file} --raw={raw_files}
+    input_files:
+      - {raw_files}
+      - {fasta_file}
+      - {parameter_file}
+    output_files:
+      - {output_dir}/proteinGroups.txt
+      - {output_dir}/peptides.txt
+    parameters:
+      output_dir: ./maxquant_output
+
+  - step_id: 2
+    tool_name: openms
+    tool_version: 3.0.0
+    command_template: OpenMS.exe IDMapper -in {input_dir}/peptides.txt -out {output_dir}/mapped_peptides.idXML
+    input_files:
+      - {input_dir}/peptides.txt
+    output_files:
+      - {output_dir}/mapped_peptides.idXML
+    parameters:
+      sample_name: proteomics_sample

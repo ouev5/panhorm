@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-05-31T10:50:15",
+  "rubric": "v2 evidence-anchored deterministic recomputation from saved answers",
+  "n_total": 200,
+  "n_done": 200,
+  "overall_score": 0.830858017857143,
+  "relevance": 0.9823098214285715,
+  "completeness": 0.7580383928571429,
+  "accuracy": 0.7017419047619048,
+  "pass_threshold": 0.75,
+  "pass_count": 138,
+  "pass_rate": 0.69,
+  "rag_hallucination_rate": 0.2583452380952381,
+  "direct_hallucination_rate": 0.5511476190476191,
+  "rag_hallucination_flag_rate": 0.305,
+  "direct_hallucination_flag_rate": 0.55,
+  "hallucination_flag_p_value": 7.332708861358699e-07,
+  "traceability": 0.7735,
+  "by_type": {
+    "association": {
+      "n": 50,
+      "f1": 0.36396150806732464,
+      "overall": 0.6309575714285715
+    },
+    "factual": {
+      "n": 50,
+      "f1": 0.6782930134776052,
+      "overall": 0.81388
+    },
+    "species_specific": {
+      "n": 50,
+      "f1": 0.8817405154543287,
+      "overall": 0.9279054999999999
+    },
+    "synthesis": {
+      "n": 50,
+      "f1": 0.9312195613096331,
+      "overall": 0.950689
+    }
+  }
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head><title>Network Test</title>
+<script src="/static/js/echarts.min.js"></script>
+</head>
+<body>
+<div id="chart" style="width:100%;height:600px;border:1px solid #ccc;"></div>
+<div id="status">Loading...</div>
+<script>
+var chart = echarts.init(document.getElementById('chart'));
+document.getElementById('status').textContent = 'Fetching API...';
+fetch('/hormone_app/api/network-data/?q=TP53&limit=5&max_records=15')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('status').textContent = 'Got ' + data.nodes.length + ' nodes, ' + data.links.length + ' links. Rendering...';
+        var colors = ['#6366f1', '#10b981', '#f43f5e'];
+        var names = ['Hormone', 'Gene', 'Disease'];
+        var nodes = data.nodes.map(function(n) {
+            return {name: n.name, category: n.category, symbolSize: n.symbolSize, itemStyle: {color: colors[n.category]}};
+        });
+        chart.setOption({
+            tooltip: {trigger: 'item'},
+            legend: {data: names, bottom: 10},
+            series: [{
+                type: 'graph', layout: 'force', data: nodes, links: data.links,
+                categories: names.map(function(n,i) { return {name: n, itemStyle: {color: colors[i]}}; }),
+                roam: true, label: {show: true},
+                force: {repulsion: 500, edgeLength: [40, 150]},
+                lineStyle: {opacity: 0.5, width: 1.5},
+                emphasis: {focus: 'adjacency'}
+            }]
+        });
+        document.getElementById('status').textContent = 'Done! ' + data.nodes.length + ' nodes rendered.';
+    })
+    .catch(function(e) {
+        document.getElementById('status').textContent = 'Error: ' + e.message;
+    });
+</script>
+</body>
+</html>

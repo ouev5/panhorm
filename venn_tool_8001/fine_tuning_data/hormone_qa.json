@@ -1,0 +1,42 @@
+[
+  {
+    "instruction": "动物激素数据库有哪些激素？",
+    "input": "",
+    "output": "动物激素数据库包含898种不同的激素，主要分为以下类别：\n\n**肽类激素**：\n- 胰岛素（Insulin）\n- 生长激素（Growth Hormone）\n- 促甲状腺激素（TSH）\n- 促性腺激素（GNRH系列）\n\n**类固醇激素**：\n- 雌激素系列（Estradiol, Estrone等）\n- 孕激素（Progesterone系列）\n- 雄激素（Testosterone系列）\n- 皮质激素（Cortisol, Corticosterone等）\n\n**胺类激素**：\n- 甲状腺激素（T3, T4）\n- 肾上腺素（Epinephrine）\n- 褪黑素（Melatonin）\n\n**其他**：\n- 前列腺素系列\n- 白三烯系列\n- 生长因子等\n\n数据库共4,096条记录，每条记录包含激素名称、相关基因、序列、疾病信息等。"
+  },
+  {
+    "instruction": "什么是KISS1基因？",
+    "input": "",
+    "output": "KISS1基因是一个重要的激素相关基因：\n\n**基本信息**：\n- 全称：KiSS-1 metastasis-suppressor\n- 类型：肽类激素相关基因\n- 功能：转移抑制基因\n\n**生物学功能**：\n1. 抑制黑色素瘤和乳腺癌的转移\n2. 不影响原发肿瘤的发生\n3. 参与青春期发育调控\n4. 通过GPR54受体发挥作用\n\n**临床意义**：\n- KISS1低表达与肿瘤转移相关\n- 可作为预后标志物\n- 潜在的肿瘤治疗靶点\n\n**在数据库中**：\n- 归类于Peptide hormone 2\n- PMID: 24824153\n- 与多种疾病相关"
+  },
+  {
+    "instruction": "胰岛素（Insulin）相关信息？",
+    "input": "",
+    "output": "胰岛素相关信息：\n\n**数据库记录**：\n- 数据库中有141条与insulin相关的记录\n- 包含Insulin、Insulin 1、Insulin 2、Insulin-like growth factor等\n\n**主要基因**：\n- INS：胰岛素基因\n- INSR：胰岛素受体基因\n- IGF1/IGF2：胰岛素样生长因子\n\n**相关疾病**：\n- 糖尿病（1型和2型）\n- 代谢综合征\n- 胰岛素抵抗\n- 多囊卵巢综合征（PCOS）\n\n**研究价值**：\n胰岛素信号通路是研究代谢疾病的重要靶点，涉及：\n- PI3K-Akt信号通路\n- MAPK信号通路\n- 血糖调节机制"
+  },
+  {
+    "instruction": "雌激素（Estrogen）相关基因有哪些？",
+    "input": "",
+    "output": "雌激素相关基因：\n\n**主要基因**：\n- ESR1（雌激素受体α）\n- ESR2（雌激素受体β）\n- CYP19A1（芳香化酶，雌激素合成关键酶）\n- CYP17A1（类固醇合成酶）\n\n**雌激素类型**：\n数据库包含多种雌激素：\n- Estradiol（雌二醇）\n- Estrone（雌酮）\n- Estriol（雌三醇）\n- 17alpha-Estradiol\n- 16alpha-Hydroxyestrone\n\n**生物学功能**：\n1. 调节女性生殖系统\n2. 骨代谢调控\n3. 心血管保护\n4. 神经保护作用\n\n**临床意义**：\n- 乳腺癌诊断和治疗靶点\n- 骨质疏松症\n- 更年期综合征\n- 认知功能保护"
+  },
+  {
+    "instruction": "甲状腺激素相关分析？",
+    "input": "",
+    "output": "甲状腺激素相关信息：\n\n**主要激素**：\n- T3（三碘甲状腺原氨酸）\n- T4（甲状腺素）\n- TSH（促甲状腺激素）\n\n**相关基因**：\n- TG（甲状腺球蛋白）\n- TPO（甲状腺过氧化物酶）\n- TSHR（TSH受体）\n- DUOX2（甲状腺氧化酶）\n- SLC5A5（碘转运体）\n\n**常见疾病**：\n1. **甲亢**：甲状腺激素过多\n2. **甲减**：甲状腺激素不足\n3. **甲状腺结节**\n4. **甲状腺癌**\n\n**分析方法**：\n- 基因表达分析\n- 信号通路富集\n- 单细胞分析（甲状腺组织）"
+  },
+  {
+    "instruction": "什么是肾上腺素？",
+    "input": "",
+    "output": "肾上腺素（Epinephrine/Adrenaline）：\n\n**基本信息**：\n- 类型：儿茶酚胺类激素\n- 来源：肾上腺髓质\n- 别名：Epinephrine, Adrenaline\n\n**相关基因**：\n- PNMT（苯乙醇胺N-甲基转移酶）\n- ADRA1/ADRA2（肾上腺素受体α）\n- ADRB1/ADRB2/ADRB3（肾上腺素受体β）\n- TH（酪氨酸羟化酶）\n\n**生理功能**：\n1. 应激反应（战斗或逃跑）\n2. 心率加快\n3. 血管收缩\n4. 血糖升高\n5. 支气管扩张\n\n**临床应用**：\n- 过敏性休克急救\n- 心脏骤停急救\n- 哮喘急性发作\n\n**研究热点**：\n- 压力与疾病关系\n- 心血管疾病机制\n- 焦虑抑郁研究"
+  },
+  {
+    "instruction": "如何利用数据库研究PCOS？",
+    "input": "",
+    "output": "PCOS（多囊卵巢综合征）研究方法：\n\n**相关激素**：\n- 胰岛素（Insulin）及其类似物\n- 雄激素（Testosterone, Androstenedione）\n- LH/FSH（促黄体/促卵泡激素）\n\n**相关基因**：\n在数据库中搜索：\n1. Insulin相关：INS, INSR, IGF1\n2. 雄激素相关：CYP17A1, CYP19A1, AR\n3. 促性腺激素：GNRH, GNRHR, LHB, FSHB\n\n**分析流程**：\n1. 从数据库搜索相关激素和基因\n2. 使用维恩图分析多个基因列表\n3. GO/KEGG富集分析\n4. 单细胞分析查看组织表达\n5. STRING网络分析蛋白互作\n\n**重点关注通路**：\n- PI3K-Akt信号通路\n- 类固醇合成通路\n- 胰岛素信号通路"
+  },
+  {
+    "instruction": "类固醇激素合成途径？",
+    "input": "",
+    "output": "类固醇激素合成途径：\n\n**前体**：胆固醇\n\n**关键酶和基因**：\n1. **CYP11A1**：胆固醇侧链裂解酶\n2. **CYP17A1**：17α-羟化酶/17,20裂解酶\n3. **CYP19A1**：芳香化酶\n4. **CYP21A2**：21-羟化酶\n5. **CYP11B1/B2**：11β-羟化酶\n6. **HSD3B**：3β-羟基类固醇脱氢酶\n7. **HSD17B**：17β-羟基类固醇脱氢酶\n\n**产物分支**：\n- **糖皮质激素**：皮质醇\n- **盐皮质激素**：醛固酮\n- **性激素**：雌激素、孕激素、雄激素\n\n**研究价值**：\n- 内分泌疾病诊断\n- 药物靶点发现\n- 激素相关癌症研究"
+  }
+]

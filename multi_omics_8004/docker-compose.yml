@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: autoBA_web
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./config:/app/config
+    environment:
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+      - MAX_CONCURRENT_TASKS=4
+      - DATA_DIR=/app/data
+      - OUTPUT_DIR=/app/output
+      - LOGS_DIR=/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    resources:
+      limits:
+        cpus: '2.0'
+        memory: '4g'
+      reservations:
+        cpus: '1.0'
+        memory: '2g'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - autoBA_network
+
+  worker:
+    build: .
+    container_name: autoBA_worker
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./config:/app/config
+    environment:
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+      - MAX_CONCURRENT_TASKS=4
+      - DATA_DIR=/app/data
+      - OUTPUT_DIR=/app/output
+      - LOGS_DIR=/app/logs
+    restart: unless-stopped
+    command: python -c "import time; time.sleep(3600)"  # 占位命令，实际应替换为worker启动命令
+    resources:
+      limits:
+        cpus: '4.0'
+        memory: '8g'
+      reservations:
+        cpus: '2.0'
+        memory: '4g'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - autoBA_network
+
+volumes:
+  data:
+  output:
+  logs:
+  config:
+
+networks:
+  autoBA_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gene Insights Hub - Animal Hormone Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root { --primary: #2563eb; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #334155; }
+        nav { background: linear-gradient(135deg, #0f172a, #1e3a8a); padding: 1rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; padding: 2rem 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102,126,234,0.3); }
+        .hero-icon { width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .hero-icon i { font-size: 2rem; color: #fff; }
+        .hero-text { flex: 1; }
+        .hero-text h1 { font-size: 2.2rem; font-weight: 700; color: #fff; margin: 0 0 0.3rem 0; letter-spacing: -0.5px; }
+        .tagline { font-size: 1.1rem; color: rgba(255,255,255,0.9); margin: 0 0 0.5rem 0; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; }
+        .hero-text .subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.75); margin: 0; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        .grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 1rem; }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem; }
+        .card-header i { color: var(--primary); }
+        .card-header h3 { font-size: 1rem; font-weight: 600; }
+        .card-body { padding: 1.25rem; }
+        .list-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; }
+        .badge { background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; }
+        textarea { width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-family: monospace; font-size: 0.85rem; min-height: 60px; resize: vertical; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-accent { background: #3b82f6; color: white; }
+        .btn-block { width: 100%; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
+        .stat { background: rgba(37,99,235,0.05); border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem; text-align: center; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; }
+        .elements-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; max-height: 80px; overflow-y: auto; }
+        .element { display: inline-block; padding: 2px 6px; margin: 1px; background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.2); border-radius: 4px; font-size: 0.65rem; font-family: monospace; color: #2563eb; }
+        .chart-box { background: #f8fafc; border-radius: 8px; padding: 0.75rem; }
+        .chart { width: 100%; height: 500px; }
+        .chart-lg { width: 100%; height: 600px; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .tab { padding: 0.4rem 0.8rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 100px; color: #64748b; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .tab:hover { background: #e2e8f0; }
+        .tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .status { display: none; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; background: rgba(37,99,235,0.1); border-radius: 6px; margin-top: 0.5rem; font-size: 0.8rem; }
+        .status.success { background: rgba(16,185,129,0.1); color: #059669; }
+        .status.error { background: rgba(239,68,68,0.1); color: #dc2626; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th, td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { color: #64748b; background: #f8fafc; font-weight: 600; position: sticky; top: 0; }
+        .source-badge { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.2rem 0.5rem; background: rgba(16,185,129,0.1); border-radius: 100px; font-size: 0.65rem; color: #10b981; }
+        .venn-container { position: relative; width: 100%; height: 560px; }
+        .venn-svg { width: 100%; height: 100%; }
+        .venn-circle { cursor: pointer; transition: all 0.3s ease; }
+        .venn-circle:hover { filter: brightness(1.1); stroke-width: 3.5; }
+        .venn-label { font-family: 'Segoe UI', sans-serif; pointer-events: none; }
+        .venn-count { font-family: 'Segoe UI', sans-serif; font-weight: 700; pointer-events: none; cursor: pointer; }
+        .venn-legend { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.95); border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .venn-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .venn-legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+        .sankey-dot-container { display: flex; gap: 0; width: 100%; height: 680px; background: #f8fafc; border-radius: 8px; overflow: hidden; }
+        .sankey-half { flex: 1; min-width: 0; height: 100%; }
+        .sankey-divider { width: 2px; background: #e2e8f0; }
+        .sankey-label { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 10px; background: rgba(248,250,252,0.95); border-radius: 4px; z-index: 2; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; }
+        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
+        .modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+        .modal-item { padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px; background: #f8fafc; text-align: center; text-decoration: none; display: block; transition: all 0.2s; }
+        .modal-item:hover { border-color: #10b981; background: #ecfdf5; }
+        .modal-item i { font-size: 1.3rem; }
+        .modal-item div { font-weight: 600; color: #1e293b; margin-top: 0.3rem; font-size: 0.85rem; }
+        .modal-item span { font-size: 0.7rem; color: #64748b; }
+    </style>
+</head>
+<body>
+    <nav><div class="nav-container"><a href="https://43.99.62.219/" class="back-btn"><i class="fa fa-arrow-left"></i> Back to Home</a></div></nav>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-icon"><i class="fa fa-chart-pie"></i></div>
+            <div class="hero-text">
+                <h1>Gene Insights Hub</h1>
+                <p class="tagline">Explore. Enrich. Discover.</p>
+                <p class="subtitle">Multi-dimensional gene set analysis with interactive visualizations</p>
+            </div>
+        </div>
+        <div class="grid">
+            <aside>
+                <div class="card">
+                    <div class="card-header"><i class="fa fa-list"></i><h3>Gene Lists</h3></div>
+                    <div class="card-body">
+                        <div id="lists">
+                            <div class="list-item"><label><span class="badge">List 1</span></label><textarea id="list1" placeholder="TP53&#10;BRCA1&#10;EGFR"></textarea></div>
+                            <div class="list-item"><label><span class="badge">List 2</span></label><textarea id="list2" placeholder="TP53&#10;BRCA2&#10;PTEN"></textarea></div>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-secondary" style="flex:1" onclick="addList()"><i class="fa fa-plus"></i> Add</button>
+                            <button class="btn btn-secondary" style="flex:1" onclick="uploadFile()"><i class="fa fa-upload"></i> Upload</button>
+                            <button class="btn btn-secondary" style="flex:1" onclick="openDbModal()"><i class="fa fa-database"></i> Database</button>
+                            <input type="file" id="fileInput" accept=".txt,.csv,.tsv" style="display:none" onchange="handleUpload(event)">
+                            <button class="btn btn-secondary" onclick="removeList()"><i class="fa fa-minus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="analyze()"><i class="fa fa-play"></i> Analyze</button>
+                <div class="card">
+                    <div class="card-header"><i class="fa fa-check-circle"></i><h3>Selected Elements</h3></div>
+                    <div class="card-body">
+                        <div class="stats">
+                            <div class="stat"><div class="stat-value" id="cnt">0</div><div class="stat-label">Elements</div></div>
+                            <div class="stat"><div class="stat-value" id="sets">-</div><div class="stat-label">Sets</div></div>
+                            <div class="stat"><div class="stat-value" id="total">2</div><div class="stat-label">Lists</div></div>
+                        </div>
+                        <div class="elements-box" id="box"><div style="color:#94a3b8;text-align:center;padding:0.5rem;font-size:0.75rem">Click regions to select</div></div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-success" onclick="runEnrichment('go')"><i class="fa fa-flask"></i> GO</button>
+                            <button class="btn btn-warning" onclick="runEnrichment('kegg')"><i class="fa fa-database"></i> KEGG</button>
+                            <button class="btn btn-accent" onclick="openString()"><i class="fa fa-link"></i> STRING</button>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-primary" onclick="showSingleCellCluster()" style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6)"><i class="fa fa-cells"></i> Single-Cell Cluster</button>
+                        </div>
+                        <div class="status" id="status"><span id="statusText"></span></div>
+                    </div>
+                </div>
+            </aside>
+            <main>
+                <div class="card">
+                    <div class="card-header"><h3>Analysis Results</h3></div>
+                    <div class="card-body">
+                        <div class="tabs" style="display:flex;align-items:center;gap:0.5rem;">
+                            <button class="tab active" onclick="switchMain('upset',this)">UpSet Plot</button>
+                            <button class="tab" onclick="switchMain('venn',this)">Classic Venn</button>
+                            <button class="btn" onclick="openPreprocessModal()" style="margin-left:auto;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:0.85rem;padding:0.4rem 0.8rem;border:none;border-radius:6px;cursor:pointer;"><i class="fa fa-cogs"></i> 数据预处理</button>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;" id="upsetControls">
+                            <button class="btn btn-secondary" onclick="clearUpsetSelection()" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-times"></i> Clear</button>
+                            <button class="btn btn-secondary" onclick="downloadChart('upset')" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-download"></i> Download</button>
+                        </div>
+                        <div class="chart-box">
+                            <div id="upsetChart" class="chart-lg"></div>
+                            <div id="vennChart" style="display:none"><div class="venn-container" id="vennContainer"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="position:relative">
+                    <span class="source-badge" id="sankeyEnrichSource">Enrichr</span>
+                    <div class="card-header"><i class="fa fa-random"></i><h3>Sankey-Dot Enrichment</h3></div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div class="tabs" style="margin-bottom:0;">
+                                <button class="tab active" onclick="switchSankeySource('go',this)">GO Terms</button>
+                                <button class="tab" onclick="switchSankeySource('kegg',this)">KEGG Pathways</button>
+                            </div>
+                            <button class="btn btn-secondary" onclick="downloadChart('sankey')" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-download"></i></button>
+                        </div>
+                        <div class="chart-box">
+                            <div class="sankey-dot-container">
+                                <div class="sankey-half" style="position:relative"><div class="sankey-label">Gene → Pathway Sankey</div><div id="sankeyLeft" style="width:100%;height:100%"></div></div>
+                                <div class="sankey-divider"></div>
+                                <div class="sankey-half" style="position:relative"><div class="sankey-label">Enrichment Dot Plot</div><div id="dotRight" style="width:100%;height:100%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="singleCellCard" style="display:none">
+                    <div class="card-header" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);margin:-1.25rem -1.25rem 0 -1.25rem;padding:1rem 1.25rem;border-radius:12px 12px 0 0;">
+                        <i class="fa fa-cells" style="color:#fff"></i><h3 style="color:#fff">Single-Cell Cluster</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-box"><div id="singleCellChart" style="width:100%;height:500px;"></div></div>
+                    </div>
+                </div>
+                <div class="card" style="position:relative">
+                    <span class="source-badge" id="goSource">Enrichr</span>
+                    <div class="card-header"><i class="fa fa-flask"></i><h3>GO Enrichment</h3></div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div class="tabs" style="margin-bottom:0;">
+                                <button class="tab active" onclick="switchSub('go','Bar',this)">Bar</button>
+                                <button class="tab" onclick="switchSub('go','Bubble',this)">Bubble</button>
+                                <button class="tab" onclick="switchSub('go','Pie',this)">Pie</button>
+                            </div>
+                        </div>
+                        <div class="chart-box"><div id="goBarChart" class="chart"></div><div id="goBubbleChart" class="chart" style="display:none"></div><div id="goPieChart" class="chart" style="display:none"></div></div>
+                    </div>
+                </div>
+                <div class="card" style="position:relative">
+                    <span class="source-badge" id="keggSource">Enrichr</span>
+                    <div class="card-header"><i class="fa fa-database"></i><h3>KEGG Pathway</h3></div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div class="tabs" style="margin-bottom:0;">
+                                <button class="tab active" onclick="switchSub('kegg','Bar',this)">Bar</button>
+                                <button class="tab" onclick="switchSub('kegg','Bubble',this)">Bubble</button>
+                                <button class="tab" onclick="switchSub('kegg','Pie',this)">Pie</button>
+                            </div>
+                        </div>
+                        <div class="chart-box"><div id="keggBarChart" class="chart"></div><div id="keggBubbleChart" class="chart" style="display:none"></div><div id="keggPieChart" class="chart" style="display:none"></div></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 数据预处理弹窗 -->
+    <div id="preprocessModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="margin:0;color:#1e293b;font-size:1.2rem;"><i class="fa fa-cogs" style="color:#10b981;"></i> 数据预处理工具</h3>
+                <button class="modal-close" onclick="closePreprocessModal()">&times;</button>
+            </div>
+            <div class="modal-grid">
+                <a href="https://43.99.62.219/page2/" target="_blank" class="modal-item"><i class="fa fa-cubes" style="color:#3b82f6;"></i><div>BLAST</div><span>序列比对</span></a>
+                <a href="https://43.99.62.219/page1/" target="_blank" class="modal-item"><i class="fa fa-flask" style="color:#10b981;"></i><div>单细胞分析</div><span>Single Cell</span></a>
+                <a href="https://43.99.62.219/page3/" target="_blank" class="modal-item"><i class="fa fa-dna" style="color:#8b5cf6;"></i><div>甲基化分析</div><span>Methylation</span></a>
+                <a href="https://43.99.62.219/page4/" target="_blank" class="modal-item"><i class="fa fa-file-text" style="color:#f59e0b;"></i><div>转录组测序</div><span>Transcriptome</span></a>
+                <a href="https://43.99.62.219/gnn/" target="_blank" class="modal-item"><i class="fa fa-brain" style="color:#a855f7;"></i><div>GNN预测</div><span>Graph Neural</span></a>
+                <a href="https://43.99.62.219/phylogeny/" target="_blank" class="modal-item"><i class="fa fa-sitemap" style="color:#6366f1;"></i><div>跨物种比较</div><span>Phylogeny</span></a>
+                <a href="https://43.99.62.219/page5/" target="_blank" class="modal-item"><i class="fa fa-exchange" style="color:#ec4899;"></i><div>KEGG通路</div><span>Pathway</span></a>
+                <a href="https://alphafold.com/" target="_blank" class="modal-item"><i class="fa fa-cube" style="color:#ef4444;"></i><div>AlphaFold</div><span>蛋白结构</span></a>
+                <a href="https://43.99.62.219/gene_prediction/" target="_blank" class="modal-item"><i class="fa fa-search" style="color:#06b6d4;"></i><div>基因预测</div><span>Gene Prediction</span></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Search Modal -->
+    <div id="dbSearchModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="margin:0;color:#334155;">Import from Database</h3>
+                <button class="modal-close" onclick="closeDbModal()">&times;</button>
+            </div>
+            <input type="text" id="dbSearchInput" placeholder="Enter hormone or gene name..." style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:15px;">
+            <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;">
+                <label><input type="radio" name="searchType" value="all" checked> All</label>
+                <label><input type="radio" name="searchType" value="hormone"> Hormone</label>
+                <label><input type="radio" name="searchType" value="gene"> Gene</label>
+                <button onclick="searchDatabase()" style="margin-left:auto;padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:6px;cursor:pointer;">Search</button>
+            </div>
+            <div id="dbSearchLoading" style="display:none;text-align:center;padding:20px;color:#64748b;">Searching...</div>
+            <div id="dbSearchResults" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:10px;background:#f8fafc;border-radius:8px;">
+                    <span id="dbResultCount">Found 0 results</span>
+                    <div>
+                        <button onclick="selectAllDb()" style="padding:6px 12px;background:#10b981;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:5px;">Select All</button>
+                        <button onclick="clearAllDb()" style="padding:6px 12px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;">Clear</button>
+                    </div>
+                </div>
+                <div id="dbResultList" style="max-height:300px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;"></div>
+            </div>
+            <div style="margin-top:15px;display:flex;justify-content:flex-end;gap:10px;">
+                <button onclick="closeDbModal()" style="padding:10px 20px;background:#e2e8f0;color:#334155;border:none;border-radius:8px;cursor:pointer;">Cancel</button>
+                <button onclick="importSelectedGenes()" style="padding:10px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;">Import Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    var listCount=2, currentElements=[], goResults=[], keggResults=[];
+    var charts={}, currentSankeySource='go';
+    var COLORS=['#2563eb','#f59e0b','#10b981','#8b5cf6','#ec4899','#14b8a6','#f472b6','#3b82f6'];
+    var VENN_COLORS=['rgba(59,130,246,0.45)','rgba(245,158,11,0.45)','rgba(16,185,129,0.45)','rgba(139,92,246,0.45)','rgba(236,72,153,0.45)'];
+    var VENN_STROKES=['#2563eb','#d97706','#059669','#7c3aed','#db2777'];
+    var PIE_COLORS=['#2563eb','#3b82f6','#60a5fa','#f59e0b','#fbbf24','#10b981','#34d399','#8b5cf6','#a78bfa','#ec4899'];
+    var analysisData=null, scData=null, upsetSelectedIndices=[], upsetIntersData=[];
+    var dbSearchResults=[], selectedDbItems=new Set();
+
+    function addList(){listCount++;document.getElementById('lists').insertAdjacentHTML('beforeend','<div class="list-item"><label><span class="badge">List '+listCount+'</span></label><textarea id="list'+listCount+'"></textarea></div>');document.getElementById('total').textContent=listCount;}
+    function removeList(){if(listCount>2){document.getElementById('lists').lastElementChild.remove();listCount--;document.getElementById('total').textContent=listCount;}}
+    function getLists(){var l={};for(var i=1;i<=listCount;i++){var e=document.getElementById('list'+i);if(e){var items=e.value.split(/[\n,;]+/).map(function(s){return s.trim().toUpperCase()}).filter(function(s){return s&&/^[A-Za-z0-9_\-.]+$/i.test(s)});items=items.filter(function(v,idx,arr){return arr.indexOf(v)===idx});if(items.length)l['List '+i]=items;}}return l;}
+    function setStatus(m,t){var s=document.getElementById('status');s.style.display='flex';s.className='status'+(t==='error'?' error':t==='success'?' success':'');document.getElementById('statusText').textContent=m;}
+
+    function openPreprocessModal(){document.getElementById('preprocessModal').style.display='block';}
+    function closePreprocessModal(){document.getElementById('preprocessModal').style.display='none';}
+    function openDbModal(){document.getElementById('dbSearchModal').style.display='block';}
+    function closeDbModal(){document.getElementById('dbSearchModal').style.display='none';}
+
+    function switchMain(type,btn){btn.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});btn.classList.add('active');document.getElementById('upsetChart').style.display=type==='upset'?'block':'none';document.getElementById('vennChart').style.display=type==='venn'?'block':'none';document.getElementById('upsetControls').style.display=type==='upset'?'flex':'none';if(type==='upset'&&charts.upset)setTimeout(function(){charts.upset.resize()},50);}
+    function switchSub(type,ct,btn){btn.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});btn.classList.add('active');['BarChart','BubbleChart','PieChart'].forEach(function(id){document.getElementById(type+id).style.display='none'});document.getElementById(type+ct+'Chart').style.display='block';if(charts[type+ct])setTimeout(function(){charts[type+ct].resize()},50);}
+    function switchSankeySource(src,btn){btn.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});btn.classList.add('active');currentSankeySource=src;var results=src==='go'?goResults:keggResults;if(results.length>0)renderSankeyDot(results,src);}
+
+    function analyze(){var lists=getLists();if(Object.keys(lists).length<2){setStatus('Need 2+ lists','error');return}setStatus('Analyzing...');fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lists:lists})}).then(function(r){return r.json()}).then(function(d){if(d.error){setStatus(d.error,'error');return}analysisData=d;renderUpSet(d);renderClassicVenn(d);setStatus('Done','success');}).catch(function(e){setStatus('Error: '+e.message,'error')});}
+
+    function renderUpSet(data){var dom=document.getElementById('upsetChart');if(charts.upset&&!charts.upset.isDisposed())charts.upset.dispose();var c=echarts.init(dom);var inters=data.intersections.slice(0,20).sort(function(a,b){return b.size-a.size});upsetIntersData=inters;var lNames=Object.keys(data.sizes);var maxSize=Math.max.apply(null,inters.map(function(i){return i.size}));var W=dom.clientWidth,H=dom.clientHeight;c.setOption({title:{text:'UpSet Plot - Click bars to select genes',left:'center',top:10,textStyle:{fontSize:14,color:'#64748b'}},tooltip:{trigger:'item'},xAxis:{type:'category',data:inters.map(function(i){return i.sets.join('∩')}),axisLabel:{rotate:45,fontSize:10}},yAxis:{type:'value',name:'Count'},series:[{type:'bar',data:inters.map(function(i){return i.size}),itemStyle:{color:'#3b82f6'}}]});charts.upset=c;c.on('click',function(params){if(params.componentType==='series'){var item=inters[params.dataIndex];currentElements=item.elements;showElements(item.elements,item.sets);setStatus('Selected '+item.elements.length+' genes','success');}});}
+
+    function renderClassicVenn(data){var container=document.getElementById('vennContainer');var

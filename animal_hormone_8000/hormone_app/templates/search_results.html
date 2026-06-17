@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}PanHorm Search | Animal Hormone Regulation Database{% endblock %}
+{% block content %}
+<style>
+  .ph-search-page {
+    --ink: #172033;
+    --muted: #5d6b82;
+    --line: #cfd8e3;
+    --panel: #ffffff;
+    --paper: #f4f7fb;
+    --blue: #235a97;
+    --blue-dark: #173f72;
+    --cyan: #3a8fb7;
+    --gold: #b7791f;
+    --green: #2f855a;
+    --red: #b83232;
+    background:
+      radial-gradient(circle at 8% 8%, rgba(58,143,183,.10), transparent 28rem),
+      linear-gradient(180deg, #f8fbff 0%, #eef3f9 42%, #f7f8fb 100%);
+    color: var(--ink);
+    min-height: calc(100vh - 80px);
+    font-family: "Source Sans 3", "IBM Plex Sans", system-ui, sans-serif;
+  }
+  .ph-shell { max-width: 1280px; margin: 0 auto; padding: 0 18px; }
+  .ph-hero { margin-top: 24px;
+    background:
+      linear-gradient(135deg, rgba(15,45,86,.96), rgba(35,90,151,.96)),
+      repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 1px, transparent 1px 12px);
+    color: white;
+    border-bottom: 4px solid #d7a642;
+    box-shadow: 0 18px 36px rgba(22,42,70,.18);
+  }
+  .ph-hero-inner { width: 100%; margin: 0 auto; padding: 30px clamp(20px, 4vw, 64px) 34px; }
+  .ph-breadcrumb { color: rgba(255,255,255,.76); font-size: 14px; margin-bottom: 12px; }
+  .ph-breadcrumb a { color: #d7ecff; text-decoration: underline; text-underline-offset: 3px; }
+  .ph-title-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:24px; width:100%; }
+  .ph-title { font-size: clamp(42px, 7vw, 96px); line-height: .88; font-weight: 900; letter-spacing: -.055em; margin: 0; max-width: 1180px; }
+  .ph-subtitle { color: rgba(255,255,255,.86); margin-top: 14px; max-width: 1060px; font-size: clamp(17px, 1.55vw, 23px); line-height:1.45; }
+  .ph-db-badge { align-self:start; border: 1px solid rgba(255,255,255,.30); background: rgba(255,255,255,.12); border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; box-shadow: inset 0 1px rgba(255,255,255,.15); }
+  .ph-search-box { margin-top: 28px; width:100%; background: rgba(255,255,255,.97); border: 1px solid rgba(255,255,255,.75); border-radius: 16px; padding: 14px; box-shadow: 0 18px 38px rgba(0,0,0,.24); }
+  .ph-search-grid { display:grid; grid-template-columns: 240px minmax(0,1fr) 150px; gap: 12px; }
+  .ph-select,.ph-input { height: 48px; border: 1px solid #aebed0; border-radius: 9px; padding: 0 13px; color: var(--ink); background: white; font-size: 16px; outline: none; }
+  .ph-select:focus,.ph-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(58,143,183,.22); }
+  .ph-button { height: 48px; border: 0; border-radius: 9px; background: linear-gradient(180deg, #2f6fad, #1d4f88); color: white; font-weight: 800; letter-spacing:.02em; box-shadow: inset 0 1px rgba(255,255,255,.24), 0 7px 16px rgba(24,70,120,.28); }
+  .ph-button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .ph-examples { color: #516176; font-size: 13px; margin-top: 9px; }
+  .ph-examples a { color:#1d5b99; text-decoration: underline; text-underline-offset: 3px; }
+  .ph-layout { display:grid; grid-template-columns: 280px minmax(0, 1fr); gap: 22px; padding: 24px 0 36px; }
+  .ph-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 22px rgba(26,44,70,.07); }
+  .ph-filter-title { padding: 14px 16px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg,#f8fafc,#eef3f8); font-weight: 900; display:flex; align-items:center; gap:8px; }
+  .ph-filter-link { display:flex; align-items:center; justify-content:space-between; padding: 11px 15px; border-bottom: 1px solid #edf1f6; color: var(--ink); text-decoration:none; }
+  .ph-filter-link:hover { background:#eef7ff; }
+  .ph-filter-link.active { background:#dcecff; color:#123f71; font-weight:900; border-left: 4px solid var(--blue); padding-left: 11px; }
+  .ph-count { min-width: 34px; text-align:center; background:#eef2f7; border:1px solid #d8e0ea; border-radius:999px; padding: 1px 8px; font-size:12px; color:#475569; }
+  .ph-help { padding: 14px 16px; font-size: 13px; color: var(--muted); line-height:1.45; }
+  .ph-result-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:14px; }
+  .ph-result-head h2 { font-size: 26px; line-height:1.15; margin:0; font-weight:900; letter-spacing:-.02em; }
+  .ph-result-head p { color: var(--muted); margin: 6px 0 0; }
+  .ph-tool-strip { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .ph-chip { border:1px solid #cbd7e4; background:#fff; color:#42526a; border-radius:999px; padding:6px 10px; font-size:12px; }
+  .ph-result-list { counter-reset: phitem; display:flex; flex-direction:column; gap: 12px; }
+  .ph-result { counter-increment: phitem; background:#fff; border:1px solid #cbd7e4; border-left: 5px solid #2f6fad; border-radius:12px; padding: 15px 16px; display:grid; grid-template-columns: 42px minmax(0,1fr); gap: 12px; box-shadow: 0 8px 20px rgba(26,44,70,.06); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .ph-result:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(26,44,70,.13); border-color:#90b7dc; }
+  .ph-index::before { content: counter(phitem); width: 32px; height: 32px; display:grid; place-items:center; border-radius:8px; background:#edf5ff; color:#1d4f88; font-weight:900; border:1px solid #c9def1; }
+  .ph-type { display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding: 3px 9px; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.04em; background:#e8f2ff; color:#1d4f88; border:1px solid #c6ddf4; }
+  .ph-type.hormone { background:#e8f2ff; color:#1d4f88; }
+  .ph-type.gene { background:#eaf8f0; color:#276749; border-color:#bfecd2; }
+  .ph-type.disease { background:#fff1f1; color:#9b2c2c; border-color:#f5caca; }
+  .ph-type.receptor { background:#fff7df; color:#975a16; border-color:#efd98d; }
+  .ph-result-title { display:inline-block; margin-top:7px; color:#174ea6; font-size:22px; line-height:1.15; font-weight:900; text-decoration:none; }
+  .ph-result-title:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .ph-meta { margin-top: 5px; color:#607089; font-size:14px; }
+  .ph-desc { margin-top: 9px; color:#2d3748; line-height:1.55; }
+  .ph-empty,.ph-start { padding: 42px 24px; text-align:center; }
+  .ph-empty h3,.ph-start h2 { font-size:24px; font-weight:900; margin:0 0 8px; }
+  .ph-start { margin: 28px 0 40px; }
+  @media (max-width: 900px) { .ph-title-row { grid-template-columns:1fr; } .ph-db-badge { justify-self:start; } .ph-search-grid { grid-template-columns: 1fr; } .ph-layout { grid-template-columns: 1fr; } .ph-result-head { flex-direction:column; } .ph-tool-strip { justify-content:flex-start; } }
+</style>
+
+<div class="ph-search-page">
+  <section class="ph-hero">
+    <div class="ph-hero-inner">
+      <div class="ph-breadcrumb"><a href="{% url 'hormone_app:home' %}">Home</a> / PanHorm Search</div>
+      <div class="ph-title-row">
+        <div>
+          <h1 class="ph-title">PanHorm<br>Entity Search</h1>
+          <p class="ph-subtitle">Search the animal hormone knowledge base by hormone, gene, disease and receptor. Results are grouped as NCBI-style entity records.</p>
+        </div>
+        <div class="ph-db-badge">Animal Hormone Regulation Database</div>
+      </div>
+      <form action="{% url 'hormone_app:search' %}" method="get" class="ph-search-box">
+        <div class="ph-search-grid">
+          <select name="type" class="ph-select" aria-label="Database">
+            <option value="all" {% if entity_filter == 'all' %}selected{% endif %}>All databases</option>
+            <option value="hormone" {% if entity_filter == 'hormone' %}selected{% endif %}>Hormone</option>
+            <option value="gene" {% if entity_filter == 'gene' %}selected{% endif %}>Gene</option>
+            <option value="disease" {% if entity_filter == 'disease' %}selected{% endif %}>Disease</option>
+            <option value="receptor" {% if entity_filter == 'receptor' %}selected{% endif %}>Receptor</option>
+          </select>
+          <input name="query" value="{{ query }}" placeholder="insulin, TP53, diabetes, androgen receptor..." class="ph-input" autocomplete="off">
+          <button class="ph-button"><i class="fa fa-search"></i> Search</button>
+        </div>
+        <div class="ph-examples">Try: <a href="?query=GH&type=all">GH</a> · <a href="?query=GHR&type=receptor">GHR</a> · <a href="?query=acromegaly&type=disease">acromegaly</a> · <a href="?query=insulin&type=all">insulin</a></div>
+      </form>
+    </div>
+  </section>
+
+  <div class="ph-shell">
+    {% if query %}
+      <div class="ph-layout">
+        <aside>
+          <div class="ph-card">
+            <div class="ph-filter-title"><i class="fa fa-database"></i> Filter by database</div>
+            <a class="ph-filter-link {% if entity_filter == 'all' %}active{% endif %}" href="?query={{ query|urlencode }}&type=all"><span>All databases</span><span class="ph-count">{{ total }}</span></a>
+            <a class="ph-filter-link {% if entity_filter == 'hormone' %}active{% endif %}" href="?query={{ query|urlencode }}&type=hormone"><span>Hormone</span><span class="ph-count">{{ counts.hormone }}</span></a>
+            <a class="ph-filter-link {% if entity_filter == 'gene' %}active{% endif %}" href="?query={{ query|urlencode }}&type=gene"><span>Gene</span><span class="ph-count">{{ counts.gene }}</span></a>
+            <a class="ph-filter-link {% if entity_filter == 'disease' %}active{% endif %}" href="?query={{ query|urlencode }}&type=disease"><span>Disease</span><span class="ph-count">{{ counts.disease }}</span></a>
+            <a class="ph-filter-link {% if entity_filter == 'receptor' %}active{% endif %}" href="?query={{ query|urlencode }}&type=receptor"><span>Receptor</span><span class="ph-count">{{ counts.receptor }}</span></a>
+            <div class="ph-help"><strong>Tip:</strong> click a record title to open the entity detail page with linked hormone-gene-disease and receptor records.</div>
+          </div>
+        </aside>
+
+        <main>
+          <div class="ph-result-head">
+            <div>
+              <h2>Results for “{{ query }}”</h2>
+              <p>{{ total }} entity-level records found in PanHorm.</p>
+            </div>
+            <div class="ph-tool-strip">
+              <span class="ph-chip">Sort: relevance</span>
+              <span class="ph-chip">View: entity list</span>
+              <span class="ph-chip">Updated database</span>
+            </div>
+          </div>
+
+          {% if results %}
+            <div class="ph-result-list">
+              {% for item in results %}
+                <article class="ph-result">
+                  <div class="ph-index" aria-hidden="true"></div>
+                  <div>
+                    <span class="ph-type {{ item.type }}">{{ item.type_label }}</span>
+                    <br>
+                    <a href="{{ item.url }}" class="ph-result-title">{{ item.title }}</a>
+                    <div class="ph-meta">{{ item.subtitle }}{% if item.source %} · Source: {{ item.source }}{% endif %}</div>
+                    <p class="ph-desc">{{ item.description }}</p>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="ph-card ph-empty">
+              <h3>No matching entities found</h3>
+              <p>Try a broader keyword or switch to “All databases”.</p>
+            </div>
+          {% endif %}
+        </main>
+      </div>
+    {% else %}
+      <div class="ph-card ph-start">
+        <h2>Start with a hormone, gene, disease or receptor keyword.</h2>
+        <p>Example queries are provided above. The search result page will list entity records one by one like a biological database portal.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

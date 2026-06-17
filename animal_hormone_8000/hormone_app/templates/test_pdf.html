@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>激素报告测试</title>
+    <style>
+        body { font-family: SimHei, Arial; padding: 20px; }
+        .data-section { margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>{{ hormone_name }} 报告</h1>
+    <p>生成时间：{{ current_time }}</p>
+
+    <div class="data-section">
+        <h3>相关基因数据</h3>
+        {% for gene in related_genes %}
+            <p>基因：{{ gene.Related_Genes }} | 疾病：{{ gene.Related_Diseases }}</p>
+        {% endfor %}
+    </div>
+
+    <div class="data-section">
+        <h3>分析总结</h3>
+        <p>{{ summary }}</p>
+    </div>
+</body>
+</html>

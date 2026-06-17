@@ -1,0 +1,35 @@
+{
+  "knowledge_base": {
+    "name": "Gene Insights Hub & Animal Hormone Database",
+    "description": "生物信息学分析平台知识库",
+    "version": "1.0",
+    "last_updated": "2026-04-19"
+  },
+  "documents": [
+    {
+      "id": "doc_001",
+      "title": "平台功能总览",
+      "content": "Gene Insights Hub是一个综合性生物信息学分析平台，包含以下核心功能：\n\n1. **基因列表管理**\n   - 支持多个基因列表输入\n   - 文件上传（TXT/CSV/TSV）\n   - 数据库搜索导入\n\n2. **维恩图分析**\n   - UpSet图：矩阵式展示多集合关系\n   - 经典维恩图：传统展示\n   - 交互选择：点击区域选择基因\n\n3. **GO富集分析**\n   - 数据源：Enrichr API (GO_Biological_Process_2023)\n   - 可视化：条形图、气泡图、饼图、表格\n   - 下载：PNG/JPG/SVG/CSV\n\n4. **KEGG通路分析**\n   - 数据源：Enrichr API (KEGG_2021_Human)\n   - 信号通路富集\n   - 疾病相关通路识别\n\n5. **桑基气泡图**\n   - R语言生成（ggplot2 + ggalluvial）\n   - 基因-通路关系可视化\n   - 显示最显著25条通路\n\n6. **单细胞分析**\n   - 数据：Tabula Sapiens (94,836细胞)\n   - 降维：UMAP/t-SNE\n   - 着色：细胞类型/组织/基因表达\n\n7. **STRING网络**\n   - 蛋白互作数据库\n   - 一键跳转可视化\n\n8. **数据库搜索**\n   - 4,096条激素记录\n   - 898种激素类型\n   - 基因-疾病关联"
+    },
+    {
+      "id": "doc_002",
+      "title": "数据来源与可靠性",
+      "content": "平台使用的数据来源均为权威科学数据库，可放心用于科研论文发表：\n\n**单细胞数据 - Tabula Sapiens**\n- 发表期刊：Science (2022)\n- 数据规模：94,836细胞，34,562基因\n- 组织类型：24种（血液、肝脏、肺、心脏等）\n- 细胞类型：161种\n- 许可：CC BY 4.0\n- 引用：Tabula Sapiens Consortium. (2022). The Tabula Sapiens: A multiple-organ, single-cell transcriptomic atlas of humans. Science, 376(6584), eabl4896.\n\n**富集分析 - Enrichr**\n- 发表期刊：BMC Bioinformatics (2013)\n- GO基因库：GO_Biological_Process_2023\n- KEGG基因库：KEGG_2021_Human\n- 特点：实时API调用，结果最新\n- 引用：Chen, E. Y., et al. (2013). Enrichr: interactive and collaborative HTML5 gene list enrichment analysis tool. BMC Bioinformatics, 14(1), 128.\n\n**蛋白互作 - STRING**\n- 发表期刊：Nucleic Acids Research (2023)\n- 数据类型：已知和预测的蛋白互作\n- 置信度评分系统\n- 引用：Szklarczyk, D., et al. (2023). The STRING database in 2023: protein-protein association networks and functional enrichment analyses.\n\n**KEGG通路数据库**\n- 738条通路记录\n- 24,680个基因\n- 代谢通路、信号通路、疾病通路"
+    },
+    {
+      "id": "doc_003",
+      "title": "分析结果解读指南",
+      "content": "**富集分析结果解读**\n\n1. **P-value（原始P值）**\n   - 统计显著性指标\n   - P < 0.05 通常认为显著\n   - 但多重检验会增加假阳性\n\n2. **Adj P-value（校正P值/FDR）**\n   - 经过多重假设检验校正\n   - 更可靠，避免假阳性\n   - 论文报告推荐使用此值\n   - 通常Adj P < 0.05 为显著\n\n3. **Combined Score**\n   - 综合P值和Z-score\n   - 分数越高越显著\n   - 便于排序筛选\n\n4. **Gene Count / Intersection Size**\n   - 该通路中包含的查询基因数\n   - 数量多不一定更显著\n   - 需结合P值判断\n\n**单细胞图解读**\n\n1. **UMAP图**\n   - 相似细胞聚集在一起\n   - 保持全局和局部结构\n   - 不同颜色代表不同细胞类型\n\n2. **t-SNE图**\n   - 更强调局部结构\n   - 聚类更紧密\n   - 适合发现细胞亚群\n\n3. **基因表达模式**\n   - 红色：高表达\n   - 蓝色：低表达\n   - 可识别特异性细胞类型"
+    },
+    {
+      "id": "doc_004",
+      "title": "常见问题解决方案",
+      "content": "**技术问题**\n\nQ: 页面加载缓慢怎么办？\nA: 1) 清除浏览器缓存 2) 使用Ctrl+Shift+R强制刷新 3) 更换浏览器（推荐Chrome）\n\nQ: 图表显示不完整？\nA: 1) 调整浏览器窗口大小 2) 使用缩放功能 3) 下载完整图片\n\nQ: 基因在单细胞中未找到？\nA: 1) 检查基因名称拼写 2) 使用官方基因符号 3) 尝试基因别名\n\nQ: 富集分析超时？\nA: 1) 减少基因数量 2) 稍后重试 3) 检查网络连接\n\n**分析方法问题**\n\nQ: 应该选择GO还是KEGG？\nA: GO侧重生物学功能分类，KEGG侧重信号通路。建议两者都做，从不同角度分析。\n\nQ: UMAP还是t-SNE？\nA: UMAP速度快，保持全局结构，推荐首先使用；t-SNE计算慢但局部结构清晰，用于深入分析。\n\nQ: 如何选择关键基因？\nA: 1) 关注显著富集通路中的基因 2) 使用Continue功能选择多通路共有基因 3) 结合STRING网络分析核心节点\n\n**数据问题**\n\nQ: CSV下载的数据为什么比显示的多？\nA: 表格显示有数量限制（20条），CSV包含全部结果（可达数百条）。\n\nQ: 如何获取更多KEGG通路信息？\nA: 点击通路名称可跳转KEGG官网，查看详细通路图和注释。"
+    },
+    {
+      "id": "doc_005",
+      "title": "激素数据库详细信息",
+      "content": "**数据库概览**\n- 总记录数：4,096条\n- 唯一激素数：898种\n- 数据字段：激素名称、相关基因、基因序列、相关疾病、PMID、DO标准术语\n\n**激素分类**\n\n1. **肽类激素**\n   - 胰岛素（Insulin）系列\n   - 生长激素（Growth Hormone）\n   - 促性腺激素（GNRH, LH, FSH）\n   - 促甲状腺激素（TSH）\n   - 催产素、加压素\n\n2. **类固醇激素**\n   - 雌激素：Estradiol, Estrone, Estriol\n   - 孕激素：Progesterone系列\n   - 雄激素：Testosterone, Androstenedione\n   - 糖皮质激素：Cortisol, Corticosterone\n   - 盐皮质激素：Aldosterone\n\n3. **胺类激素**\n   - 甲状腺激素：T3, T4\n   - 儿茶酚胺：Epinephrine, Norepinephrine, Dopamine\n   - 褪黑素：Melatonin\n\n4. **脂质激素**\n   - 前列腺素系列\n   - 白三烯系列\n   - 内大麻素\n\n**KEGG通路数据**\n- 通路数：738条\n- 基因数：24,680个\n- 类别：代谢、信号转导、疾病相关\n\n**应用场景**\n1. 激素-疾病关联研究\n2. 内分泌疾病机制分析\n3. 药物靶点发现\n4. 激素信号通路研究"
+    }
+  ]
+}

@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>See - Paper Content Extraction | Animal Hormone Database</title>
+    
+    <!-- External resources -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <style>
+        /* Copy original page navigation styles */
+        :root {
+            --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+            --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+            --text-color: white;
+            --hover-bg: rgba(255, 255, 255, 0.1);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background: var(--nav-bg);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            margin-right: 2rem;
+        }
+
+        .logo-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--logo-bg);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            line-height: 1;
+        }
+
+        .logo-subtext {
+            font-size: 1rem;
+            color: var(--text-color);
+            line-height: 1;
+            margin-top: 0.2rem;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-left ul, .nav-right ul {
+            list-style: none;
+            display: flex;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-left a, .nav-right a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+
+        .nav-left a:hover, .nav-right a:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .nav-left a.active, .nav-right a.active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-right {
+            margin-left: auto;
+        }
+
+        .nav-icon {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav-left ul, .nav-right ul {
+                display: none;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .mobile-nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--nav-bg);
+                box-shadow: var(--shadow);
+                padding: 1rem 1.5rem;
+                display: none;
+            }
+            .mobile-nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .mobile-nav a {
+                text-decoration: none;
+                color: var(--text-color);
+                font-weight: 500;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                font-size: 1rem;
+            }
+            .mobile-nav a:hover {
+                background: var(--hover-bg);
+            }
+        }
+
+        /* Notification styles */
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+
+        #notification.active {
+            transform: translateX(0);
+        }
+
+        .notification-success {
+            border-left: 4px solid #52C41A;
+        }
+
+        .notification-error {
+            border-left: 4px solid #FF4D4F;
+        }
+
+        .notification-warning {
+            border-left: 4px solid #FAAD14;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Chat styles */
+        .chat-container {
+            background-color: #f7f9fc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .model-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 0.3rem 1rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #667eea;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background-color: white;
+            color: #333;
+            align-self: flex-start;
+            border: 1px solid #e1e5eb;
+            border-bottom-left-radius: 4px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .user-message-wrapper {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .ai-message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.8rem 1.2rem;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background-color: #764ba2;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+            0% { transform: translateY(0px); }
+            28% { transform: translateY(-5px); }
+            44% { transform: translateY(0px); }
+        }
+
+        .chat-input-area {
+            border-top: 1px solid #e1e5eb;
+            padding: 1rem 1.5rem;
+            background-color: white;
+        }
+
+        /* Upload area styles */
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-area i {
+            font-size: 2rem;
+            color: #667eea;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .file-info .filename {
+            font-weight: 500;
+            color: #1e293b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 300px;
+        }
+
+        .remove-file {
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .remove-file:hover {
+            color: #b91c1c;
+        }
+
+        #submitBtn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: opacity 0.2s;
+        }
+
+        #submitBtn:hover {
+            opacity: 0.9;
+        }
+
+        #submitBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- Navigation bar (consistent with main site) -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">
+                            <div class="logo-icon">
+                                <span class="logo-text">AH</span>
+                                <span class="logo-subtext">Animal Hormone</span>
+                            </div>
+                        </a>
+                    </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                        <li><a href="{% url 'hormone_app:page1' %}" class="active"><span class="nav-icon fa fa-file-text"></span>See</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+                <button class="menu-toggle">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="mobile-nav">
+                <ul>
+                    <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                    <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                    <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                    <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                    <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    <li><a href="{% url 'hormone_app:page1' %}" class="active"><span class="nav-icon fa fa-file-text"></span>See</a></li>
+                    <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main content area -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <header class="mb-6 text-center">
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <i class="fa fa-file-text-o mr-2"></i>See - Paper Content Extraction
+                </h1>
+                <p class="text-gray-600 mt-2">Upload a PDF or TXT paper and ask questions using Qwen Vision Model</p>
+            </header>
+
+            <!-- Chat container -->
+            <div class="chat-container mb-6">
+                <!-- Chat header -->
+                <div class="chat-header">
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-file-text-o"></i>
+                        <span>Paper Analysis · Qwen Vision Model</span>
+                    </div>
+                    <div class="model-badge">
+                        <i class="fa fa-magic"></i>
+                        <span>Qwen2.5-VL-72B</span>
+                    </div>
+                </div>
+                
+                <!-- Chat messages area -->
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Initial welcome message -->
+                    <div class="ai-message-wrapper">
+                        <img src="https://picsum.photos/id/1005/36/36" alt="AI Avatar" class="message-avatar">
+                        <div class="message ai-message">
+                            <span class="text-xs text-purple-600 block mb-1"><i class="fa fa-file-text-o"></i> Paper Analysis Assistant</span>
+                            Hello! I am the Qwen Vision Model, specialized in analyzing paper content. Please upload a PDF or TXT file, then ask your question.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input area (includes upload and question) -->
+                <div class="chat-input-area">
+                    <!-- File upload area -->
+                    <div id="uploadArea" class="upload-area">
+                        <i class="fa fa-cloud-upload"></i>
+                        <p class="text-gray-600 mb-1">Click or drag and drop PDF/TXT paper here</p>
+                        <p class="text-xs text-gray-400">Supports .pdf, .txt, max size 50MB</p>
+                        <input type="file" id="fileInput" accept=".pdf,.txt" class="hidden">
+                    </div>
+                    
+                    <!-- Uploaded file info -->
+                    <div id="fileInfoContainer" class="hidden">
+                        <div class="file-info">
+                            <div class="flex items-center gap-2">
+                                <i class="fa fa-file-pdf-o text-red-500"></i>
+                                <span id="fileNameDisplay" class="filename"></span>
+                                <span id="fileSizeDisplay" class="text-sm text-gray-500"></span>
+                            </div>
+                            <span id="removeFile" class="remove-file" title="Remove file">
+                                <i class="fa fa-times-circle"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Question area -->
+                    <div class="flex gap-3">
+                        <textarea 
+                            id="questionInput" 
+                            class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            rows="2" 
+                            placeholder="Enter a question about the paper... e.g.: What is the main conclusion of this paper?"></textarea>
+                        <button 
+                            id="submitBtn" 
+                            class="px-6" 
+                            disabled>
+                            <i class="fa fa-paper-plane"></i>
+                            <span>Ask</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification area -->
+    <div id="notification" class="notification fade-in"></div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Animal Hormone Database</h3>
+                    <p class="text-gray-400 text-sm">This database is dedicated to collecting, organizing, and sharing research literature and experimental data related to animal hormones.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors">Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors">Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors">Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors">AI</a></li>
+                        <li><a href="{% url 'hormone_app:page1' %}" class="hover:text-white transition-colors">See</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-center"><i class="fa fa-envelope-o mr-2"></i><a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a></li>
+                        <li class="flex items-center"><i class="fa fa-phone mr-2"></i><span>+86 15393345650</span></li>
+                        <li class="flex items-center"><i class="fa fa-map-marker mr-2"></i><span>Inner Mongolia University of Science and Technology</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
+                &copy; 2025 Animal Hormone Database. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+<script>
+    // Utility functions
+    function getCSRFToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.content : '';
+    }
+
+    // Improved escapeHtml function, handles various data types
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) {
+            return '';
+        }
+        
+        // If array or object, convert to JSON string
+        if (typeof unsafe === 'object') {
+            try {
+                // If it's an array, handle specially
+                if (Array.isArray(unsafe)) {
+                    // If array has only one element and it's a string, return that string
+                    if (unsafe.length === 1 && typeof unsafe[0] === 'string') {
+                        unsafe = unsafe[0];
+                    } else {
+                        unsafe = JSON.stringify(unsafe, null, 2);
+                    }
+                } else {
+                    unsafe = JSON.stringify(unsafe, null, 2);
+                }
+            } catch (e) {
+                unsafe = String(unsafe);
+            }
+        } else {
+            // Ensure it's a string
+            unsafe = String(unsafe);
+        }
+        
+        // Escape HTML special characters
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        if (!notification) return;
+        
+        const notificationTypes = {
+            success: 'notification-success',
+            error: 'notification-error',
+            warning: 'notification-warning',
+            info: ''
+        };
+        
+        notification.className = 'notification fade-in';
+        if (notificationTypes[type]) {
+            notification.classList.add(notificationTypes[type]);
+        }
+        
+        const icons = {
+            success: '<i class="fa fa-check-circle text-success text-lg"></i>',
+            error: '<i class="fa fa-exclamation-circle text-danger text-lg"></i>',
+            warning: '<i class="fa fa-exclamation-triangle text-warning text-lg"></i>',
+            info: '<i class="fa fa-info-circle text-primary text-lg"></i>'
+        };
+        
+        notification.innerHTML = `
+            <div class="flex items-start">
+                <div class="flex-shrink-0 pt-0.5">${icons[type] || icons.info}</div>
+                <div class="ml-3"><p class="text-sm font-medium text-gray-900">${escapeHtml(message)}</p></div>
+                <button class="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-600"><i class="fa fa-times"></i></button>
+            </div>
+        `;
+        
+        setTimeout(() => notification.classList.add('active'), 10);
+        
+        const closeButton = notification.querySelector('button');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => notification.classList.remove('active'));
+        }
+        
+        setTimeout(() => notification.classList.remove('active'), 5000);
+    }
+
+    // Add message to chat area - improved version
+    function addMessage(content, isUser = false, isPaperResponse = true) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        // Process content - ensure it's a string
+        let displayContent = '';
+        if (content === null || content === undefined) {
+            displayContent = '';
+        } else if (typeof content === 'object') {
+            try {
+                if (Array.isArray(content)) {
+                    // If it's an array, concatenate all elements
+                    displayContent = content.map(item => {
+                        if (typeof item === 'string') return item;
+                        try {
+                            return JSON.stringify(item, null, 2);
+                        } catch {
+                            return String(item);
+                        }
+                    }).join('\n');
+                } else {
+                    displayContent = JSON.stringify(content, null, 2);
+                }
+            } catch (e) {
+                displayContent = String(content);
+            }
+        } else {
+            displayContent = String(content);
+        }
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = isUser ? 'user-message-wrapper' : 'ai-message-wrapper';
+        
+        const avatarSrc = isUser ? 'https://picsum.photos/id/1012/36/36' : 'https://picsum.photos/id/1005/36/36';
+        const avatarAlt = isUser ? 'User Avatar' : 'AI Avatar';
+        const messageClass = isUser ? 'message user-message' : 'message ai-message';
+        
+        const escapedContent = escapeHtml(displayContent).replace(/\n/g, '<br>');
+        
+        let headerHtml = '';
+        if (!isUser && isPaperResponse) {
+            headerHtml = '<span class="text-xs text-purple-600 block mb-1"><i class="fa fa-file-text-o"></i> Paper Analysis</span>';
+        }
+        
+        wrapper.innerHTML = `
+            <img src="${avatarSrc}" alt="${avatarAlt}" class="message-avatar">
+            <div class="${messageClass}">
+                ${headerHtml}
+                ${escapedContent}
+            </div>
+        `;
+        
+        chatMessages.appendChild(wrapper);
+        chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+        if (document.getElementById('typingIndicator')) return;
+        
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        const typingWrapper = document.createElement('div');
+        typingWrapper.className = 'ai-message-wrapper';
+        typingWrapper.id = 'typingIndicator';
+        
+        typingWrapper.innerHTML = `
+            <img src="https://picsum.photos/id/1005/36/36" alt="AI Avatar" class="message-avatar">
+            <div class="message ai-message">
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(typingWrapper);
+        chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+    }
+
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) typingIndicator.remove();
+    }
+
+    // Helper function to format API response
+function formatApiResponse(data) {
+    if (data.status === 'success') {
+        // Process answer field
+        let answer = data.answer;
+        
+        // If it's an array
+        if (Array.isArray(answer)) {
+            // Check if it's an array of objects containing a 'text' field (this is your case)
+            if (answer.length > 0 && answer[0] && answer[0].text) {
+                // Extract text fields from all objects and join with newlines
+                let textParts = [];
+                for (let i = 0; i < answer.length; i++) {
+                    if (answer[i].text) {
+                        textParts.push(answer[i].text);
+                    }
+                }
+                return textParts.join('\n\n');
+            }
+            // If array has only one element and it's a string
+            else if (answer.length === 1 && typeof answer[0] === 'string') {
+                return answer[0];
+            }
+            // Other cases, try intelligent processing
+            else {
+                let textParts = [];
+                for (let i = 0; i < answer.length; i++) {
+                    const item = answer[i];
+                    if (typeof item === 'string') {
+                        textParts.push(item);
+                    } else if (item && typeof item === 'object') {
+                        // If it's an object, prioritize returning the text field
+                        if (item.text) {
+                            textParts.push(item.text);
+                        } else {
+                            // Otherwise return formatted JSON, but without adding extra markers
+                            textParts.push(JSON.stringify(item, null, 2));
+                        }
+                    } else {
+                        textParts.push(String(item));
+                    }
+                }
+                return textParts.join('\n\n');
+            }
+        }
+        // If it's an object, check if it has a text field
+        else if (typeof answer === 'object' && answer !== null) {
+            if (answer.text) {
+                return answer.text;
+            } else {
+                return JSON.stringify(answer, null, 2);
+            }
+        }
+        // If it's a string, return directly
+        else {
+            return String(answer);
+        }
+    } else {
+        return data.message || 'Unknown error';
+    }
+}
+
+    // Initialize after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing page...');
+        
+        // Mobile menu
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileNav = document.querySelector('.mobile-nav');
+        if (menuToggle && mobileNav) {
+            menuToggle.addEventListener('click', () => {
+                mobileNav.style.display = mobileNav.style.display === 'block' ? 'none' : 'block';
+            });
+            document.querySelectorAll('.mobile-nav a').forEach(link => {
+                link.addEventListener('click', () => mobileNav.style.display = 'none');
+            });
+        }
+
+        // Paper upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfoContainer = document.getElementById('fileInfoContainer');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+        const removeFileBtn = document.getElementById('removeFile');
+        const questionInput = document.getElementById('questionInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Check if necessary elements exist
+        if (!uploadArea || !fileInput || !questionInput || !submitBtn) {
+            console.error('Required elements not found!');
+            return;
+        }
+
+        let currentFile = null;
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#cbd5e0';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#cbd5e0';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            console.log('Processing file:', file.name, file.type, file.size);
+            
+            if (!file.name.match(/\.(pdf|txt)$/i)) {
+                showNotification('Only PDF or TXT files are supported', 'error');
+                return;
+            }
+            if (file.size > 50 * 1024 * 1024) {
+                showNotification('File size cannot exceed 50MB', 'error');
+                return;
+            }
+            
+            currentFile = file;
+            fileNameDisplay.textContent = file.name;
+            fileSizeDisplay.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+            fileInfoContainer.classList.remove('hidden');
+            uploadArea.classList.add('hidden');
+            
+            // If there's already a question, enable button
+            if (questionInput.value.trim()) {
+                submitBtn.disabled = false;
+            }
+            
+            showNotification(`File "${file.name}" uploaded successfully`, 'success');
+        }
+
+        // Remove file
+        if (removeFileBtn) {
+            removeFileBtn.addEventListener('click', () => {
+                currentFile = null;
+                fileInfoContainer.classList.add('hidden');
+                uploadArea.classList.remove('hidden');
+                fileInput.value = '';
+                submitBtn.disabled = true;
+                showNotification('File removed', 'info');
+            });
+        }
+
+        // Enable button on question input
+        questionInput.addEventListener('input', () => {
+            submitBtn.disabled = !(currentFile && questionInput.value.trim());
+        });
+
+        // Submit question
+        submitBtn.addEventListener('click', async () => {
+            const question = questionInput.value.trim();
+            if (!question || !currentFile) {
+                showNotification('Please upload a file and enter a question first', 'warning');
+                return;
+            }
+
+            console.log('Ready to submit question:', question);
+            console.log('File:', currentFile.name, currentFile.type, currentFile.size);
+
+            // Display user question
+            addMessage(question, true, false);
+            
+            // Clear input
+            questionInput.value = '';
+            submitBtn.disabled = true;
+            
+            // Show loading indicator
+            showTypingIndicator();
+
+            // Prepare FormData
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            formData.append('question', question);
+            formData.append('model', 'qwen-vl-max');
+
+            try {
+                // Get CSRF token
+                const csrfToken = getCSRFToken();
+                console.log('CSRF Token:'YOUR_VALUE_HERE'exists' : 'does not exist');
+                
+                // Log FormData content
+                console.log('FormData content:');
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + (pair[0] === 'file' ? pair[1].name : pair[1]));
+                }
+
+                const response = await fetch('/hormone_app/api/paper-qa/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                removeTypingIndicator();
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', {
+                    'content-type': response.headers.get('content-type'),
+                    'status': response.status
+                });
+
+                if (!response.ok) {
+                    let errorDetail = '';
+                    try {
+                        const errorData = await response.json();
+                        errorDetail = JSON.stringify(errorData);
+                    } catch {
+                        try {
+                            errorDetail = await response.text();
+                        } catch {
+                            errorDetail = 'Unable to retrieve error details';
+                        }
+                    }
+                    console.error('Server error details:', errorDetail);
+                    throw new Error(`Server error (${response.status}): ${errorDetail.substring(0, 200)}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.status === 'success') {
+                    // Format API response
+                    const formattedAnswer = formatApiResponse(data);
+                    addMessage(formattedAnswer, false, true);
+                    showNotification('Answer received', 'success');
+                } else {
+                    addMessage(`Error: ${data.message || 'Unknown error'}`, false, true);
+                    showNotification('Processing failed', 'error');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                console.error('Request exception:', error);
+                addMessage(`Request failed: ${error.message}`, false, true);
+                showNotification('Network error: ' + error.message, 'error');
+            } finally {
+                // If file exists, re-enable button
+                if (currentFile) {
+                    submitBtn.disabled = false;
+                }
+            }
+        });
+
+        // Send on Enter
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!submitBtn.disabled) {
+                    submitBtn.click();
+                }
+            }
+        });
+
+        // Check if CSRF token exists
+        const metaToken = document.querySelector('meta[name="csrf-token"]');
+        if (!metaToken) {
+            console.warn('Warning: CSRF token meta tag not found');
+        } else {
+            console.log('CSRF token meta tag exists');
+        }
+
+        console.log('Page initialization complete');
+    });
+
+    // Add global error handling
+    window.addEventListener('error', (e) => {
+        console.error('Global error:', e.error || e.message);
+    });
+
+    window.addEventListener('unhandledrejection', (e) => {
+        console.error('Unhandled Promise rejection:', e.reason);
+    });
+</script>
+</body>
+</html>

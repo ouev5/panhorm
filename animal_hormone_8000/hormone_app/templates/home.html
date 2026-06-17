@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Hormone Regulation Database</title>
+    <!-- Bootstrap CSS -->
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ECharts -->
+    <script src="{% static 'js/echarts.min.js' %}"></script>
+    <!-- Custom Styles -->
+    <style>
+/* Base Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background: #f1f5f9;
+    -webkit-font-smoothing: antialiased;
+    color: #334155;
+}
+
+/* Navigation Styles - Blue Theme */
+:root {
+    --nav-bg: linear-gradient(135deg, #0f172a, #1e3a8a);
+    --logo-bg: linear-gradient(135deg, #1e40af, #3b82f6);
+    --text-color: white;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1a5e 40%, #0d2b6b 100%);
+    padding: 0;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    color: var(--text-color);
+    margin-right: 2rem;
+}
+
+.logo-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(37,99,235,0.4);
+    transition: all 0.3s ease;
+}
+
+.logo-icon:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(37,99,235,0.5);
+}
+
+.logo-text {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--text-color);
+    line-height: 1;
+    font-family: 'Arial', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.logo-subtext {
+    font-size: 1rem;
+    color: var(--text-color);
+    line-height: 1;
+    margin-top: 0.2rem;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.6px;
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-left ul, .nav-right ul {
+    list-style: none;
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-left a, .nav-right a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    font-size: 1.4rem;
+}
+
+.nav-left a:hover, .nav-right a:hover {
+    background: var(--hover-bg);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(37,99,235,0.5);
+}
+
+/* Active State */
+.nav-left a.active, .nav-right a.active {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+}
+
+.nav-right {
+    margin-left: auto;
+}
+
+.nav-icon {
+    margin-right: 0.6rem;
+    font-size: 1.1rem;
+}
+
+/* Mobile Menu */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-left ul, .nav-right ul {
+        display: none;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+    
+    /* Mobile Navigation */
+    .mobile-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--nav-bg);
+        box-shadow: var(--shadow);
+        padding: 1rem 1.5rem;
+        display: none;
+    }
+    
+    .mobile-nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .mobile-nav a {
+        text-decoration: none;
+        color: var(--text-color);
+        font-weight: 500;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+    }
+    
+    .mobile-nav a:hover {
+        background: var(--hover-bg);
+    }
+}
+
+/* ========== 关键修改：搜索区域样式（全屏背景+搜索框上移） ========== */
+/* Search Area - 全屏背景+搜索框上移 */
+.search-container {
+    /* 关键1：取消最大宽度，改为100%全屏 */
+    max-width: 100%;
+    width: 100%;
+    /* 关键2：减小margin-top，把搜索框往上移（从6rem改为2rem） */
+    margin: 2rem auto 2.5rem; 
+    display: flex; 
+    justify-content: center;
+    padding: 3rem 1rem; 
+    /* 关键3：背景图居中显示，横向全屏 */
+    background: url("/media/image/6.jpg") no-repeat center center; background-size: cover; 
+    /* 关键4：背景图宽度100%，高度自适应，保证横向全屏 */
+    background-size: 100% auto; 
+    /* 关键5：取消圆角，保证全屏视觉连贯 */
+    border-radius: 0; 
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    position: relative;
+    /* 适配全屏后的高度 */
+    min-height: 220px;
+    /* 搜索框垂直居中（如需更靠上，可改为flex-start） */
+    align-items: center; 
+}
+
+.search-form {
+    display: flex;
+    width: 100%;
+    max-width: 1000px; /* 限制搜索框最大宽度，避免过宽 */
+    border-radius: 36px; 
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.8); /* 半透明白色边框 */
+    background: rgba(255, 255, 255, 0.9); /* 搜索框半透明白色背景，保证文字清晰 */
+}
+
+.search-input {
+    flex: 1;
+    height: 80px; /* 增高输入框 */
+    padding: 0 24px 0 56px;
+    border: none;
+    outline: none; 
+    font-size: 22px; /* 放大字体 */
+    transition: border-color 0.3s;
+    background: transparent; /* 透明背景，显示外层半透明白色 */
+}
+
+.search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-btn {
+    background: #2563eb;
+    height: 80px; /* 与输入框等高 */
+    padding: 0 40px; /* 扩大按钮 */
+    color: white;
+    border: none; 
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 22px; /* 放大按钮文字 */
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 36px 36px 0; /* 只保留右侧圆角 */
+}
+
+.search-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px); /* 鼠标悬浮轻微上移 */
+}
+
+.search-icon {
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 26px; /* 放大图标 */
+}  
+
+/* Dashboard Containers */
+.dashboard {
+    max-width: 1200px;
+    margin: 2rem auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+/* Card Styles */
+.card {
+    background: rgba(255,255,255,0.92);
+    color: #334155;
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 2px solid rgba(255,255,255,0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+}
+
+.card-title {
+    color: #0f172a;
+    margin-bottom: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.card-title i {
+    margin-right: 0.75rem;
+    color: #3b82f6;
+    font-size: 1.5rem;
+}
+
+/* Icon Containers */
+.icon-container {
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 1rem;
+}
+
+.function-icon {
+    text-align: center;
+    padding: 1.2rem 0.8rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255,255,255,0.3);
+    width: 100%; 
+}
+
+.function-icon:hover {
+    background: #f1f5f9;
+    transform: translateY(-3px);
+    border-color: #cbd5e1;
+}
+
+.function-icon:hover .icon {
+    color: #2563eb;
+}
+
+.icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.75rem;
+    color: #64748b;
+    transition: color 0.3s;
+}
+
+.icon-text {
+    font-size: 0.95rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+/* Analysis Tools Icon Container */
+.icon-container-analysis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 1rem; 
+    width: 100%; 
+}
+
+/* Statistics Styles */
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1e40af;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+/* Contact Info Styles */
+.contact-info {
+    padding: 1.5rem;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.contact-text {
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.contact-text i {
+    margin-right: 0.5rem;
+    color: #64748b;
+}
+
+/* Data Section Styles */
+.data-section {
+    background: rgba(255,255,255,0.92);
+    color: #334155;
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    max-width: 1200px; 
+    margin: 2rem auto; 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    padding: 1.5rem;
+    border: 2px solid rgba(255,255,255,0.3);
+    width: 100%; 
+    box-sizing: border-box;
+}
+
+.data-section h2 {
+    color: #0f172a;
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+}
+
+.data-section h2 i {
+    margin-right: 0.75rem;
+    color: #3b82f6;
+}
+
+.data-section p {
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+/* Introduction Section Styles */
+.intro-content-heading {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    background: linear-gradient(135deg, rgba(37,99,235,0.03), rgba(124,58,237,0.03));
+    margin-bottom: 1rem;
+}
+
+.intro-content-subheading {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 1rem;
+}
+
+.intro-content-text {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #334155;
+    margin-bottom: 1.5rem;
+}
+
+.intro-content-list {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #334155;
+    margin-bottom: 1.5rem;
+    padding-left: 0;
+    list-style: none;
+}
+
+.intro-content-list li {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.intro-content-list li i {
+    color: #3b82f6;
+    margin-right: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+.intro-content-highlight {
+    font-weight: 600;
+    color: #1e40af;
+}
+
+/* Carousel Styles */
+.carousel-container {
+    margin: 2rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    height: 380px;
+}
+
+.carousel {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+    position: relative;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Carousel Captions */
+.carousel-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    color: white;
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.carousel-caption h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.carousel-caption p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.carousel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.carousel-dot.active {
+    background-color: white;
+    transform: scale(1.2);
+}
+
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(15, 23, 42, 0.7);
+    color: white;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    z-index: 5;
+    opacity: 0.7;
+}
+
+.carousel-control:hover {
+    background-color: rgba(15, 23, 42, 0.9);
+    transform: translateY(-50%) scale(1.05);
+    opacity: 1;
+}
+
+.carousel-control.prev {
+    left: 20px;
+}
+
+.carousel-control.next {
+    right: 20px;
+}
+
+/* ========== 移动端适配搜索框（同步全屏+上移） ========== */
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+    }
+    
+    .nav-left, .nav-right {
+        margin: 0.5rem 0;
+    }
+    
+    .nav-left ul, .nav-right ul {
+        gap: 0.5rem;
+    }
+    
+    .nav-left a, .nav-right a {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .logo-text {
+        font-size: 1.8rem;
+    }
+    
+    .logo-subtext {
+        font-size: 0.6rem;
+    }
+    
+    .carousel-container {
+        height: 220px;
+    }
+    
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+    
+    .card {
+        grid-column: span 1 !important;
+    }
+    
+    .function-icon {
+        min-width: 90px;
+        padding: 1rem 0.5rem;
+    }
+
+    /* 移动端搜索框适配 - 同步全屏+上移 */
+    .search-container {
+        padding: 2rem 1rem;
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0;
+        margin: 1rem auto 1rem; /* 移动端同步上移 */
+        min-height: 180px;
+        background-size: 100% auto; /* 移动端保持横向全屏 */
+    }
+
+    .search-input {
+        height: 60px;
+        font-size: 18px;
+    }
+
+    .search-btn {
+        height: 60px;
+        padding: 0 20px;
+        font-size: 18px;
+    }
+}
+
+/* Literature List Styles */
+.literature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.literature-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.3s;
+}
+
+.literature-item:last-child {
+    border-bottom: none;
+}
+
+.literature-item:hover {
+    background-color: #f8fafc;
+}
+
+.literature-title {
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    display: block;
+}
+
+.literature-title:hover {
+    text-decoration: underline;
+}
+
+.literature-authors {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.literature-journal {
+    font-style: italic;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+/* Gene Prediction Card Styles */
+.prediction-container {
+    padding: 1rem;
+}
+
+.prediction-type {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.prediction-type label {
+    margin-right: 2rem;
+    font-size: 1.1rem;
+    color: #334155;
+    cursor: pointer;
+}
+
+.prediction-type input[type="radio"] {
+    margin-right: 0.5rem;
+    accent-color: #3b82f6;
+}
+
+.sequence-input {
+    margin-bottom: 1.5rem;
+}
+
+.sequence-input label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    background: linear-gradient(135deg, rgba(37,99,235,0.03), rgba(124,58,237,0.03));
+    font-size: 1.1rem;
+}
+
+.sequence-input textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.sequence-input textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.prediction-button {
+    text-align: right;
+}
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-left">
+                    <div class="logo">
+                        <a href="{% url 'hormone_app:home' %}">
+                            <div class="logo-icon">
+                                <span class="logo-text">AH</span>
+                                <span class="logo-subtext">Animal Hormone</span>
+                            </div>
+                        </a>
+                    </div>
+                    <ul>
+                        <li><a href="{% url 'hormone_app:home' %}"><span class="nav-icon fa fa-home"></span>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}"><span class="nav-icon fa fa-database"></span>Data</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}"><span class="nav-icon fa fa-bar-chart"></span>Analysis</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}"><span class="nav-icon fa fa-question-circle"></span>Help</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}"><span class="nav-icon fa fa-robot"></span>AI</a></li>
+                    </ul>
+                </div>
+                <div class="nav-right">
+                    <ul>
+                        <li><a href="{% url 'hormone_app:login_view' %}"><span class="nav-icon fa fa-user"></span>Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% block content %}
+<!-- Search Box -->
+<div class="search-container">
+    <!-- 新增外层容器，用于定位搜索图标 -->
+    <div style="position: relative; width: 100%; max-width: 1000px;">
+        <form action="{% url 'hormone_app:search' %}" method="get" class="search-form">
+            <!-- 新增搜索图标 -->
+            <i class="fa fa-search search-icon"></i>
+            <input 
+                type="search" 
+                name="query" 
+                placeholder="Search hormones, genes, species or literature..." 
+                class="search-input"
+                required
+            >
+            <button type="submit" class="search-btn">
+                <i class="fa fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+</div>
+
+    <!-- Dynamic Stats Banner -->
+    <div class="stats-container" style="max-width: 1200px; margin: 0 auto 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.95); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; justify-content: space-around; flex-wrap: wrap;">
+        <div class="stat-item">
+            <div class="stat-number" id="homeTotalRecords" style="color:#1e40af;">-</div>
+            <div class="stat-label">Total Records</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="homeTotalHormones" style="color:#059669;">-</div>
+            <div class="stat-label">Unique Hormones</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="homeTotalGenes" style="color:#7c3aed;">-</div>
+            <div class="stat-label">Unique Genes</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="homeTotalSpecies" style="color:#ea580c;">-</div>
+            <div class="stat-label">Unique Species</div>
+        </div>
+    </div>
+    
+    <!-- Function Card Area -->
+    <div class="dashboard">
+
+        <!-- Introduction Box - Full width -->
+        <div class="card intro-card" style="grid-column: 1 / -1;">
+            
+            
+            <!-- Flex layout for content -->
+            <div class="intro-content-wrapper" style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                <!-- Text section - 50% width -->
+                <div class="intro-text" style="flex: 1; min-width: calc(50% - 1rem);">
+                    <h2 class="intro-content-heading">AH Animal Hormone Regulation Database</h2>
+                    
+                    <p class="intro-content-text">
+                        The AH database is a professional platform for collecting, integrating, and analyzing multi-omics data related to animal hormones. It covers comprehensive hormone information from model organisms to economic animals.
+                    </p>
+                    
+                    <h3 class="intro-content-subheading">Key Features:</h3>
+                    
+                    <ul class="intro-content-list">
+                        <li>
+                            <i class="fa fa-search"></i>
+                            Query hormone structure, function, secretory organs, and mechanisms
+                        </li>
+                        <li>
+                            <i class="fa fa-line-chart"></i>
+                            Analyze dynamic changes in hormone expression levels
+                        </li>
+                        <li>
+                            <i class="fa fa-sitemap"></i>
+                            Explore hormone distribution and evolutionary relationships
+                        </li>
+                        <li>
+                            <i class="fa fa-th"></i>
+                            Perform gene expression heatmap and clustering analysis
+                        </li>
+                        <li>
+                            <i class="fa fa-book"></i>
+                            Access latest research literature and experimental data
+                        </li>
+                    </ul>
+                    
+                    <p class="intro-content-text">
+                        <span class="intro-content-highlight">Advantages:</span>
+                        Weekly updates ensure access to cutting-edge research. Supports both basic research and application development.
+                    </p>
+                </div>
+                
+                <!-- Image section - 50% width -->
+                <div class="intro-image" style="flex: 1; min-width: calc(50% - 1rem);">
+                    <!-- Optimized carousel -->
+                    <div class="carousel-container">
+                        <div class="carousel" id="carousel">
+                            <div class="carousel-slide active">
+                                <img src="/media/image/1.png" alt="Hormone Research">
+                                <div class="carousel-caption">
+                                    <h3>Hormone Research</h3>
+                                    <p>Comprehensive collection of animal hormone data</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="/media/image/2.png" alt="Gene Expression Analysis">
+                                <div class="carousel-caption">
+                                    <h3>Gene Expression Analysis</h3>
+                                    <p>Advanced tools for gene expression studies</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="/media/image/1.png" alt="Hormone Regulation Pathway">
+                                <div class="carousel-caption">
+                                    <h3>Hormone Regulation Pathway</h3>
+                                    <p>Visualization of complex regulatory networks</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="/media/image/2.png" alt="Bioinformatics Platform">
+                                <div class="carousel-caption">
+                                    <h3>Bioinformatics Platform</h3>
+                                    <p>Integrated tools for hormone data analysis</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="/media/image/1.png" alt="Hormone Interaction Network">
+                                <div class="carousel-caption">
+                                    <h3>Hormone Interaction Network</h3>
+                                    <p>Exploring relationships between hormones and genes</p>
+                                </div>
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="/media/image/2.png" alt="Gene Expression Visualization">
+                                <div class="carousel-caption">
+                                    <h3>Gene Expression Visualization</h3>
+                                    <p>Powerful visualization for research insights</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="carousel-control prev">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-control next">
+                            <i class="fa fa-chevron-right"></i>
+                        </button>
+                        
+                        <div class="carousel-dots" id="carousel-dots"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+<!-- Venn Analysis Card -->
+        <div class="card" style="grid-column: 1 / -1; cursor: pointer;" onclick="window.open('http://43.99.62.219:8001', '_blank')">
+            <div class="card-title">
+                <i class="fa fa-flask"></i>
+                <span>Gene Insights Hub</span>
+            </div>
+            <div style="padding: 1rem;">
+                <p style="color: #64748b; margin-bottom: 1rem;">
+                    Transform your gene lists into biological insights. From multi-set intersection discovery to enrichment analysis and single-cell exploration — bring your ideas to life in just a few clicks.
+                </p>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <img src="/static/img/img2.jpg?v=20260417" style="width: 48%; min-width: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" alt="Gene Insights Hub">
+                    <img src="/static/img/img1.jpg?v=20260417" style="width: 48%; min-width: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" alt="Your Analysis Journey">
+                </div>
+                <a class="search-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; padding: 0.6rem 1.2rem; border-radius: 8px;">
+                    <i class="fa fa-rocket"></i> Start Your Analysis Journey
+                </a>
+            </div>
+        </div>
+
+        <!-- Visualization Dashboard (3 cards, 1 column each) -->
+        <div class="card" style="grid-column: span 1;">
+            <div class="card-title">
+                <i class="fa fa-line-chart"></i>
+                <span>Hormone Research Publication Trends</span>
+            </div>
+            <div id="trendChart" style="height: 300px;"></div>
+        </div>
+
+        <div class="card" style="grid-column: span 1;">
+            <div class="card-title">
+                <i class="fa fa-pie-chart"></i>
+                <span>Hormone Type Distribution</span>
+            </div>
+            <div id="typeChart" style="height: 300px;"></div>
+        </div>
+
+        <div class="card" style="grid-column: span 1;">
+            <div class="card-title">
+                <i class="fa fa-th"></i>
+                <span>Gene-Species Distribution</span>
+            </div>
+            <div id="heatmapChart" style="height: 300px;"></div>
+        </div>
+
+        <!-- Analysis Tools Card (Full width) -->
+        <div class="card" onclick="window.location.href='{% url 'hormone_app:docs' %}'" style="grid-column: 1 / -1; cursor:pointer;">
+            <div class="card-title">
+                <i class="fa fa-cubes"></i>
+                <span>Analysis Toolkit</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; padding:1rem;">
+                <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border-radius:12px; padding:1.2rem; text-align:center; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(59,130,246,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;box-shadow:0 4px 12px rgba(59,130,246,0.3);">
+                        <i class="fa fa-search-plus" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div style="font-weight:600;color:#1e40af;font-size:0.9rem;">BLAST</div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">Sequence Alignment</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-radius:12px; padding:1.2rem; text-align:center; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(16,185,129,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#10b981,#059669);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+                        <i class="fa fa-sitemap" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div style="font-weight:600;color:#065f46;font-size:0.9rem;">Single Cell</div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">Cell Analysis</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#faf5ff,#f3e8ff); border-radius:12px; padding:1.2rem; text-align:center; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(139,92,246,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;box-shadow:0 4px 12px rgba(139,92,246,0.3);">
+                        <i class="fa fa-exchange" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div style="font-weight:600;color:#5b21b6;font-size:0.9rem;">Methylation</div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">Epigenetic Study</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#fff7ed,#ffedd5); border-radius:12px; padding:1.2rem; text-align:center; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(245,158,11,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+                        <i class="fa fa-history" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div style="font-weight:600;color:#92400e;font-size:0.9rem;">Transcriptome</div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">RNA Sequencing</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#fef2f2,#fecaca); border-radius:12px; padding:1.2rem; text-align:center; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(239,68,68,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#ef4444,#dc2626);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;box-shadow:0 4px 12px rgba(239,68,68,0.3);">
+                        <i class="fa fa-area-chart" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div style="font-weight:600;color:#991b1b;font-size:0.9rem;">KEGG Pathway</div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">Pathway Analysis</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5); border-radius:12px; padding:1.2rem; text-align:center; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(5,150,105,0.15)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#06b6d4,#0891b2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;box-shadow:0 4px 12px rgba(6,182,212,0.3);">
+                        <i class="fa fa-link" style="color:#fff;font-size:1.2rem;"></i>
+                    </div>
+                    <div style="font-weight:600;color:#155e75;font-size:0.9rem;">AlphaFold2</div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">3D Structure</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Data Section -->
+<div class="dashboard">
+    <!-- Latest Literature Card -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">
+            <i class="fa fa-flask"></i>
+            <span>Latest Literature</span>
+        </div>
+        <div class="card-content">
+                        <ul class="literature-list">
+                <li class="literature-item" style="position: relative; padding-bottom: 1.2rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.8rem;">
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/41984957/" target="_blank" class="literature-title" style="font-size: 0.95rem; line-height: 1.5;">Mammalian-like steroidogenesis in plants gives rise to endocrine-mimetic cardenolides</a>
+                    <div class="literature-meta" style="position: absolute; right: 0; bottom: 0.2rem; font-size: 0.8rem; color: #6b7280;">Xu M. et al. · 2026.04.15</div>
+                </li>
+                <li class="literature-item" style="position: relative; padding-bottom: 1.2rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.8rem;">
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/41984956/" target="_blank" class="literature-title" style="font-size: 0.95rem; line-height: 1.5;">C. elegans somatostatin signaling regulates sleep, metabolism, survival, and memory</a>
+                    <div class="literature-meta" style="position: absolute; right: 0; bottom: 0.2rem; font-size: 0.8rem; color: #6b7280;">Park B. et al. · 2026.04.15</div>
+                </li>
+                <li class="literature-item" style="position: relative; padding-bottom: 1.2rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.8rem;">
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/41984930/" target="_blank" class="literature-title" style="font-size: 0.95rem; line-height: 1.5;">Transcriptional atlas of pubertal human growth plate reveals stem cells and growth hormone effects</a>
+                    <div class="literature-meta" style="position: absolute; right: 0; bottom: 0.2rem; font-size: 0.8rem; color: #6b7280;">Chu N.T.L. et al. · 2026.04.15</div>
+                </li>
+                <li class="literature-item" style="position: relative; padding-bottom: 1.2rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.8rem;">
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/41984264/" target="_blank" class="literature-title" style="font-size: 0.95rem; line-height: 1.5;">Genome analysis of sulfur-oxidizing bacterium with plant hormone biosynthesis potential</a>
+                    <div class="literature-meta" style="position: absolute; right: 0; bottom: 0.2rem; font-size: 0.8rem; color: #6b7280;">Yuvasri E.A. et al. · 2026.04.15</div>
+                </li>
+                <li class="literature-item" style="position: relative; padding-bottom: 0.5rem;">
+                    <a href="https://pubmed.ncbi.nlm.nih.gov/41983838/" target="_blank" class="literature-title" style="font-size: 0.95rem; line-height: 1.5;">Costus speciosus ameliorates polycystic ovary syndrome phenotypes in female rats</a>
+                    <div class="literature-meta" style="position: absolute; right: 0; bottom: 0.2rem; font-size: 0.8rem; color: #6b7280;">Elmazoudy R. et al. · 2026.04.10</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+        <!-- Hot Topics Card -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-title" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fa fa-project-diagram" style="margin-right: 8px;"></i>
+                    <span>Hormone-Gene-Disease Network</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="text" id="networkSearch" placeholder="Search hormone, gene or disease..."
+                        style="padding: 6px 14px; border-radius: 20px; border: 1px solid #cbd5e1; font-size: 13px; width: 280px; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#cbd5e1'">
+                    <button onclick="window._networkSearch()" style="padding: 6px 16px; border-radius: 20px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-size: 13px; cursor: pointer; transition: opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                        <i class="fa fa-search"></i> Search
+                    </button>
+                    <button onclick="window._networkReset()" style="padding: 6px 16px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;"
+                        onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#cbd5e1'">
+                        <i class="fa fa-refresh"></i> Reset
+                    </button>
+                    <span style="margin-left: 10px; color: #94a3b8; font-size: 12px;">Download:</span>
+                    <button onclick="window._downloadNetwork('png')" style="padding: 4px 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #475569; font-size: 11px; cursor: pointer; margin-left: 4px;">
+                        PNG
+                    </button>
+                    <button onclick="window._downloadNetwork('jpg')" style="padding: 4px 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #475569; font-size: 11px; cursor: pointer; margin-left: 4px;">
+                        JPG
+                    </button>
+                    <button onclick="window._downloadNetwork('pdf')" style="padding: 4px 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: white; color: #475569; font-size: 11px; cursor: pointer; margin-left: 4px;">
+                        PDF
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="networkChart" style="height: 480px;"></div>
+                <div id="networkDebug" style="display:none; padding:8px; margin-top:8px; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; font-size:12px; color:#92400e;"></div>
+                <div id="networkInfo" style="text-align: center; font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                    Loading from database...
+                </div>
+            </div>
+        </div>
+    <script>
+    (function() {
+        function initNetworkChart() {
+            var ncDom = document.getElementById('networkChart');
+            if (!ncDom) { console.error('[Net] no #networkChart'); return; }
+            if (typeof echarts === 'undefined') { console.error('[Net] no echarts'); return; }
+            
+            var ncChart = echarts.init(ncDom);
+            var debugEl = document.getElementById('networkDebug');
+            var infoEl = document.getElementById('networkInfo');
+            var colors = ['#6366f1', '#10b981', '#f43f5e'];
+            var names = ['Hormone', 'Gene', 'Disease'];
+            
+            function buildOpt(data) {
+                var nodes = [];
+                for (var i = 0; i < data.nodes.length; i++) {
+                    var n = data.nodes[i];
+                    var lbl = n.name.length > 20 ? n.name.substring(0,18)+'...' : n.name;
+                    nodes.push({name:n.name, category:n.category, symbolSize:n.symbolSize,
+                        itemStyle:{color:colors[n.category]},
+                        label:{show:true, position:'right', fontSize:n.category===0?13:11,
+                            fontWeight:n.category===0?'bold':'normal', formatter:lbl}});
+                }
+                var cats = [];
+                for (var j = 0; j < names.length; j++) {
+                    cats.push({name:names[j], itemStyle:{color:colors[j]}});
+                }
+                return {
+                    tooltip:{trigger:'item', formatter:function(p){
+                        if(p.dataType==='node') return '<b>'+p.data.name+'</b> ('+names[p.data.category]+')';
+                        return '<b>'+p.data.source+'</b> → <b>'+p.data.target+'</b>'+(p.data.value?'<br>'+p.data.value:'');
+                    }},
+                    legend:{data:names, bottom:10},
+                    series:[{type:'graph', layout:'force', data:nodes, links:data.links, categories:cats,
+                        roam:true, draggable:true, label:{show:true, position:'right'},
+                        force:{repulsion:800, gravity:0.1, edgeLength:[40,150]},
+                        lineStyle:{opacity:0.5, width:1.5, color:'#94a3b8'},
+                        emphasis:{focus:'adjacency', lineStyle:{width:3, opacity:1}}}]
+                };
+            }
+            
+            function load(q) {
+                var url = '/hormone_app/api/network-data/?limit=15&max_records=50' + (q ? '&q='+encodeURIComponent(q) : '');
+                if(infoEl) infoEl.textContent = 'Loading...';
+                if(debugEl){ debugEl.style.display='block'; debugEl.textContent='Fetching: '+url; }
+                
+                fetch(url).then(function(r){ return r.json(); }).then(function(d){
+                    var nn = d.nodes?d.nodes.length:0, nl = d.links?d.links.length:0;
+                    if(debugEl) debugEl.textContent = 'Got '+nn+' nodes, '+nl+' links';
+                    if(!d.nodes||nn===0){
+                        if(infoEl) infoEl.textContent='No results'+(q?' for "'+q+'"':'')+'.';
+                        return;
+                    }
+                    try{ ncChart.setOption(buildOpt(d), true); }catch(e){
+                        if(debugEl) debugEl.textContent='setOption ERROR: '+e.message;
+                    }
+                    var hc=0,gc=0,dc=0;
+                    for(var i=0;i<d.nodes.length;i++){
+                        if(d.nodes[i].category===0)hc++;
+                        else if(d.nodes[i].category===1)gc++;
+                        else dc++;
+                    }
+                    if(infoEl) infoEl.textContent=hc+' Hormones, '+gc+' Genes, '+dc+' Diseases | Drag to move, scroll to zoom.'+(q?' (Searched: "'+q+'")':' (Top hormones from database)');
+                    if(debugEl) debugEl.style.display='none';
+                }).catch(function(e){
+                    if(infoEl) infoEl.textContent='Error loading data.';
+                    if(debugEl){ debugEl.style.display='block'; debugEl.textContent='ERROR: '+e.message; }
+                });
+            }
+            
+            window._networkSearch = function(){
+                var inp = document.getElementById('networkSearch');
+                var q = inp ? inp.value.trim() : '';
+                if(q) load(q);
+            };
+            window._networkReset = function(){
+                var inp = document.getElementById('networkSearch');
+                if(inp) inp.value='';
+                load('');
+            };
+            window._downloadNetwork = function(format) {
+                var chart = ncChart;
+                if (!chart) {
+                    alert('Chart not ready');
+                    return;
+                }
+                var url = chart.getDataURL({
+                    type: format === 'jpg' ? 'jpeg' : 'png',
+                    pixelRatio: 2,
+                    backgroundColor: '#fff'
+                });
+                
+                if (format === 'pdf') {
+                    // PDF 需要特殊处理，用新窗口打开
+                    var win = window.open('', '_blank');
+                    win.document.write('<html><head><title>Network Graph</title></head><body style="margin:0;text-align:center;"><img src="' + url + '" style="max-width:100%;"></body></html>');
+                    win.document.close();
+                    win.print();
+                } else {
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'network_graph.' + format;
+                    a.click();
+                }
+            };
+
+            
+            var si = document.getElementById('networkSearch');
+            if(si) si.addEventListener('keydown', function(e){ if(e.key==='Enter') window._networkSearch(); });
+            
+            window.addEventListener('resize', function(){ ncChart.resize(); });
+            
+            load('');
+        }
+        
+        if(document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initNetworkChart);
+        } else {
+            initNetworkChart();
+        }
+    })();
+    </script>
+    </div><!-- end dashboard -->
+
+    <!-- Footer Contact Information -->
+    <footer class="bg-gray-900 text-white py-12 mt-12 w-full">
+        <div class="w-full px-4 md:px-8 lg:px-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About Section -->
+                <div class="md:col-span-1">
+                    <h3 class="text-xl font-bold mb-4 text-white">Animal Hormone Database</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                        A comprehensive resource for hormone-gene-disease interactions across 481 species. 
+                        Integrating literature mining, ChIP-seq analysis, and AI-powered Q&A.
+                    </p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-white">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="{% url 'hormone_app:home' %}" class="hover:text-white transition-colors flex items-center"><i class="fa fa-home mr-2"></i>Home</a></li>
+                        <li><a href="{% url 'hormone_app:data' %}" class="hover:text-white transition-colors flex items-center"><i class="fa fa-database mr-2"></i>Data Browser</a></li>
+                        <li><a href="{% url 'hormone_app:docs' %}" class="hover:text-white transition-colors flex items-center"><i class="fa fa-chart-bar mr-2"></i>Analysis Tools</a></li>
+                        <li><a href="{% url 'hormone_app:help' %}" class="hover:text-white transition-colors flex items-center"><i class="fa fa-question-circle mr-2"></i>Help & Docs</a></li>
+                        <li><a href="{% url 'hormone_app:ai' %}" class="hover:text-white transition-colors flex items-center"><i class="fa fa-robot mr-2"></i>AI Assistant</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-white">Resources</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="http://43.99.62.219:8001" target="_blank" class="hover:text-white transition-colors flex items-center"><i class="fa fa-circle-nodes mr-2"></i>Gene Insights Hub</a></li>
+                        <li><a href="http://43.99.62.219:8003" target="_blank" class="hover:text-white transition-colors flex items-center"><i class="fa fa-dna mr-2"></i>GeneReg Predictor</a></li>
+                        <li><a href="http://43.99.62.219:8004" target="_blank" class="hover:text-white transition-colors flex items-center"><i class="fa fa-flask mr-2"></i>Multi-Omics Analysis</a></li>
+                        <li><a href="http://43.99.62.219:8005" target="_blank" class="hover:text-white transition-colors flex items-center"><i class="fa fa-book mr-2"></i>Literature Search</a></li>
+                        <li><a href="http://43.99.62.219:8006" target="_blank" class="hover:text-white transition-colors flex items-center"><i class="fa fa-exchange-alt mr-2"></i>Gene Mapper</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact & Stats -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4 text-white">Contact Us</h3>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o mr-3 text-blue-400"></i>
+                            <a href="mailto:contact@hormone-db.com" class="hover:text-white transition-colors">contact@hormone-db.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone mr-3 text-green-400"></i>
+                            <span>+86 15393345650</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker mr-3 text-red-400 mt-1"></i>
+                            <span>Inner Mongolia University of Science and Technology<br><span class="text-xs text-gray-500">Baotou, Inner Mongolia, China</span></span>
+                        </li>
+                    </ul>
+                    
+                    <!-- Stats Badge -->
+                    <div class="mt-4 p-3 bg-gray-800 rounded-lg">
+                        <div class="text-xs text-gray-500 mb-2">Database Statistics</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div><span class="text-blue-400 font-bold">126,199</span> Records</div>
+                            <div class="text-xs text-gray-400 mt-1">Current PanHorm release dataset; legacy database entries are treated as candidates unless independently evidence-validated.</div>
+                            <div><span class="text-green-400 font-bold">740</span> Hormones</div>
+                            <div><span class="text-purple-400 font-bold">1,978</span> Genes</div>
+                            <div><span class="text-orange-400 font-bold">481</span> Species</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-700 mt-10 pt-6">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        &copy; 2026 Animal Hormone Database. All rights reserved.
+                    </div>
+                    <div class="flex space-x-6 mt-4 md:mt-0 text-sm text-gray-500">
+                        <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="#" class="hover:text-white transition-colors">Terms of Use</a>
+                        <a href="#" class="hover:text-white transition-colors">Citation</a>
+                    </div>
+                </div>
+                <div class="text-center mt-4 text-xs text-gray-600">
+                    Powered by Django, MySQL, DeepSeek AI | Last updated: April 2026
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+
+    <script>
+        // Carousel functionality
+document.addEventListener('DOMContentLoaded', function() {
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dotsContainer = document.getElementById('carousel-dots');
+    let slideInterval;
+    
+    // Create carousel dots
+    slides.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = 'carousel-dot';
+        dot.addEventListener('click', () => goToSlide(index));
+        dotsContainer.appendChild(dot);
+    });
+    
+    const dots = document.querySelectorAll('.carousel-dot');
+    
+    // Update carousel display
+    function updateCarousel() {
+        // Remove all active states
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        // Set current active state
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+    }
+    
+    // Go to specific slide
+    function goToSlide(index) {
+        // Stop autoplay
+        clearInterval(slideInterval);
+        
+        currentSlide = index;
+        updateCarousel();
+        
+        // Restart autoplay
+        startAutoPlay();
+    }
+    
+    // Next slide
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        updateCarousel();
+    }
+    
+    // Previous slide
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        updateCarousel();
+    }
+    
+    // Autoplay - 3 second interval
+    function startAutoPlay() {
+        slideInterval = setInterval(nextSlide, 3000);
+    }
+    
+    // Pause autoplay on mouse enter
+    const carouselContainer = document.querySelector('.carousel-container');
+    carouselContainer.addEventListener('mouseenter', () => {
+        clearInterval(slideInterval);
+    });
+    
+    // Resume autoplay on mouse leave
+    carouselContainer.addEventListener('mouseleave', () => {
+        startAutoPlay();
+    });
+    
+    // Bind control button events
+    document.querySelector('.carousel-control.prev').addEventListener('click', prevSlide);
+    document.querySelector('.carousel-control.next').addEventListener('click', nextSlide);
+    
+    // Initialize carousel
+    updateCarousel();
+    startAutoPlay();
+
+    // Initialize charts with REAL database data
+    fetch('/hormone_app/api/chart-data/').then(r=>r.json()).then(d=>{
+        // === Chart 1: Top 10 Hormones by Record Count (Horizontal Bar) ===
+        const trendChart = echarts.init(document.getElementById('trendChart'));
+        var hNames = d.hormones.map(h=>h.hormone_name.length>20?h.hormone_name.substring(0,18)+'..':h.hormone_name);
+        var hCounts = d.hormones.map(h=>h.count);
+        var barColors = ['#6366f1','#8b5cf6','#06b6d4','#0ea5e9','#f59e0b','#10b981','#ef4444','#f43f5e','#14b8a6','#a855f7'];
+        trendChart.setOption({
+            tooltip: { trigger:'axis', backgroundColor:'rgba(15,23,42,0.9)', borderColor:'transparent', textStyle:{color:'#e2e8f0',fontSize:12} },
+            grid: { top:15, right:30, bottom:20, left:130 },
+            xAxis: { type:'value', splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}, axisLabel:{color:'#94a3b8',fontSize:11}, axisLine:{show:false} },
+            yAxis: { type:'category', data:hNames.reverse(), axisLabel:{color:'#475569',fontSize:11}, axisLine:{lineStyle:{color:'#e2e8f0'}}, axisTick:{show:false} },
+            series: [{
+                type:'bar', data:hCounts.reverse(),
+                itemStyle: { borderRadius:[0,6,6,0], color:function(p){return barColors[9-p.dataIndex]||'#6366f1';} },
+                barWidth: '60%',
+                label: { show:true, position:'right', color:'#64748b', fontSize:11, formatter:'{c}' },
+                emphasis: { itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,0.15)'} }
+            }],
+            animationDuration:1500, animationEasing:'cubicOut'
+        });
+
+        // === Chart 2: Species Distribution (Rose Pie) ===
+        const typeChart = echarts.init(document.getElementById('typeChart'));
+        var spPie = d.species.map((s,i)=>({
+            value:s.count, name:s.organism,
+            itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,1,[{offset:0,color:barColors[i]},{offset:1,color:barColors[(i+3)%10]}])}
+        }));
+        typeChart.setOption({
+            tooltip:{trigger:'item',backgroundColor:'rgba(15,23,42,0.9)',borderColor:'transparent',textStyle:{color:'#e2e8f0',fontSize:12},formatter:'<b>{b}</b><br/>Records: {c} ({d}%)'},
+            legend:{bottom:0,textStyle:{color:'#64748b',fontSize:10},itemWidth:12,itemHeight:12,itemGap:8},
+            series:[{
+                name:'Species',type:'pie',radius:['12%','65%'],center:['50%', '42%'],roseType:'area',
+                label:{color:'#475569',fontSize:10,formatter:function(p){return p.name.length>12?p.name.substring(0,10)+'.. '+p.percent+'%':p.name+' '+p.percent+'%';}},
+                labelLine:{lineStyle:{color:'#cbd5e1'},length:10,length2:14},
+                itemStyle:{borderRadius:5,borderColor:'#fff',borderWidth:2,shadowBlur:8,shadowColor:'rgba(0,0,0,0.06)'},
+                data:spPie
+            }],
+            animationDuration:1500,animationEasing:'elasticOut'
+        });
+
+        // === Chart 3: Species-Disease Heatmap ===
+        const heatmapChart = echarts.init(document.getElementById('heatmapChart'));
+        var hmSp = d.heatmap.species;
+        var hmDi = d.heatmap.diseases;
+        var hmData = d.heatmap.data;
+        var maxVal = Math.max.apply(null, hmData.map(function(x){return x[2];}));
+        heatmapChart.setOption({
+            tooltip:{backgroundColor:'rgba(15,23,42,0.9)',borderColor:'transparent',textStyle:{color:'#e2e8f0',fontSize:12},formatter:function(p){return '<b>'+hmDi[p.value[1]]+'</b><br/>in '+hmSp[p.value[0]]+'<br/>Records: <b>'+p.value[2]+'</b>';}},
+            grid:{top:10,right:15,bottom:70,left:90},
+            xAxis:{type:'category',data:hmSp,axisLabel:{color:'#94a3b8',fontSize:10,rotate:25},axisLine:{lineStyle:{color:'#e2e8f0'}},axisTick:{show:false},splitLine:{show:false}},
+            yAxis:{type:'category',data:hmDi,axisLabel:{color:'#64748b',fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+            visualMap:{min:0,max:maxVal,calculable:true,orient:'horizontal',left:'center',bottom:0,textStyle:{color:'#94a3b8',fontSize:10},inRange:{color:['#eef2ff','#c7d2fe','#818cf8','#6366f1','#4f46e5']},itemWidth:14,itemHeight:120},
+            series:[{
+                type:'heatmap',data:hmData,
+                label:{show:true,fontSize:10,color:'#334155',formatter:function(p){return p.value[2];}},
+                emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,0.3)'}},
+                itemStyle:{borderColor:'#fff',borderWidth:2,borderRadius:4}
+            }],
+            animationDuration:1500
+        });
+
+        // Resize
+        window.addEventListener('resize',function(){
+            trendChart.resize(); typeChart.resize(); heatmapChart.resize();
+        });
+    }).catch(e=>console.error('Chart data fetch error:',e));
+    // Resize handler for all charts
+    window.addEventListener('resize', function() {
+        if (typeof trendChart !== 'undefined' && trendChart) trendChart.resize();
+        if (typeof typeChart !== 'undefined' && typeChart) typeChart.resize();
+        if (typeof heatmapChart !== 'undefined' && heatmapChart) heatmapChart.resize();
+    });
+
+});
+    </script>
+    
+<!-- AI Customer Service Widget with Markdown Rendering -->
+
+<!-- Floating Button -->
+<div id="ai-customer-service-btn" onclick="toggleChat()" style="
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    z-index: 9999;
+    transition: all 0.3s ease;
+">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="white"/>
+        <circle cx="9" cy="10" r="1.5" fill="white"/>
+        <circle cx="15" cy="10" r="1.5" fill="white"/>
+        <path d="M12 17.5C14.33 17.5 16.32 16.05 17.12 14H6.88C7.68 16.05 9.67 17.5 12 17.5Z" fill="white"/>
+    </svg>
+</div>
+
+<!-- Chat Window -->
+<div id="ai-customer-service-window" style="
+    position: fixed;
+    right: 20px;
+    bottom: 90px;
+    width: 380px;
+    height: 550px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    z-index: 9998;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+">
+    <!-- Header -->
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    ">
+        <div style="font-size: 16px; font-weight: 600;">🧬 AI Assistant</div>
+        <div onclick="toggleChat()" style="cursor: pointer; padding: 5px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Quick Questions -->
+    <div style="
+        padding: 10px 15px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    ">
+        <span onclick="askQuestion('What does this platform do?')" class="cs-quick-btn">Platform Intro</span>
+        <span onclick="askQuestion('How to perform GO enrichment analysis?')" class="cs-quick-btn">GO Analysis</span>
+        <span onclick="askQuestion('How to use BLAST?')" class="cs-quick-btn">BLAST</span>
+        <span onclick="askQuestion('How to use single-cell analysis?')" class="cs-quick-btn">Single Cell</span>
+    </div>
+    
+    <!-- Messages -->
+    <div id="chat-messages" class="cs-messages">
+        <div class="cs-msg cs-msg-bot">
+            <div class="cs-msg-content">Hello! I'm the AI assistant for this bioinformatics platform. How can I help you? 😊</div>
+        </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="cs-input-area">
+        <input type="text" id="chat-input" placeholder="Type your question..." onkeypress="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()" id="send-btn">Send</button>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#ai-customer-service-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+}
+.cs-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8fafc;
+}
+.cs-messages::-webkit-scrollbar { width: 6px; }
+.cs-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.cs-msg { display: flex; margin-bottom: 12px; }
+.cs-msg-user { justify-content: flex-end; }
+.cs-msg-bot { justify-content: flex-start; }
+.cs-msg-content {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+}
+.cs-msg-user .cs-msg-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+.cs-msg-bot .cs-msg-content {
+    background: white;
+    color: #334155;
+    border-bottom-left-radius: 4px;
+}
+.cs-input-area {
+    padding: 12px 15px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 10px;
+}
+.cs-input-area input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+}
+.cs-input-area button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.cs-input-area button:disabled { opacity: 0.6; cursor: not-allowed; }
+.cs-quick-btn {
+    padding: 5px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+.cs-quick-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* Markdown Styles */
+.cs-msg-content h1, .cs-msg-content h2, .cs-msg-content h3 {
+    margin: 10px 0 8px 0;
+    font-weight: 600;
+    color: inherit;
+}
+.cs-msg-content h1 { font-size: 16px; }
+.cs-msg-content h2 { font-size: 15px; }
+.cs-msg-content h3 { font-size: 14px; }
+.cs-msg-content p { margin: 8px 0; }
+.cs-msg-content ul, .cs-msg-content ol { margin: 8px 0; padding-left: 20px; }
+.cs-msg-content li { margin: 4px 0; }
+.cs-msg-content code {
+    background: rgba(0,0,0,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+}
+.cs-msg-content pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 10px 0;
+}
+.cs-msg-content pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+}
+.cs-msg-content strong { font-weight: 600; }
+.cs-msg-content em { font-style: italic; }
+.cs-msg-content blockquote {
+    border-left: 3px solid #667eea;
+    padding-left: 10px;
+    margin: 10px 0;
+    color: #64748b;
+}
+.cs-msg-content hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+.cs-msg-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+    font-size: 13px;
+}
+.cs-msg-content th, .cs-msg-content td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 8px;
+    text-align: left;
+}
+.cs-msg-content th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+</style>
+
+<script>
+let isOpen = false;
+const CS_API_URL = 'http://43.99.62.219:8002/api/chat';
+
+function toggleChat() {
+    const win = document.getElementById('ai-customer-service-window');
+    isOpen = !isOpen;
+    win.style.display = isOpen ? 'flex' : 'none';
+    if (isOpen) document.getElementById('chat-input').focus();
+}
+
+function renderMarkdown(text) {
+    if (!text) return '';
+    text = text.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    text = text.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    text = text.replace(/^---$/gm, '<hr>');
+    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+    text = text.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#667eea;text-decoration:underline;">$1</a>');
+    text = text.replace(/\n\n/g, '</p><p>');
+    text = text.replace(/\n/g, '<br>');
+    return '<p>' + text + '</p>';
+}
+
+function addMessage(content, isUser) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `cs-msg ${isUser ? 'cs-msg-user' : 'cs-msg-bot'}`;
+    const renderedContent = isUser ? content : renderMarkdown(content);
+    div.innerHTML = `<div class="cs-msg-content">${renderedContent}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function addTyping() {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.id = 'typing-indicator';
+    div.className = 'cs-msg cs-msg-bot';
+    div.innerHTML = '<div class="cs-msg-content" style="opacity:0.7;">Thinking...</div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const btn = document.getElementById('send-btn');
+    const question = input.value.trim();
+    if (!question) return;
+    
+    input.disabled = true;
+    btn.disabled = true;
+    
+    addMessage(question, true);
+    input.value = '';
+    addTyping();
+    
+    try {
+        const res = await fetch(CS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: question })
+        });
+        const data = await res.json();
+        removeTyping();
+        addMessage(data.answer, false);
+    } catch (e) {
+        removeTyping();
+        addMessage('Sorry, the service is temporarily unavailable. Please try again later.', false);
+    }
+    
+    input.disabled = false;
+    btn.disabled = false;
+    input.focus();
+}
+
+function askQuestion(q) {
+    document.getElementById('chat-input').value = q;
+    sendMessage();
+}
+</script>
+
+    <script>
+    // Load dynamic stats for home page
+    (function() {
+        fetch('/hormone_app/api/hormone-stats/')
+            .then(res => res.json())
+            .then(stats => {
+                // Update stats banner
+                const fmt = n => n.toLocaleString();
+                document.getElementById('homeTotalRecords').textContent = fmt(stats.summary.total_records);
+                document.getElementById('homeTotalHormones').textContent = fmt(stats.summary.unique_hormones);
+                document.getElementById('homeTotalGenes').textContent = fmt(stats.summary.unique_genes);
+                document.getElementById('homeTotalSpecies').textContent = fmt(stats.summary.unique_species);
+            })
+            .catch(err => console.error('Failed to load stats:', err));
+    })();
+    </script>
+
+</body>
+</html>

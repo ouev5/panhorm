@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gene Insights Hub - Animal Hormone Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root { --primary: #2563eb; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #334155; }
+        nav { background: linear-gradient(135deg, #0f172a, #1e3a8a); padding: 1rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+        /* Hero Section */
+        .hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; padding: 2rem 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102,126,234,0.3); }
+        .hero-icon { width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .hero-icon i { font-size: 2rem; color: #fff; }
+        .hero-text { flex: 1; }
+        .hero-text h1 { font-size: 2.2rem; font-weight: 700; color: #fff; margin: 0 0 0.3rem 0; letter-spacing: -0.5px; }
+        .tagline { font-size: 1.1rem; color: rgba(255,255,255,0.9); margin: 0 0 0.5rem 0; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; }
+        .hero-text .subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.75); margin: 0; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        h1 { font-size: 2rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+        .subtitle { color: #64748b; margin-bottom: 2rem; }
+        .grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 1rem; }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem; }
+        .card-header i { color: var(--primary); }
+        .card-header h3 { font-size: 1rem; font-weight: 600; }
+        .card-body { padding: 1.25rem; }
+        .list-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; }
+        .badge { background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; }
+        textarea { width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px; font-family: monospace; font-size: 0.85rem; min-height: 60px; resize: vertical; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-accent { background: #3b82f6; color: white; }
+        .btn-block { width: 100%; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
+        .stat { background: rgba(37,99,235,0.05); border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.6rem; text-align: center; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; }
+        .elements-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; max-height: 80px; overflow-y: auto; }
+        .element { display: inline-block; padding: 2px 6px; margin: 1px; background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.2); border-radius: 4px; font-size: 0.65rem; font-family: monospace; color: #2563eb; }
+        .chart-box { background: #f8fafc; border-radius: 8px; padding: 0.75rem; }
+        .chart { width: 100%; height: 500px; }
+        .chart-lg { width: 100%; height: 600px; }
+        .chart-xl { width: 100%; height: 700px; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .tab { padding: 0.4rem 0.8rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 100px; color: #64748b; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .tab:hover { background: #e2e8f0; }
+        .tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .status { display: none; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; background: rgba(37,99,235,0.1); border-radius: 6px; margin-top: 0.5rem; font-size: 0.8rem; }
+        .status.success { background: rgba(16,185,129,0.1); color: #059669; }
+        .status.error { background: rgba(239,68,68,0.1); color: #dc2626; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th, td { padding: 0.5rem 0.6rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { color: #64748b; background: #f8fafc; font-weight: 600; position: sticky; top: 0; }
+        .source-badge { position: absolute; top: 0.5rem; right: 0.5rem; padding: 0.2rem 0.5rem; background: rgba(16,185,129,0.1); border-radius: 100px; font-size: 0.65rem; color: #10b981; }
+        .venn-container { position: relative; width: 100%; height: 560px; }
+        .venn-svg { width: 100%; height: 100%; }
+        .venn-circle { cursor: pointer; transition: all 0.3s ease; }
+        .venn-circle:hover { filter: brightness(1.1); stroke-width: 3.5; }
+        .venn-label { font-family: 'Segoe UI', sans-serif; pointer-events: none; }
+        .venn-count { font-family: 'Segoe UI', sans-serif; font-weight: 700; pointer-events: none; cursor: pointer; }
+        .venn-count:hover { font-size: 120%; }
+        .venn-region { cursor: pointer; transition: opacity 0.2s; }
+        .venn-region:hover { opacity: 0.9 !important; }
+        .venn-legend { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.95); border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .venn-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .venn-legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+        .sankey-dot-container { display: flex; gap: 0; width: 100%; height: 680px; background: #f8fafc; border-radius: 8px; overflow: hidden; }
+        .sankey-half { flex: 1; min-width: 0; height: 100%; }
+        .sankey-divider { width: 2px; background: #e2e8f0; }
+        .sankey-label { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 10px; background: rgba(248,250,252,0.95); border-radius: 4px; z-index: 2; }
+        .echarts-tooltip { max-width: 350px !important; word-wrap: break-word !important; }
+
+        /* ── Blink animation for selected UpSet bars ── */
+        @keyframes upsetBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .upset-selected-blink {
+            animation: upsetBlink 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <nav><div class="nav-container"><a href="https://43.99.62.219/" class="back-btn"><i class="fa fa-arrow-left"></i> Back to Home</a></div></nav>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="hero-text">
+                <h1>Gene Insights Hub</h1>
+                <p class="tagline">Explore. Enrich. Discover.</p>
+                <p class="subtitle">Multi-dimensional gene set analysis with interactive visualizations</p>
+            </div>
+        </div>
+        <div class="grid">
+            <aside>
+                <div class="card">
+                    <div class="card-header"><i class="fa fa-list"></i><h3>Gene Lists</h3></div>
+                    <div class="card-body">
+                        <div id="lists">
+                            <div class="list-item"><label><span class="badge">List 1</span></label><textarea id="list1" placeholder="TP53&#10;BRCA1&#10;EGFR"></textarea></div>
+                            <div class="list-item"><label><span class="badge">List 2</span></label><textarea id="list2" placeholder="TP53&#10;BRCA2&#10;PTEN"></textarea></div>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-secondary" style="flex:1" onclick="addList()"><i class="fa fa-plus"></i> Add</button>
+                            <button class="btn btn-secondary" style="flex:1" onclick="uploadFile()"><i class="fa fa-upload"></i> Upload</button>
+                            <button class="btn btn-secondary" style="flex:1" onclick="openDbModal()"><i class="fa fa-database"></i> Database</button>
+                            <input type="file" id="fileInput" accept=".txt,.csv,.tsv" style="display:none" onchange="handleUpload(event)">
+                            <button class="btn btn-secondary" onclick="removeList()"><i class="fa fa-minus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="analyze()"><i class="fa fa-play"></i> Analyze</button>
+                <div class="card">
+                    <div class="card-header"><i class="fa fa-check-circle"></i><h3>Selected Elements</h3></div>
+                    <div class="card-body">
+                        <div class="stats">
+                            <div class="stat"><div class="stat-value" id="cnt">0</div><div class="stat-label">Elements</div></div>
+                            <div class="stat"><div class="stat-value" id="sets">-</div><div class="stat-label">Sets</div></div>
+                            <div class="stat"><div class="stat-value" id="total">2</div><div class="stat-label">Lists</div></div>
+                        </div>
+                        <div class="elements-box" id="box"><div style="color:#94a3b8;text-align:center;padding:0.5rem;font-size:0.75rem">Click regions to select</div></div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-success" onclick="runEnrichment('go')"><i class="fa fa-flask"></i> GO</button>
+                            <button class="btn btn-warning" onclick="runEnrichment('kegg')"><i class="fa fa-database"></i> KEGG</button>
+                            <button class="btn btn-accent" onclick="openString()"><i class="fa fa-link"></i> STRING</button>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                            <button class="btn btn-primary" onclick="showSingleCellCluster()" style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6)"><i class="fa fa-cells"></i> Single-Cell Cluster</button>
+                        </div>
+                        <div class="status" id="status"><span id="statusText"></span></div>
+                    </div>
+                </div>
+                <!-- Multi-select hint -->
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:0.6rem 0.8rem;font-size:0.75rem;color:#1e40af;">
+                    <i class="fa fa-info-circle" style="margin-right:4px"></i>
+                    <b>Tip:</b> Click bars in UpSet plot to multi-select. Click again to deselect. Selected bars will blink.
+                </div>
+            </aside>
+            <main>
+                <div class="card">
+                    <div class="card-header"><h3>Analysis Results</h3></div>
+                    <div class="card-body">
+                        <div class="tabs" style="display:flex;align-items:center;gap:0.5rem;">
+                            <button class="tab active" onclick="switchMain('upset',this)">UpSet Plot</button>
+                            <button class="tab" onclick="switchMain('venn',this)">Classic Venn</button>
+                            <button class="btn" onclick="openPreprocessModal()" style="margin-left:auto;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:0.85rem;padding:0.4rem 0.8rem;border:none;border-radius:6px;cursor:pointer;"><i class="fa fa-cogs"></i> 数据预处理</button>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;" id="upsetControls">
+                            <button class="btn btn-secondary" onclick="clearUpsetSelection()" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-times"></i> Clear</button>
+                            <button class="btn btn-secondary" onclick="downloadChart('upset')" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-download"></i> Download</button>
+                            <span id="upsetSelInfo" style="font-size:0.75rem;color:#64748b;line-height:2;">No bars selected</span>
+                        </div>
+                        <div class="chart-box">
+                            <div id="upsetChart" class="chart-lg"></div>
+                            <div id="vennChart" style="display:none">
+                                <div class="venn-container" id="vennContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="position:relative">
+                    <span class="source-badge" id="sankeyEnrichSource">Enrichr</span>
+                    <div class="card-header"><i class="fa fa-random"></i><h3>Sankey-Dot Enrichment</h3></div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div class="tabs" style="margin-bottom:0;">
+                                <button class="tab active" onclick="switchSankeySource('go',this)">GO Terms</button>
+                                <button class="tab" onclick="switchSankeySource('kegg',this)">KEGG Pathways</button>
+                            </div>
+                            <button class="btn btn-secondary" onclick="downloadChart('sankey')" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-download"></i></button>
+                        </div>
+                        <div class="chart-box">
+                            <div class="sankey-dot-container">
+                                <div class="sankey-half" style="position:relative">
+                                    <div class="sankey-label">Gene → Pathway Sankey</div>
+                                    <div id="sankeyLeft" style="width:100%;height:100%"></div>
+                                </div>
+                                <div class="sankey-divider"></div>
+                                <div class="sankey-half" style="position:relative">
+                                    <div class="sankey-label">Enrichment Dot Plot</div>
+                                    <div id="dotRight" style="width:100%;height:100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Single-Cell Cluster Card -->
+                <div class="card" id="singleCellCard" style="display:none">
+                    <div class="card-header" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);margin:-1.25rem -1.25rem 0 -1.25rem;padding:1rem 1.25rem;border-radius:12px 12px 0 0;">
+                        <i class="fa fa-cells" style="color:#fff"></i><h3 style="color:#fff">Single-Cell Cluster (Tabula Sapiens)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">
+                            <span style="font-size:0.8rem;color:#64748b;"><b id="scGeneCount">0</b> genes selected · <b id="scCellCount">0</b> cells found</span>
+                            <div style="display:flex;gap:0.5rem;">
+                                <button class="btn btn-secondary btn-sm" onclick="switchSCColorBy('cell_type',this)">Cell Type</button>
+                                <button class="btn btn-secondary btn-sm" onclick="switchSCColorBy('tissue',this)">Tissue</button>
+                                <button class="btn btn-secondary btn-sm" onclick="switchSCColorBy('gene',this)">Gene Expr</button>
+                                <button class="btn btn-secondary btn-sm" onclick="downloadChart('singleCell')" style="margin-left:auto;"><i class="fa fa-download"></i> Download</button>
+                            </div>
+                        </div>
+                        <div class="chart-box">
+                            <div id="singleCellChart" style="width:100%;height:550px;"></div>
+                        </div>
+                        <div style="margin-top:0.5rem;font-size:0.75rem;color:#64748b;">
+                            <i class="fa fa-info-circle"></i> Real single-cell data from Tabula Sapiens (94,836 cells, 24 tissues). UMAP coordinates pre-computed.
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="position:relative">
+                    <span class="source-badge" id="goSource">Enrichr</span>
+                    <div class="card-header"><i class="fa fa-flask"></i><h3>GO Enrichment</h3></div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div class="tabs" style="margin-bottom:0;">
+                                <button class="tab active" onclick="switchSub('go','Bar',this)">Bar</button>
+                                <button class="tab" onclick="switchSub('go','Bubble',this)">Bubble</button>
+                                <button class="tab" onclick="switchSub('go','Pie',this)">Pie</button>
+                                <button class="tab" onclick="switchSub('go','Table',this)">Table</button>
+                            </div>
+                            <button class="btn btn-secondary" onclick="downloadEnrichment('go')" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-download"></i></button>
+                        </div>
+                        <div class="chart-box">
+                            <div id="goBarChart" class="chart"></div>
+                            <div id="goBubbleChart" class="chart" style="display:none"></div>
+                            <div id="goPieChart" class="chart" style="display:none"></div>
+                            <div id="goTableChart" style="max-height:380px;overflow:auto;display:none"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="position:relative">
+                    <span class="source-badge" id="keggSource">Enrichr</span>
+                    <div class="card-header"><i class="fa fa-database"></i><h3>KEGG Pathway</h3></div>
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <div class="tabs" style="margin-bottom:0;">
+                                <button class="tab active" onclick="switchSub('kegg','Bar',this)">Bar</button>
+                                <button class="tab" onclick="switchSub('kegg','Bubble',this)">Bubble</button>
+                                <button class="tab" onclick="switchSub('kegg','Pie',this)">Pie</button>
+                                <button class="tab" onclick="switchSub('kegg','Table',this)">Table</button>
+                            </div>
+                            <button class="btn btn-secondary" onclick="downloadEnrichment('kegg')" style="font-size:0.75rem;padding:0.3rem 0.7rem;"><i class="fa fa-download"></i></button>
+                        </div>
+                        <div class="chart-box">
+                            <div id="keggBarChart" class="chart"></div>
+                            <div id="keggBubbleChart" class="chart" style="display:none"></div>
+                            <div id="keggPieChart" class="chart" style="display:none"></div>
+                            <div id="keggTableChart" style="max-height:380px;overflow:auto;display:none"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+    var listCount=2, currentElements=[], intersections=[], goResults=[], keggResults=[];
+    var charts={}, currentSankeySource='go';
+    var COLORS=['#2563eb','#f59e0b','#10b981','#8b5cf6','#ec4899','#14b8a6','#f472b6','#3b82f6'];
+    var VENN_COLORS=['rgba(59,130,246,0.45)','rgba(245,158,11,0.45)','rgba(16,185,129,0.45)','rgba(139,92,246,0.45)','rgba(236,72,153,0.45)'];
+    var VENN_STROKES=['#2563eb','#d97706','#059669','#7c3aed','#db2777'];
+    var PIE_COLORS=['#2563eb','#3b82f6','#60a5fa','#f59e0b','#fbbf24','#10b981','#34d399','#8b5cf6','#a78bfa','#ec4899'];
+    var analysisData=null;
+    var scData=null; // Single-cell data cache
+
+    // ── UpSet multi-select state ──
+    var upsetSelectedIndices = [];   // array of selected intersection indices
+    var upsetIntersData = [];        // stored intersection data for current render
+    var upsetBlinkTimer = null;      // blink animation timer
+    var upsetBlinkState = true;      // toggle for blink
+
+    function addList(){
+        listCount++;
+        document.getElementById('lists').insertAdjacentHTML('beforeend',
+            '<div class="list-item"><label><span class="badge">List '+listCount+'</span></label><textarea id="list'+listCount+'"></textarea></div>');
+        document.getElementById('total').textContent=listCount;
+    }
+    function removeList(){
+        if(listCount>2){document.getElementById('lists').lastElementChild.remove();listCount--;document.getElementById('total').textContent=listCount;}
+    }
+    function getLists(){
+        var l={};
+        for(var i=1;i<=listCount;i++){
+            var e=document.getElementById('list'+i);
+            if(e){
+                var items=e.value.split(/[\n,;]+/).map(function(s){return s.trim().toUpperCase()}).filter(function(s){return s&&/^[A-Za-z0-9_\-.]+$/i.test(s)});
+                items=items.filter(function(v,idx,arr){return arr.indexOf(v)===idx});
+                if(items.length) l['List '+(i)]=items;
+            }
+        }
+        return l;
+    }
+    function setStatus(m,t){
+        var s=document.getElementById('status');
+        s.style.display='flex';
+        s.className='status'+(t==='error'?' error':t==='success'?' success':'');
+        document.getElementById('statusText').textContent=m;
+    }
+
+    var scColorBy = 'cell_type';
+    var scCurrentGenes = [];
+
+    function showSingleCellCluster(){
+        if(!currentElements || currentElements.length < 1){
+            setStatus('Select at least 1 gene for single-cell analysis','error');
+            return;
+        }
+        scCurrentGenes = currentElements.slice(0, 50);
+        document.getElementById('scGeneCount').textContent = scCurrentGenes.length;
+        document.getElementById('singleCellCard').style.display = 'block';
+        document.getElementById('singleCellCard').scrollIntoView({behavior:'smooth',block:'start'});
+        setStatus('Loading single-cell data...','success');
+        
+        fetch('/api/single_cell_query',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({genes:scCurrentGenes})
+        })
+        .then(function(r){return r.json()})
+        .then(function(d){
+            if(d.error){setStatus(d.error,'error');return;}
+            // Show loading for large datasets
+            if(d.n_cells > 10000){
+                setStatus('Rendering ' + d.n_cells + ' cells...', 'success');
+            }
+            scData = d; // Cache data for re-rendering
+            console.log('Single-cell API response:', d.found_genes, 'genes,', d.n_cells, 'cells');
+            document.getElementById('scGeneCount').textContent = d.found_genes ? d.found_genes.length : 0;
+            document.getElementById('scCellCount').textContent = d.n_cells || 0;
+            renderSingleCellPlot(d);
+            var msg = 'Found '+d.n_cells+' cells expressing '+(d.found_genes||[]).length+' genes';
+            if(d.not_found_genes && d.not_found_genes.length > 0){
+                msg += ' (Warning: '+d.not_found_genes.join(', ')+' not in dataset)';
+            }
+            setStatus(msg, d.not_found_genes && d.not_found_genes.length > 0 ? 'warning' : 'success');
+        })
+        .catch(function(e){setStatus('Error: '+e.message,'error');});
+    }
+
+    function switchSCColorBy(type, btn){
+        scColorBy = type;
+        if(btn){
+            btn.parentElement.querySelectorAll('.btn').forEach(function(b){
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-secondary');
+            });
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+        }
+        // Re-render plot with new color scheme
+        if(scData){
+            renderSingleCellPlot(scData);
+        }
+    }
+
+    function renderSingleCellPlot(data){
+        var dom = document.getElementById('singleCellChart');
+        if(charts.singleCell && !charts.singleCell.isDisposed()) charts.singleCell.dispose();
+        var c = echarts.init(dom);
+        
+        var cells = data.cells || [];
+        var cellTypes = data.cell_types || [];
+        var typeColors = data.type_colors || {};
+        
+        if(cells.length === 0){
+            c.setOption({
+                title: { text: 'No cells found expressing selected genes', left: 'center', top: 'center' }
+            });
+            charts.singleCell = c;
+            return;
+        }
+        
+        // 根据颜色模式分组
+        var seriesData = {};
+        var geneExprData = [];
+        
+        if(scColorBy === 'gene'){
+            // 基因表达模式：用颜色深浅表示表达量
+            var exprValues = cells.map(function(c){ return c.gene_expr || 0; });
+            var maxExpr = Math.max.apply(null, exprValues);
+            var minExpr = Math.min.apply(null, exprValues);
+            
+            cells.forEach(function(cell){
+                var expr = cell.gene_expr || 0;
+                // 归一化到 0-1
+                var norm = maxExpr > minExpr ? (expr - minExpr) / (maxExpr - minExpr) : 0.5;
+                geneExprData.push({
+                    value: [cell.x, cell.y],
+                    gene_expr: expr.toFixed(2),
+                    cell_type: cell.cell_type
+                });
+            });
+            
+            var series = [{
+                type: 'scatter',
+                name: 'Gene Expression',
+                data: geneExprData,
+                symbolSize: 3,
+                large: true,
+                largeThreshold: 2000,
+                itemStyle: {
+                    color: function(params){
+                        var expr = params.data.gene_expr;
+                        // 颜色从浅蓝到深红
+                        var r = Math.round(255 * expr);
+                        var b = Math.round(255 * (1 - expr));
+                        return 'rgb(' + r + ',80,' + b + ')';
+                    },
+                    opacity: 0.8
+                },
+                emphasis: {
+                    itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' }
+                }
+            }];
+        } else {
+            // 细胞类型或组织模式
+            var colorKey = scColorBy === 'cell_type' ? 'cell_type' : 'cell_type';
+            var colorMap = typeColors;
+            
+            cells.forEach(function(cell){
+                var key = cell[colorKey] || 'Unknown';
+                if(!seriesData[key]) seriesData[key] = [];
+                seriesData[key].push({
+                    value: [cell.x, cell.y],
+                    gene_expr: (cell.gene_expr || 0).toFixed(2)
+                });
+            });
+            
+            var series = [];
+            var keys = Object.keys(seriesData);
+            keys.forEach(function(key){
+                series.push({
+                    type: 'scatter',
+                    name: key,
+                    data: seriesData[key],
+                    symbolSize: 3,
+                    large: true,
+                    largeThreshold: 2000,
+                    itemStyle: {
+                        color: colorMap[key] || '#94a3b8',
+                        opacity: 0.8
+                    },
+                    emphasis: {
+                        itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.3)' }
+                    }
+                });
+            });
+        }
+        
+        // 构建标题
+        var titleText = 'UMAP - ' + data.found_genes.length + ' gene' + (data.found_genes.length > 1 ? 's' : '');
+        if(data.found_genes.length > 0){
+            titleText += ' (' + data.found_genes.slice(0, 3).join(', ') + (data.found_genes.length > 3 ? '...' : '') + ')';
+        }
+        titleText += ' - ' + cells.length + ' cells';
+        if(data.not_found_genes && data.not_found_genes.length > 0){
+            titleText += ' [' + data.not_found_genes.length + ' not found]';
+        }
+        
+        c.setOption({
+            backgroundColor: 'transparent',
+            title: {
+                text: titleText,
+                left: 'center',
+                top: 5,
+                textStyle: { fontSize: 13, color: '#334155', fontWeight: '600' }
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: function(p){
+                    var d = p.data;
+                    if(scColorBy === 'gene'){
+                        return '<b>Expression: ' + d.gene_expr + '</b><br>Cell: ' + d.cell_type;
+                    } else {
+                        return '<b>' + p.seriesName + '</b><br>Expr: ' + (d.gene_expr || 'N/A');
+                    }
+                }
+            },
+            visualMap: scColorBy === 'gene' ? {
+                min: 0,
+                max: 1,
+                left: 'right',
+                top: 'center',
+                text: ['High', 'Low'],
+                calculable: true,
+                inRange: {
+                    color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', 
+                            '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+                }
+            } : null,
+            legend: scColorBy !== 'gene' ? {
+                type: 'scroll',
+                orient: 'horizontal',
+                bottom: 5,
+                itemWidth: 10,
+                itemHeight: 10,
+                textStyle: { fontSize: 10, color: '#475569' },
+                pageIconSize: 10
+            } : null,
+            grid: { left: '3%', right: scColorBy === 'gene' ? '15%' : '3%', bottom: '15%', top: '12%' },
+            xAxis: {
+                type: 'value',
+                show: true,
+                axisLine: { lineStyle: { color: '#e2e8f0' } },
+                splitLine: { lineStyle: { color: '#f1f5f9' } },
+                axisLabel: { color: '#94a3b8', fontSize: 9 }
+            },
+            yAxis: {
+                type: 'value',
+                show: true,
+                axisLine: { lineStyle: { color: '#e2e8f0' } },
+                splitLine: { lineStyle: { color: '#f1f5f9' } },
+                axisLabel: { color: '#94a3b8', fontSize: 9 }
+            },
+            series: series
+        });
+        charts.singleCell = c;
+    }
+
+    function switchMain(type,btn){
+        btn.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+        btn.classList.add('active');
+        document.getElementById('upsetChart').style.display = type==='upset'?'block':'none';
+        document.getElementById('vennChart').style.display = type==='venn'?'block':'none';
+        document.getElementById('upsetControls').style.display = type==='upset'?'flex':'none';
+        if(type==='upset'&&charts.upset)setTimeout(function(){charts.upset.resize()},50);
+    }
+    function switchSub(type,ct,btn){
+        btn.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+        btn.classList.add('active');
+        ['BarChart','BubbleChart','PieChart','TableChart'].forEach(function(id){document.getElementById(type+id).style.display='none'});
+        document.getElementById(type+ct+'Chart').style.display='block';
+        if(ct!=='Table'&&charts[type+ct])setTimeout(function(){charts[type+ct].resize()},50);
+    }
+    function switchSankeySource(src,btn){
+        btn.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+        btn.classList.add('active');
+        currentSankeySource=src;
+        var results = src==='go' ? goResults : keggResults;
+        if(results.length>0) renderSankeyDot(results, src);
+    }
+
+    function analyze(){
+        var lists=getLists();
+        if(Object.keys(lists).length<2){setStatus('Need 2+ lists','error');return}
+        setStatus('Analyzing...');
+        // Clear previous selections
+        clearUpsetSelection();
+        fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lists:lists})})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            if(d.error){setStatus(d.error,'error');return}
+            analysisData=d;
+            renderUpSet(d);
+            renderClassicVenn(d);
+            setStatus('Done – '+d.intersections.length+' intersections','success');
+        }).catch(function(e){setStatus('Error: '+e.message,'error')});
+    }
+
+    /* ══════════════════════════════════════════════════════
+       UpSet Plot — with multi-select + blink effect
+       Layout: "List N" [bar] count
+       ══════════════════════════════════════════════════════ */
+    function renderUpSet(data){
+        var dom=document.getElementById('upsetChart');
+        if(charts.upset&&!charts.upset.isDisposed()) charts.upset.dispose();
+        var c=echarts.init(dom);
+
+        var inters=data.intersections.slice(0,20).sort(function(a,b){return b.size-a.size});
+        upsetIntersData = inters; // store for selection
+        upsetSelectedIndices = [];
+
+        var lNames=Object.keys(data.sizes);
+        var maxSize=Math.max.apply(null,inters.map(function(i){return i.size}));
+        var maxSetSize=Math.max.apply(null,lNames.map(function(n){return data.sizes[n]}));
+
+        var W=dom.clientWidth, H=dom.clientHeight;
+
+        var matrixLeft = 180;  // 矩阵往右移，给左侧条形留空间
+        var colW = Math.max(36, Math.min(55, (W - matrixLeft - 40) / inters.length));
+        var rowH = Math.max(28, Math.min(38, 160 / lNames.length));
+        var matrixBottom = H - 40;
+        var matrixTop = matrixBottom - lNames.length * rowH;
+        var barAreaTop = 50;
+        var barAreaH = matrixTop - barAreaTop - 30;
+        var setBarMaxW = 80;  // 恢复条形宽度
+        var dotR_active = 8;
+        var dotR_inactive = 4;
+
+        var graphics = [];
+
+        // Title
+        graphics.push({type:'text',style:{x:W/2,y:16,text:'UpSet Plot — Click bars to multi-select (blink = selected)',textAlign:'center',
+            fill:'#64748b',fontSize:12,fontWeight:'600'}});
+
+        // Background stripes
+        lNames.forEach(function(ln,i){
+            var y = matrixBottom - (lNames.length - i) * rowH;
+            if(i % 2 === 0){
+                graphics.push({type:'rect',shape:{x:matrixLeft-5, y:y, width:inters.length*colW+10, height:rowH},
+                    style:{fill:'rgba(241,245,249,0.5)'}});
+            }
+        });
+
+        /* ── Set size bars (left): "List N" [bar] count ── */
+        lNames.forEach(function(ln, i){
+            var y = matrixBottom - (lNames.length - i) * rowH + rowH / 2;
+            var bw = (data.sizes[ln] / maxSetSize) * setBarMaxW;
+
+            // Set name on the far left
+            graphics.push({type:'text',style:{x: 5, y: y + 1, text: ln, fill:'#334155', fontSize:12, fontWeight:'600',
+                textAlign:'left', textVerticalAlign:'middle'}});
+
+            // Bar starts after the name area, with spacing
+            var barStart = 55;
+            graphics.push({type:'rect',shape:{x: barStart, y: y - 8, width: bw, height: 16, r:[4,4,4,4]},
+                style:{fill: COLORS[i % COLORS.length], opacity:0.7}});
+
+            // Count to the right of the bar
+            graphics.push({type:'text',style:{x: barStart + bw + 6, y: y + 1, text: data.sizes[ln].toString(),
+                textAlign:'left', textVerticalAlign:'middle', fill:'#475569', fontSize:11, fontWeight:'bold'}});
+        });
+
+        // ── Intersection columns ──
+        inters.forEach(function(item, ci){
+            var cx = matrixLeft + ci * colW + colW / 2;
+
+            // Top bar — store id for blink toggling
+            var barH = Math.max(4, (item.size / maxSize) * barAreaH);
+            var barColor = COLORS[ci % COLORS.length];
+
+            graphics.push({
+                type:'rect',
+                id: 'upsetBar_' + ci,
+                shape:{x: cx - colW * 0.32, y: matrixTop - 24 - barH, width: colW * 0.64, height: barH, r:[4,4,0,0]},
+                style:{
+                    fill: new echarts.graphic.LinearGradient(0,0,0,1,[
+                        {offset:0, color: barColor + 'bb'},
+                        {offset:1, color: barColor}
+                    ])
+                },
+                onclick:(function(ci_){return function(){toggleUpsetSelection(ci_)}})(ci),
+                cursor:'pointer'
+            });
+
+            // Selection highlight overlay (invisible initially)
+            graphics.push({
+                type:'rect',
+                id: 'upsetSel_' + ci,
+                shape:{x: cx - colW * 0.42, y: matrixTop - 28 - barH, width: colW * 0.84, height: barH + 8, r:[6,6,2,2]},
+                style:{
+                    fill: 'transparent',
+                    stroke: 'transparent',
+                    lineWidth: 0
+                },
+                silent: true
+            });
+
+            // Bar value label
+            graphics.push({type:'text',style:{x:cx, y: matrixTop - 30 - barH, text: item.size.toString(),
+                textAlign:'center', fill:'#1e293b', fontSize:11, fontWeight:'bold'}});
+
+            // Matrix dots
+            var activeDots = [];
+            lNames.forEach(function(ln, ri){
+                var y = matrixBottom - (lNames.length - ri) * rowH + rowH / 2;
+                var active = item.sets.indexOf(ln) >= 0;
+                if(active) activeDots.push({y:y, ci:ri});
+
+                graphics.push({
+                    type:'circle',
+                    shape:{cx:cx, cy:y, r: active ? dotR_active : dotR_inactive},
+                    style:{
+                        fill: active ? COLORS[ri % COLORS.length] : '#dde3ea',
+                        stroke: active ? '#fff' : 'none',
+                        lineWidth: active ? 2.5 : 0,
+                        shadowBlur: active ? 6 : 0,
+                        shadowColor: active ? 'rgba(0,0,0,0.15)' : 'none'
+                    }
+                });
+            });
+
+            // Connector line
+            if(activeDots.length > 1){
+                var ys = activeDots.map(function(d){return d.y});
+                graphics.push({type:'line',
+                    shape:{x1:cx, y1:Math.min.apply(null,ys), x2:cx, y2:Math.max.apply(null,ys)},
+                    style:{stroke:'#64748b', lineWidth:2.5, lineCap:'round'}
+                });
+                activeDots.forEach(function(ad){
+                    graphics.push({
+                        type:'circle',
+                        shape:{cx:cx, cy:ad.y, r:dotR_active},
+                        style:{fill:COLORS[ad.ci % COLORS.length], stroke:'#fff', lineWidth:2.5,
+                            shadowBlur:6, shadowColor:'rgba(0,0,0,0.15)'}
+                    });
+                });
+            }
+        });
+
+        // Separator
+        graphics.push({type:'line',
+            shape:{x1:matrixLeft-5, y1:matrixTop-16, x2:matrixLeft+inters.length*colW+5, y2:matrixTop-16},
+            style:{stroke:'#cbd5e1', lineWidth:1, lineDash:[4,3]}
+        });
+
+        c.setOption({tooltip:{show:false},xAxis:{show:false},yAxis:{show:false},series:[],graphic:{elements:graphics}});
+        charts.upset=c;
+
+        updateUpsetSelInfo();
+    }
+
+    /* ── Toggle selection for an UpSet bar ── */
+    function toggleUpsetSelection(ci){
+        var idx = upsetSelectedIndices.indexOf(ci);
+        if(idx >= 0){
+            upsetSelectedIndices.splice(idx, 1);
+        } else {
+            upsetSelectedIndices.push(ci);
+        }
+        applyUpsetSelectionVisuals();
+        mergeUpsetSelections();
+        updateUpsetSelInfo();
+    }
+
+    /* ── Clear all UpSet selections ── */
+    function clearUpsetSelection(){
+        upsetSelectedIndices = [];
+        if(charts.upset && !charts.upset.isDisposed()){
+            applyUpsetSelectionVisuals();
+        }
+        currentElements = [];
+        showElements([], []);
+        updateUpsetSelInfo();
+        // Stop blink timer
+        if(upsetBlinkTimer){
+            clearInterval(upsetBlinkTimer);
+            upsetBlinkTimer = null;
+        }
+    }
+
+    /* ── Apply visual highlighting + start blink ── */
+    function applyUpsetSelectionVisuals(){
+        if(!charts.upset || charts.upset.isDisposed()) return;
+        var c = charts.upset;
+
+        // Build update elements for all bars
+        var updates = [];
+        for(var ci=0; ci < upsetIntersData.length; ci++){
+            var isSelected = upsetSelectedIndices.indexOf(ci) >= 0;
+
+            // Update the selection overlay
+            updates.push({
+                id: 'upsetSel_' + ci,
+                style:{
+                    fill: isSelected ? 'rgba(37,99,235,0.12)' : 'transparent',
+                    stroke: isSelected ? '#2563eb' : 'transparent',
+                    lineWidth: isSelected ? 2.5 : 0,
+                    lineDash: isSelected ? [6,3] : null
+                }
+            });
+
+            // Dim non-selected bars when there's a selection
+            if(upsetSelectedIndices.length > 0){
+                updates.push({
+                    id: 'upsetBar_' + ci,
+                    style:{
+                        opacity: isSelected ? 1 : 0.3
+                    }
+                });
+            } else {
+                updates.push({
+                    id: 'upsetBar_' + ci,
+                    style:{
+                        opacity: 1
+                    }
+                });
+            }
+        }
+
+        c.setOption({graphic:{elements:updates}});
+
+        // Manage blink timer
+        if(upsetBlinkTimer){
+            clearInterval(upsetBlinkTimer);
+            upsetBlinkTimer = null;
+        }
+
+        if(upsetSelectedIndices.length > 0){
+            upsetBlinkState = true;
+            upsetBlinkTimer = setInterval(function(){
+                upsetBlinkState = !upsetBlinkState;
+                var blinkUpdates = [];
+                upsetSelectedIndices.forEach(function(ci){
+                    blinkUpdates.push({
+                        id: 'upsetSel_' + ci,
+                        style:{
+                            fill: upsetBlinkState ? 'rgba(37,99,235,0.18)' : 'rgba(37,99,235,0.04)',
+                            stroke: upsetBlinkState ? '#2563eb' : 'rgba(37,99,235,0.3)',
+                            lineWidth: upsetBlinkState ? 2.5 : 1.5
+                        }
+                    });
+                    blinkUpdates.push({
+                        id: 'upsetBar_' + ci,
+                        style:{
+                            opacity: upsetBlinkState ? 1 : 0.55
+                        }
+                    });
+                });
+                if(charts.upset && !charts.upset.isDisposed()){
+                    charts.upset.setOption({graphic:{elements:blinkUpdates}});
+                }
+            }, 600);
+        }
+    }
+
+    /* ── Merge elements from all selected intersections ── */
+    function mergeUpsetSelections(){
+        var allElements = [];
+        var allSets = [];
+
+        upsetSelectedIndices.forEach(function(ci){
+            var item = upsetIntersData[ci];
+            if(item){
+                item.elements.forEach(function(e){
+                    if(allElements.indexOf(e) < 0) allElements.push(e);
+                });
+                item.sets.forEach(function(s){
+                    if(allSets.indexOf(s) < 0) allSets.push(s);
+                });
+            }
+        });
+
+        currentElements = allElements;
+        showElements(allElements, allSets);
+    }
+
+    /* ── Update selection info text ── */
+    function updateUpsetSelInfo(){
+        var el = document.getElementById('upsetSelInfo');
+        if(!el) return;
+        var n = upsetSelectedIndices.length;
+        if(n === 0){
+            el.textContent = 'No bars selected';
+            el.style.color = '#64748b';
+        } else {
+            var totalGenes = 0;
+            upsetSelectedIndices.forEach(function(ci){
+                if(upsetIntersData[ci]) totalGenes += upsetIntersData[ci].elements.length;
+            });
+            el.innerHTML = '<span style="color:#2563eb;font-weight:600">' + n + ' bar' + (n>1?'s':'') + ' selected</span> · ' +
+                currentElements.length + ' unique genes (from ' + totalGenes + ' total)';
+            el.style.color = '#334155';
+        }
+    }
+
+    /* ══════════════════════════════════════════════════════
+       Classic Venn Diagram
+       ══════════════════════════════════════════════════════ */
+    function renderClassicVenn(data){
+        var container=document.getElementById('vennContainer');
+        var lNames=Object.keys(data.sizes);
+        var n=lNames.length;
+        if(n<2||n>5){container.innerHTML='<div style="text-align:center;padding:3rem;color:#94a3b8">Venn diagram supports 2~5 sets</div>';return}
+
+        var W=container.clientWidth||700, H=560;
+        var cx=W/2, cy=H/2;
+
+        var circles=[];
+        if(n===2){
+            var r=155, d=120;
+            circles=[{x:cx-d/2,y:cy,r:r},{x:cx+d/2,y:cy,r:r}];
+        } else if(n===3){
+            var r=140, d=105;
+            circles=[{x:cx,y:cy-d*0.55,r:r},{x:cx-d*0.95,y:cy+d*0.55,r:r},{x:cx+d*0.95,y:cy+d*0.55,r:r}];
+        } else if(n===4){
+            var r=115, d=80;
+            circles=[{x:cx-d,y:cy-d*0.5,r:r},{x:cx+d,y:cy-d*0.5,r:r},{x:cx-d*0.5,y:cy+d*0.5,r:r},{x:cx+d*0.5,y:cy+d*0.5,r:r}];
+        } else {
+            var r=100, d=95;
+            var angle=-Math.PI/2;
+            for(var i=0;i<5;i++){
+                circles.push({x:cx+d*1.15*Math.cos(angle+i*2*Math.PI/5),y:cy+d*1.15*Math.sin(angle+i*2*Math.PI/5),r:r});
+            }
+        }
+
+        var svg='<svg class="venn-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+        svg+='<defs><filter id="vennShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.12"/></filter></defs>';
+
+        circles.forEach(function(c,i){
+            svg+='<circle class="venn-circle" cx="'+c.x+'" cy="'+c.y+'" r="'+c.r+'" fill="'+VENN_COLORS[i]+'" stroke="'+VENN_STROKES[i]+'" stroke-width="2.5" filter="url(#vennShadow)" data-set="'+lNames[i]+'"/>';
+        });
+
+        circles.forEach(function(c,i){
+            var dx=c.x-cx, dy=c.y-cy;
+            var dist=Math.sqrt(dx*dx+dy*dy)||1;
+            var lx, ly;
+            if(n===2){
+                lx=c.x+(i===0?-1:1)*(c.r*0.6); ly=c.y-c.r-22;
+            } else if(n===3){
+                if(i===0){lx=c.x;ly=c.y-c.r-22;}
+                else{lx=c.x+(i===1?-1:1)*20;ly=c.y+c.r+22;}
+            } else {
+                lx=c.x+dx/dist*(c.r+20);
+                ly=c.y+dy/dist*(c.r+20);
+            }
+            svg+='<text class="venn-label" x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="14" font-weight="700" fill="'+VENN_STROKES[i]+'">'+lNames[i]+'</text>';
+            svg+='<text class="venn-label" x="'+lx+'" y="'+(ly+16)+'" text-anchor="middle" font-size="11" fill="#64748b">('+data.sizes[lNames[i]]+')</text>';
+        });
+
+        data.intersections.forEach(function(item){
+            if(item.size===0) return;
+            var setIndices=item.sets.map(function(s){return lNames.indexOf(s)}).filter(function(i){return i>=0});
+            if(setIndices.length===0) return;
+
+            var ax=0,ay=0;
+            setIndices.forEach(function(si){ax+=circles[si].x;ay+=circles[si].y});
+            ax/=setIndices.length; ay/=setIndices.length;
+
+            if(setIndices.length===1){
+                var si=setIndices[0];
+                var dx=circles[si].x-cx, dy=circles[si].y-cy;
+                var dist=Math.sqrt(dx*dx+dy*dy)||1;
+                ax=circles[si].x+dx/dist*circles[si].r*0.45;
+                ay=circles[si].y+dy/dist*circles[si].r*0.45;
+            }
+
+            var textLen = item.size.toString().length;
+            var pillW = Math.max(28, textLen * 10 + 12);
+            svg+='<rect x="'+(ax-pillW/2)+'" y="'+(ay-12)+'" width="'+pillW+'" height="24" rx="12" fill="rgba(255,255,255,0.85)" stroke="#e2e8f0" stroke-width="1"/>';
+            svg+='<text class="venn-count" x="'+ax+'" y="'+ay+'" text-anchor="middle" dominant-baseline="central" font-size="'+(item.size>999?11:item.size>99?12:14)+'" fill="#1e293b" data-sets="'+encodeURIComponent(JSON.stringify(item.sets))+'" data-elements="'+encodeURIComponent(JSON.stringify(item.elements))+'">'+item.size+'</text>';
+        });
+
+        svg+='</svg>';
+
+        var legend='<div class="venn-legend">';
+        lNames.forEach(function(ln,i){
+            legend+='<div class="venn-legend-item"><div class="venn-legend-dot" style="background:'+VENN_STROKES[i]+'"></div><span style="font-weight:500">'+ln+' <span style="color:#94a3b8">('+data.sizes[ln]+')</span></span></div>';
+        });
+        legend+='</div>';
+
+        container.innerHTML=svg+legend;
+
+        container.querySelectorAll('.venn-count').forEach(function(el){
+            el.addEventListener('click',function(){
+                var sets=JSON.parse(decodeURIComponent(this.getAttribute('data-sets')));
+                var elements=JSON.parse(decodeURIComponent(this.getAttribute('data-elements')));
+                showElements(elements,sets);
+            });
+            el.style.cursor='pointer';
+        });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       Sankey-Dot Combined Chart
+       ══════════════════════════════════════════════════════ */
+    function renderSankeyDot(results, type){
+        if(!results||results.length===0) return;
+        var top=results.slice(0,10);
+
+        var domL=document.getElementById('sankeyLeft');
+        if(charts.sankeyL&&!charts.sankeyL.isDisposed()) charts.sankeyL.dispose();
+        var cL=echarts.init(domL);
+
+        var nodes=[],links=[],nodeSet={};
+        var allGenes=[], geneColorMap={};
+
+        top.forEach(function(r){
+            (r.genes||[]).forEach(function(g){
+                if(allGenes.indexOf(g)<0 && allGenes.length<25) allGenes.push(g);
+            });
+        });
+
+        allGenes.forEach(function(g,i){
+            nodeSet[g]=true;
+            var col=COLORS[i%COLORS.length];
+            geneColorMap[g]=col;
+            nodes.push({name:g, itemStyle:{color:col,borderColor:'#fff',borderWidth:1}});
+        });
+
+        top.forEach(function(r,i){
+            var tName=r.term.length>35 ? r.term.slice(0,33)+'…' : r.term;
+            var suffix='';
+            while(nodeSet[tName+suffix]) suffix+=' ';
+            tName=tName+suffix;
+            nodeSet[tName]=true;
+            var pathColor=PIE_COLORS[i%PIE_COLORS.length];
+            nodes.push({name:tName, itemStyle:{color:pathColor,borderColor:'#fff',borderWidth:1}});
+
+            (r.genes||[]).forEach(function(g){
+                if(allGenes.indexOf(g)>=0){
+                    links.push({source:g, target:tName, value:1, lineStyle:{color:geneColorMap[g]||'#cbd5e1',opacity:0.4}});
+                }
+            });
+        });
+
+        cL.setOption({
+            tooltip:{trigger:'item',confine:true,formatter:function(p){
+                if(p.dataType==='node') return '<b>'+p.name.trim()+'</b>';
+                return p.data.source+' → '+p.data.target.trim();
+            }},
+            series:[{
+                type:'sankey', layout:'none', emphasis:{focus:'adjacency'},
+                data:nodes, links:links, top:50, bottom:30, left:10, right:20,
+                nodeWidth:16, nodeGap:10,
+                lineStyle:{curveness:0.5,opacity:0.35},
+                label:{fontSize:10,color:'#475569',fontWeight:'500'},
+                levels:[{depth:0,label:{position:'left'}},{depth:1,label:{position:'right'}}]
+            }]
+        });
+        charts.sankeyL=cL;
+
+        var domR=document.getElementById('dotRight');
+        if(charts.dotR&&!charts.dotR.isDisposed()) charts.dotR.dispose();
+        var cR=echarts.init(domR);
+
+        var dotData=top.map(function(r){return{
+            term: r.term.length>35 ? r.term.slice(0,33)+'…' : r.term,
+            fullTerm: r.term,
+            pval: r.pvalue,
+            negLogP: -Math.log10(r.pvalue+1e-300),
+            geneCount: r.intersection_size||0,
+            score: r.combined_score||0,
+            geneRatio: r.intersection_size / (currentElements.length||1)
+        }});
+
+        dotData.sort(function(a,b){return a.pval-b.pval});
+
+        var maxNLP=Math.max.apply(null,dotData.map(function(d){return d.negLogP}));
+        var maxGC=Math.max.apply(null,dotData.map(function(d){return d.geneCount}));
+
+        cR.setOption({
+            tooltip:{trigger:'item',confine:true,formatter:function(p){
+                var d=dotData[dotData.length-1-p.dataIndex];
+                if(!d) d=dotData[p.dataIndex];
+                return '<b>'+p.name+'</b><br/>P-value: '+(d?d.pval.toExponential(2):'')+'<br/>-log₁₀(P): '+p.value[0].toFixed(2)+'<br/>Gene Count: '+p.value[2];
+            }},
+            grid:{left:'50%',right:'14%',top:60,bottom:50},
+            xAxis:{type:'value',name:'-log₁₀(P-value)',nameLocation:'center',nameGap:30,
+                nameTextStyle:{fontSize:11,color:'#64748b',fontWeight:'500'},
+                axisLine:{lineStyle:{color:'#cbd5e1'}},axisLabel:{fontSize:10,color:'#94a3b8'},
+                splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}},
+            yAxis:{type:'category',data:dotData.map(function(d){return d.term}).reverse(),
+                axisLine:{show:false},axisTick:{show:false},
+                axisLabel:{fontSize:10,color:'#475569',fontWeight:'500',width:220,overflow:'truncate'}},
+            visualMap:{show:true,type:'continuous',min:0,max:Math.ceil(maxGC)||5,
+                dimension:2,
+                inRange:{color:['#bfdbfe','#3b82f6','#1d4ed8','#1e3a8a']},
+                text:['High','Low'],textStyle:{fontSize:9,color:'#94a3b8'},
+                right:8,bottom:60,itemWidth:14,itemHeight:90,
+                seriesIndex:0,calculable:false},
+            series:[{
+                type:'scatter',
+                data:dotData.map(function(d){return{value:[d.negLogP, d.term, d.geneCount], name:d.term}}).reverse(),
+                symbolSize:function(d){
+                    var ratio = (d[2] || 1) / (maxGC || 1);
+                    return Math.max(12, Math.min(38, ratio * 32 + 10));
+                },
+                itemStyle:{borderColor:'#fff',borderWidth:2,shadowBlur:4,shadowColor:'rgba(0,0,0,0.1)'}
+            }]
+        });
+        charts.dotR=cR;
+
+        document.getElementById('sankeyEnrichSource').textContent = type==='go'?'GO':'KEGG';
+    }
+
+    /* ── Show selected elements ── */
+    function showElements(elements,sets){
+        currentElements=elements||[];
+        document.getElementById('cnt').textContent=elements?elements.length:0;
+        document.getElementById('sets').textContent=sets?sets.join(', '):'-';
+        var box=document.getElementById('box');
+        if(elements&&elements.length>0){
+            box.innerHTML=elements.slice(0,80).map(function(e){return'<span class="element">'+e+'</span>'}).join('')+(elements.length>80?'<span style="color:#64748b;font-size:0.65rem"> ...+'+(elements.length-80)+'</span>':'');
+        }else{box.innerHTML='<div style="color:#94a3b8;text-align:center;padding:0.5rem;font-size:0.75rem">Click regions to select</div>'}
+    }
+
+    /* ── Enrichment ── */
+    function runEnrichment(type){
+        if(!currentElements.length){setStatus('Select elements first','error');return}
+        setStatus(type.toUpperCase()+' enrichment running...');
+        fetch('/api/enrichment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({genes:currentElements,type:type})})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            if(d.error){setStatus(d.error,'error');return}
+            var results=d.results||[];
+            if(results.length>0){
+                if(type==='go'){goResults=results;document.getElementById('goSource').textContent=d.source||'Enrichr'}
+                else{keggResults=results;document.getElementById('keggSource').textContent=d.source||'Enrichr'}
+                renderBar(type,results);renderBubble(type,results);renderPie(type,results);renderTable(type,results);
+                if(currentSankeySource===type){renderSankeyDot(results, type)}
+                setStatus(type.toUpperCase()+': '+results.length+' enriched terms found','success');
+            }else{setStatus('No significant results found','error')}
+        }).catch(function(e){setStatus('Error: '+e.message,'error')});
+    }
+
+    function renderBar(type,results){
+        var dom=document.getElementById(type+'BarChart');
+        if(charts[type+'Bar']&&!charts[type+'Bar'].isDisposed()) charts[type+'Bar'].dispose();
+        var c=echarts.init(dom);
+        var top=results.slice(0,12);
+
+        var maxLabelLen = Math.max.apply(null, top.map(function(r){return r.term.length}));
+        var leftPercent = Math.min(55, Math.max(35, maxLabelLen * 0.9)) + '%';
+
+        c.setOption({
+            tooltip:{trigger:'axis',axisPointer:{type:'shadow'},confine:true,
+                formatter:function(p){
+                    var d=top[top.length-1-p[0].dataIndex];
+                    return '<b>'+d.term+'</b><br/>P-value: '+d.pvalue.toExponential(2)+'<br/>Genes: '+d.intersection_size;
+                }},
+            grid:{left:leftPercent,right:'10%',bottom:'6%',top:'6%',containLabel:false},
+            xAxis:{type:'value',name:'-log₁₀(P)',nameLocation:'center',nameGap:25,
+                nameTextStyle:{fontSize:11,color:'#64748b'},
+                axisLabel:{fontSize:10},
+                splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}},
+            yAxis:{type:'category',
+                data:top.map(function(r){
+                    var t=r.term;
+                    return t.length>50?t.slice(0,48)+'…':t;
+                }).reverse(),
+                axisLabel:{fontSize:10,color:'#475569',fontWeight:'500',
+                    width:280,overflow:'truncate',ellipsis:'…'}},
+            series:[{type:'bar',
+                data:top.map(function(r,i){
+                    return{value:-Math.log10(r.pvalue),
+                        itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[
+                            {offset:0,color:COLORS[i%COLORS.length]+'bb'},
+                            {offset:1,color:COLORS[i%COLORS.length]}
+                        ]),borderRadius:[0,4,4,0]}
+                    }
+                }).reverse(),
+                barWidth:'60%',barMaxWidth:28,
+                label:{show:true,position:'right',fontSize:10,fontWeight:'500',color:'#475569',
+                    formatter:function(p){return p.value.toFixed(1)}}
+            }]
+        });
+        charts[type+'Bar']=c;
+    }
+
+    function renderBubble(type,results){
+        var dom=document.getElementById(type+'BubbleChart');
+        if(charts[type+'Bubble']&&!charts[type+'Bubble'].isDisposed()) charts[type+'Bubble'].dispose();
+        var c=echarts.init(dom);
+        var top=results.slice(0,12);
+
+        var maxInter = Math.max.apply(null, top.map(function(r){return r.intersection_size}));
+
+        c.setOption({
+            tooltip:{trigger:'item',confine:true,
+                formatter:function(p){
+                    var d=top[p.dataIndex];
+                    return '<b>'+d.term+'</b><br/>P-value: '+d.pvalue.toExponential(2)+'<br/>Combined Score: '+p.data[0].toFixed(1)+'<br/>Genes: '+d.intersection_size;
+                }},
+            grid:{left:'12%',right:'10%',bottom:'14%',top:'8%'},
+            xAxis:{type:'value',name:'Combined Score',nameLocation:'center',nameGap:30,
+                nameTextStyle:{fontSize:11,color:'#64748b'},
+                axisLabel:{fontSize:10},
+                splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}},
+            yAxis:{type:'value',name:'-log₁₀(P-value)',nameLocation:'center',nameGap:40,
+                nameTextStyle:{fontSize:11,color:'#64748b'},
+                axisLabel:{fontSize:10},
+                splitLine:{lineStyle:{color:'#f1f5f9',type:'dashed'}}},
+            series:[{type:'scatter',
+                symbolSize:function(d){
+                    var ratio = d[2] / (maxInter||1);
+                    return Math.max(16, Math.min(50, ratio * 40 + 14));
+                },
+                data:top.map(function(r){return[r.combined_score||0,-Math.log10(r.pvalue),r.intersection_size]}),
+                itemStyle:{
+                    color:function(p){return COLORS[p.dataIndex%COLORS.length]},
+                    borderColor:'#fff',borderWidth:2,
+                    shadowBlur:6,shadowColor:'rgba(0,0,0,0.12)'
+                },
+                label:{show:true,position:'top',fontSize:9,color:'#64748b',
+                    formatter:function(p){
+                        var t=top[p.dataIndex].term;
+                        return t.length>22?t.slice(0,20)+'…':t;
+                    },
+                    overflow:'truncate',width:120},
+                labelLayout:{hideOverlap:true}
+            }]
+        });
+        charts[type+'Bubble']=c;
+    }
+
+    function renderPie(type,results){
+        var dom=document.getElementById(type+'PieChart');
+        if(charts[type+'Pie']&&!charts[type+'Pie'].isDisposed()) charts[type+'Pie'].dispose();
+        var c=echarts.init(dom);
+        var top=results.slice(0,10);
+
+        c.setOption({
+            tooltip:{trigger:'item',confine:true,formatter:'{b}<br/>Gene Count: {c} ({d}%)'},
+            legend:{type:'scroll',orient:'vertical',right:10,top:30,bottom:30,
+                textStyle:{fontSize:10,color:'#475569',overflow:'truncate',width:140},
+                itemWidth:14,itemHeight:10,itemGap:8,
+                formatter:function(n){return n.length>28?n.slice(0,26)+'…':n},
+                pageIconSize:10,pageTextStyle:{fontSize:9}},
+            series:[{type:'pie',radius:['30%','65%'],center:['38%','52%'],roseType:'radius',
+                data:top.map(function(r,i){return{name:r.term,value:r.intersection_size,
+                    itemStyle:{color:PIE_COLORS[i%PIE_COLORS.length],borderColor:'#fff',borderWidth:2.5}}}),
+                label:{show:true,fontSize:9,color:'#475569',
+                    formatter:function(p){return p.percent>8?p.name.slice(0,12):''},
+                    overflow:'truncate',width:80},
+                labelLine:{length:12,length2:8,lineStyle:{color:'#cbd5e1'}},
+                emphasis:{label:{show:true,fontSize:12,fontWeight:'bold'},
+                    itemStyle:{shadowBlur:12,shadowColor:'rgba(0,0,0,0.2)'}},
+                animationType:'scale',animationEasing:'elasticOut'}]
+        });
+        charts[type+'Pie']=c;
+    }
+
+    function renderTable(type,results){
+        var top=results.slice(0,25);
+        var html='<table><thead><tr><th>#</th><th style="min-width:220px">Term</th><th>P-value</th><th>Adj P</th><th>Genes</th><th>Score</th></tr></thead><tbody>';
+        top.forEach(function(r,i){
+            var sig=r.pvalue<0.05;
+            var bgColor=i%2===0?'':'background:#fafbfc';
+            html+='<tr style="'+bgColor+'"><td>'+(i+1)+'</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.term+'">'+r.term+'</td><td style="color:'+(sig?'#059669':'#dc2626')+';font-weight:600;font-family:monospace;font-size:0.7rem">'+r.pvalue.toExponential(2)+'</td><td style="font-family:monospace;font-size:0.7rem">'+(r.adj_pvalue?r.adj_pvalue.toExponential(2):'-')+'</td><td style="font-weight:600;text-align:center">'+r.intersection_size+'</td><td>'+(r.combined_score?r.combined_score.toFixed(1):'-')+'</td></tr>';
+        });
+        html+='</tbody></table>';
+        document.getElementById(type+'TableChart').innerHTML=html;
+    }
+
+    function openString(){
+        if(!currentElements.length){setStatus('Select elements first','error');return}
+        fetch('/api/string_url',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({genes:currentElements})})
+        .then(function(r){return r.json()}).then(function(d){if(d.url)window.open(d.url,'_blank')}).catch(function(e){setStatus('Error: '+e.message,'error')});
+    }
+
+    function uploadFile(){document.getElementById('fileInput').click()}
+    function handleUpload(e){
+        var file=e.target.files[0];if(!file)return;
+        var fd=new FormData();fd.append('file',file);
+        fetch('/api/parse_file',{method:'POST',body:fd})
+        .then(function(r){return r.json()})
+        .then(function(d){
+            if(d.success&&d.genes.length){
+                addList();document.getElementById('list'+listCount).value=d.genes.join('\n');
+                setStatus('Loaded '+d.count+' genes from '+file.name,'success');
+            }else{setStatus(d.error||'Parse failed','error')}
+        }).catch(function(e){setStatus('Error: '+e.message,'error')});
+    }
+
+    var resizeTimer;
+    window.addEventListener('resize',function(){
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function(){
+            Object.keys(charts).forEach(function(k){
+                try{if(charts[k]&&typeof charts[k].resize==='function') charts[k].resize()}catch(e){}
+            });
+            if(analysisData && document.getElementById('vennChart').style.display!=='none'){
+                renderClassicVenn(analysisData);
+            }
+        }, 200);
+    });
+    
+    // Download chart as PNG
+    function downloadEnrichment(type){
+        // 下载所有图表：条形图、气泡图、饼图
+        var prefix = type === 'go' ? 'go_enrichment' : 'kegg_pathway';
+        var barChart = type === 'go' ? charts.goBar : charts.keggBar;
+        var bubbleChart = type === 'go' ? charts.goBubble : charts.keggBubble;
+        var pieChart = type === 'go' ? charts.goPie : charts.keggPie;
+        var results = type === 'go' ? goResults : keggResults;
+        
+        var downloaded = 0;
+        
+        // 下载条形图
+        if(barChart && !barChart.isDisposed()){
+            var url = barChart.getDataURL({type: 'png', pixelRatio: 2, backgroundColor: '#fff'});
+            var link = document.createElement('a');
+            link.download = prefix + '_bar.png';
+            link.href = url;
+            link.click();
+            downloaded++;
+        }
+        
+        // 下载气泡图
+        if(bubbleChart && !bubbleChart.isDisposed()){
+            var url = bubbleChart.getDataURL({type: 'png', pixelRatio: 2, backgroundColor: '#fff'});
+            var link = document.createElement('a');
+            link.download = prefix + '_bubble.png';
+            link.href = url;
+            link.click();
+            downloaded++;
+        }
+        
+        // 下载饼图
+        if(pieChart && !pieChart.isDisposed()){
+            var url = pieChart.getDataURL({type: 'png', pixelRatio: 2, backgroundColor: '#fff'});
+            var link = document.createElement('a');
+            link.download = prefix + '_pie.png';
+            link.href = url;
+            link.click();
+            downloaded++;
+        }
+        
+        // 下载数据表为CSV - 下载全部数据
+        if(results && results.length > 0){
+            var csv = 'Term,P-value,Adjusted P-value,Z-score,Combined Score,Genes\n';
+            results.forEach(function(r){
+                var genes = (r.genes || r[5] || []).join(';');
+                csv += '"' + (r.term || r[1]) + '",' + 
+                       (r.pvalue || r[2]) + ',' + 
+                       (r.adj_pvalue || r[6] || '') + ',' + 
+                       (r.z_score || r[3]) + ',' + 
+                       (r.combined_score || r[4]) + ',"' + genes + '"\n';
+            });
+            var blob = new Blob([csv], {type: 'text/csv'});
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.download = prefix + '_table.csv';
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+            downloaded++;
+        }
+        
+        if(downloaded > 0){
+            setStatus('Downloaded ' + downloaded + ' files (' + results.length + ' rows in CSV) for ' + type.toUpperCase(), 'success');
+        } else {
+            setStatus('Please run enrichment analysis first', 'error');
+        }
+    }
+    
+    function downloadChart(chartType){
+        var chartInstance = null;
+        var filename = '';
+        
+        if(chartType === 'upset'){
+            chartInstance = charts.upset;
+            filename = 'upset_plot.png';
+        } else if(chartType === 'sankey'){
+            chartInstance = charts.sankeyL;
+            filename = 'sankey_plot.png';
+        } else if(chartType === 'singleCell'){
+            chartInstance = charts.singleCell;
+            filename = 'single_cell_cluster.png';
+        }
+        
+        if(!chartInstance){
+            setStatus('Please analyze data first before downloading', 'error');
+            return;
+        }
+        if(chartInstance.isDisposed()){
+            setStatus('Chart has been disposed, please refresh', 'error');
+            return;
+        }
+        
+        try {
+            var url = chartInstance.getDataURL({
+                type: 'png',
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            link.click();
+            setStatus('Download started: ' + filename, 'success');
+        } catch(e) {
+            setStatus('Download failed: ' + e.message, 'error');
+        }
+    }
+
+// ========== Database Search Functions ==========
+var dbSearchResults = [];
+var selectedDbItems = new Set();
+
+function openDbModal(){
+    document.getElementById("dbSearchModal").style.display = "block";
+    document.getElementById("dbSearchInput").value = "";
+    document.getElementById("dbSearchResults").style.display = "none";
+    dbSearchResults = [];
+    selectedDbItems = new Set();
+}
+
+function closeDbModal(){
+    document.getElementById("dbSearchModal").style.display = "none";
+}
+
+function searchDatabase(){
+    var query = document.getElementById("dbSearchInput").value.trim();
+    var searchType = document.querySelector("input[name=searchType]:checked").value;
+    
+    if(!query){ setStatus("Please enter search keyword", "error"); return; }
+    
+    document.getElementById("dbSearchLoading").style.display = "block";
+    document.getElementById("dbSearchResults").style.display = "none";
+    
+    fetch("/api/search_database?q=" + encodeURIComponent(query) + "&type=" + searchType)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            document.getElementById("dbSearchLoading").style.display = "none";
+            if(data.error){ setStatus(data.error, "error"); return; }
+            dbSearchResults = data.results || [];
+            document.getElementById("dbResultCount").textContent = "Found " + dbSearchResults.length + " results";
+            renderDbResults();
+            document.getElementById("dbSearchResults").style.display = "block";
+        })
+        .catch(function(err){
+            document.getElementById("dbSearchLoading").style.display = "none";
+            setStatus("Search failed: " + err.message, "error");
+        });
+}
+
+function renderDbResults(){
+    var container = document.getElementById("dbResultList");
+    container.innerHTML = "";
+    dbSearchResults.forEach(function(item, idx){
+        var div = document.createElement("div");
+        div.style.cssText = "padding:10px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;";
+        div.innerHTML = "<input type=checkbox id=db_item_" + idx + " onchange=toggleDbItem(" + idx + ") style=width:18px;height:18px;>" +
+                       "<label for=db_item_" + idx + " style=flex:1;cursor:pointer;>" + item.display + "</label>";
+        container.appendChild(div);
+    });
+}
+
+function toggleDbItem(idx){
+    if(selectedDbItems.has(idx)){ selectedDbItems.delete(idx); }
+    else { selectedDbItems.add(idx); }
+}
+
+function selectAllDb(){
+    dbSearchResults.forEach(function(_, idx){
+        selectedDbItems.add(idx);
+        var cb = document.getElementById("db_item_" + idx);
+        if(cb) cb.checked = true;
+    });
+}
+
+function clearAllDb(){
+    selectedDbItems.clear();
+    dbSearchResults.forEach(function(_, idx){
+        var cb = document.getElementById("db_item_" + idx);
+        if(cb) cb.checked = false;
+    });
+}
+
+function importSelectedGenes(){
+    if(selectedDbItems.size === 0){ setStatus("Please select at least one item", "error"); return; }
+    
+    var genes = new Set();
+    selectedDbItems.forEach(function(idx){
+        var item = dbSearchResults[idx];
+        if(item.type === "hormone" && item.genes){
+            item.genes.forEach(function(g){ genes.add(g); });
+        } else if(item.type === "gene" && item.gene_name){
+            genes.add(item.gene_name);
+        }
+    });
+    
+    if(genes.size === 0){ setStatus("No genes found", "error"); return; }
+    
+    var textarea = document.getElementById("list1");
+    var existing = textarea.value.split("\n").filter(function(g){ return g.trim(); });
+    genes.forEach(function(g){ if(existing.indexOf(g) < 0) existing.push(g); });
+    textarea.value = existing.join("\n");
+    
+    setStatus("Imported " + genes.size + " genes to List 1", "success");
+    closeDbModal();
+}
+</script>
+
+<!-- Database Search Modal -->
+<div id="dbSearchModal" class="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;">
+<div class="modal-content" style="background:#fff;margin:50px auto;padding:20px;border-radius:12px;max-width:600px;max-height:80vh;overflow-y:auto;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+<h3 style="margin:0;color:#334155;">Import from Database</h3>
+<button onclick="closeDbModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#64748b;">&times;</button>
+</div>
+<input type="text" id="dbSearchInput" placeholder="Enter hormone or gene name..." style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:15px;">
+<div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;">
+<label><input type="radio" name="searchType" value="all" checked> All</label>
+<label><input type="radio" name="searchType" value="hormone"> Hormone</label>
+<label><input type="radio" name="searchType" value="gene"> Gene</label>
+<button onclick="searchDatabase()" style="margin-left:auto;padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:6px;cursor:pointer;">Search</button>
+</div>
+<div id="dbSearchLoading" style="display:none;text-align:center;padding:20px;color:#64748b;">Searching...</div>
+<div id="dbSearchResults" style="display:none;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:10px;background:#f8fafc;border-radius:8px;">
+<span id="dbResultCount">Found 0 results</span>
+<div>
+<button onclick="selectAllDb()" style="padding:6px 12px;background:#10b981;color:#fff;border:none;border-radius:4px;cursor:pointer;margin-right:5px;">Select All</button>
+<button onclick="clearAllDb()" style="padding:6px 12px;background:#ef4444;color:#fff;border:none;border-radius:4px;cursor:pointer;">Clear</button>
+</div>
+</div>
+<div id="dbResultList" style="max-height:300px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;"></div>
+</div>
+<div style="margin-top:15px;display:flex;justify-content:flex-end;gap:10px;">
+<button onclick="closeDbModal()" style="padding:10px 20px;background:#e2e8f0;color:#334155;border:none;border-radius:8px;cursor:pointer;">Cancel</button>
+<button onclick="importSelectedGenes()" style="padding:10px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;">Import Selected</button>
+</div>
+</div>

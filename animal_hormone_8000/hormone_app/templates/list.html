@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+<head>
+    <title>激素受体数据展示</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>激素受体数据表</h1>
+    <table>
+        <tr>
+            <th>受体类型</th>
+            <th>受体名称</th>
+            <th>基因家族</th>
+            <th>基因名称/符号</th>
+            <th>配体</th>
+            <th>配体类型/注释</th>
+        </tr>
+        {% for receptor in receptors %}
+        <tr>
+            <td>{{ receptor.receptor_type|default:"-" }}</td>
+            <td>{{ receptor.receptor_name|default:"-" }}</td>
+            <td>{{ receptor.gene_family|default:"-" }}</td>
+            <td>{{ receptor.gene_name_symbol|default:"-" }}</td>
+            <td>{{ receptor.ligand|default:"-" }}</td>
+            <td>{{ receptor.ligand_type_comments|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

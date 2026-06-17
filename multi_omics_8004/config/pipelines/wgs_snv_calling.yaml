@@ -1,0 +1,47 @@
+name: wgs_snv_calling
+description: WGS变异检测流程（GATK）
+task_type: deterministic
+
+required_inputs:
+  - bam_file
+  - reference_genome
+  - dbsnp_vcf
+
+output_patterns:
+  - snv_variants.vcf
+  - indel_variants.vcf
+
+steps:
+  - step_id: 1
+    tool_name: gatk
+    tool_version: 4.3.0.0
+    command_template: gatk BaseRecalibrator -I {bam_file} -R {reference_genome} --known-sites {dbsnp_vcf} -O {output_dir}/recal_data.table
+    input_files:
+      - {bam_file}
+    output_files:
+      - {output_dir}/recal_data.table
+    parameters:
+      sample_name: wgs_sample
+
+  - step_id: 2
+    tool_name: gatk
+    tool_version: 4.3.0.0
+    command_template: gatk ApplyBQSR -I {bam_file} -R {reference_genome} --bqsr-recal-file {input_dir}/recal_data.table -O {output_dir}/{sample_name}_recal.bam
+    input_files:
+      - {bam_file}
+      - {input_dir}/recal_data.table
+    output_files:
+      - {output_dir}/{sample_name}_recal.bam
+    parameters:
+      sample_name: wgs_sample
+
+  - step_id: 3
+    tool_name: gatk
+    tool_version: 4.3.0.0
+    command_template: gatk HaplotypeCaller -I {input_dir}/{sample_name}_recal.bam -R {reference_genome} -O {output_dir}/{sample_name}_raw_variants.vcf
+    input_files:
+      - {input_dir}/{sample_name}_recal.bam
+    output_files:
+      - {output_dir}/{sample_name}_raw_variants.vcf
+    parameters:
+      sample_name: wgs_sample

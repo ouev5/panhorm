@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Omics Analysis Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root{--primary:#8b5cf6}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fafc;color:#334155}
+        nav{background:linear-gradient(135deg,#0f172a,#581c87);padding:1rem 1.5rem;box-shadow:0 4px 12px rgba(0,0,0,.1);position:sticky;top:0;z-index:100}
+        .nav-container{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+        .nav-title{color:#fff;font-size:1.3rem;font-weight:600;display:flex;align-items:center;gap:.5rem}
+        .nav-links a{color:rgba(255,255,255,.8);text-decoration:none;padding:.4rem .8rem;border-radius:6px;border:1px solid rgba(255,255,255,.3)}
+        .hero{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;padding:2rem 2.5rem;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;box-shadow:0 10px 40px rgba(102,126,234,.3)}
+        .hero-icon{width:70px;height:70px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .hero-icon i{font-size:2rem;color:#fff}.hero-text{flex:1}.hero-text h1{font-size:2.2rem;font-weight:700;color:#fff;margin:0 0 .3rem}
+        .tagline{font-size:1.1rem;color:rgba(255,255,255,.9);font-weight:500;letter-spacing:2px;text-transform:uppercase}
+        .hero-text .subtitle{font-size:.95rem;color:rgba(255,255,255,.75)}
+        .container{max-width:1400px;margin:2rem auto;padding:0 1.5rem}
+        .grid{display:grid;grid-template-columns:280px 1fr;gap:1.5rem}
+        @media(max-width:900px){.grid{grid-template-columns:1fr}}
+        .card{background:#fff;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);border:1px solid #e2e8f0;margin-bottom:1rem}
+        .card-header{padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:.5rem}
+        .card-header i{color:var(--primary)}.card-header h3{font-size:1rem;font-weight:600}.card-body{padding:1.25rem}
+        .sidebar-item{padding:.75rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+        .sidebar-item:hover{background:rgba(139,92,246,.1)}.sidebar-item.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.5rem 1rem;border:none;border-radius:6px;font-size:.85rem;cursor:pointer;transition:all .2s}
+        .btn:hover{opacity:.85;transform:translateY(-1px)}.btn-primary{background:var(--primary);color:#fff}.btn-block{width:100%}
+        textarea,input[type="text"]{width:100%;padding:.5rem;border:1px solid #e2e8f0;border-radius:6px;font-size:.85rem}
+        textarea{min-height:60px;resize:vertical;font-family:monospace}
+        .form-group{margin-bottom:1rem}.form-group label{display:block;font-size:.8rem;color:#64748b;margin-bottom:.3rem;font-weight:500}
+        .chart-box{background:#f8fafc;border-radius:8px;padding:.75rem;height:500px}
+        .log-box{background:#1e293b;color:#22c55e;padding:1rem;border-radius:8px;font-family:monospace;font-size:.8rem;height:250px;overflow-y:auto;white-space:pre-wrap}
+        .log-box .info{color:#3b82f6}.log-box .success{color:#22c55e}.log-box .error{color:#ef4444}
+        .pipeline-card{border:1px solid #e2e8f0;border-radius:8px;padding:.75rem;margin-bottom:.5rem;cursor:pointer;transition:all .2s}
+        .pipeline-card:hover{border-color:var(--primary);background:rgba(139,92,246,.05)}
+        .pipeline-card.selected{border-color:var(--primary);background:rgba(139,92,246,.1)}
+        .pipeline-card h4{font-size:.85rem;margin:0 0 .2rem;display:flex;align-items:center;gap:.5rem}
+        .pipeline-card p{font-size:.7rem;color:#64748b;margin:0}
+        .status{display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;background:rgba(139,92,246,.1);border-radius:6px;font-size:.8rem;margin-top:.5rem}
+        .status.success{background:rgba(16,185,129,.1);color:#059669}.status.error{background:rgba(239,68,68,.1);color:#dc2626}
+        .chat-container{display:flex;flex-direction:column;height:500px}
+        .chat-messages{flex:1;overflow-y:auto;padding:1rem;background:#f8fafc;border-radius:8px;margin-bottom:.5rem}
+        .chat-message{margin-bottom:.75rem}.chat-message.user{text-align:right}
+        .chat-message .content{display:inline-block;padding:.5rem .75rem;border-radius:8px;max-width:80%;text-align:left}
+        .chat-message.user .content{background:var(--primary);color:#fff}
+        .chat-message.assistant .content{background:#fff;border:1px solid #e2e8f0}
+        .chat-message.assistant .content pre{background:#1e293b;color:#e2e8f0;padding:.5rem;border-radius:4px;overflow-x:auto;font-size:.75rem}
+        .chat-message.assistant .content code{background:#f1f5f9;padding:.1rem .3rem;border-radius:3px;font-size:.8rem}
+        .chat-message.assistant .content pre code{background:transparent}
+        .chat-input{display:flex;gap:.5rem}.chat-input input{flex:1}
+        .tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+        .tab{padding:.4rem .8rem;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:100px;color:#64748b;font-size:.8rem;cursor:pointer;transition:all .2s}
+        .tab:hover{background:#e2e8f0}.tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+        .file-drop{border:2px dashed #e2e8f0;border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:#fafbff}
+        .file-drop:hover{border-color:var(--primary);background:rgba(139,92,246,.03)}
+        .file-drop.has-file{border-color:#10b981;background:rgba(16,185,129,.05)}
+        .file-drop i{font-size:2rem;color:#94a3b8;margin-bottom:.5rem}.file-drop.has-file i{color:#10b981}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;margin:1rem 0}
+        .stat-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem;text-align:center}
+        .stat-card .value{font-size:1.5rem;font-weight:700;color:var(--primary)}.stat-card .label{font-size:.7rem;color:#64748b;margin-top:.2rem}
+        .upload-preview{background:#f1f5f9;border-radius:8px;padding:.75rem;margin-top:.75rem;font-size:.8rem}
+        .upload-preview table{width:100%;font-size:.75rem;border-collapse:collapse}
+        .upload-preview th,.upload-preview td{padding:.25rem .5rem;border:1px solid #e2e8f0;text-align:left}
+        .upload-preview th{background:#e2e8f0;font-weight:600}
+    </style>
+</head>
+<body>
+    <nav><div class="nav-container">
+        <div class="nav-title"><i class="fa fa-dna"></i> Multi-Omics Analysis Platform</div>
+        <div class="nav-links"><a href="https://43.99.62.219"><i class="fa fa-arrow-left"></i> Back</a></div>
+    </div></nav>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-icon"><i class="fa fa-dna"></i></div>
+            <div class="hero-text">
+                <p class="tagline">AI-Powered Bioinformatics</p>
+                <h1>Multi-Omics Analysis Platform</h1>
+                <p class="subtitle">RNA-seq · scRNA-seq · Proteomics · Volcano · Correlation · Real Analysis</p>
+            </div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header"><i class="fa fa-bars"></i><h3>Navigation</h3></div>
+                <div class="card-body">
+                    <div class="sidebar-item active" onclick="showSection('analysis')"><i class="fa fa-flask"></i> Analysis</div>
+                    <div class="sidebar-item" onclick="showSection('visualization')"><i class="fa fa-image"></i> Visualization</div>
+                    <div class="sidebar-item" onclick="showSection('chat')"><i class="fa fa-comments"></i> AI Assistant</div>
+                    <div class="sidebar-item" onclick="showSection('pipelines')"><i class="fa fa-cogs"></i> Pipelines</div>
+                </div>
+            </div>
+            <div>
+                <!-- Analysis -->
+                <div id="section-analysis" class="card">
+                    <div class="card-header"><i class="fa fa-flask"></i><h3>Run Analysis</h3></div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label><strong>Step 1:</strong> Upload Data File (CSV / TSV / Excel)</label>
+                            <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()">
+                                <i class="fa fa-cloud-upload" id="fileIcon"></i>
+                                <div id="fileText" style="color:#64748b;font-size:.85rem">Click or drag file here</div>
+                                <div id="filePreview"></div>
+                            </div>
+                            <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" style="display:none" onchange="uploadFile(this)">
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Step 2:</strong> Select Pipeline</label>
+                            <div id="pipelineList">
+                            {% for pid, p in pipelines.items() %}
+                                <div class="pipeline-card" onclick="selectPipeline('{{ pid }}', this)">
+                                    <h4><i class="fa {{ p.icon }}"></i> {{ p.name }}</h4>
+                                    <p>{{ p.description }}</p>
+                                </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Step 3:</strong> Parameters (JSON, optional)</label>
+                            <textarea id="advancedParams" placeholder='{"pvalue_cutoff": 0.05, "log2fc_cutoff": 1}'></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="runAnalysis()"><i class="fa fa-play"></i> Run Analysis</button>
+                        <div id="analysisStatus" class="status" style="display:none"></div>
+                        <div id="analysisStats" style="display:none"></div>
+                        <div class="form-group" style="margin-top:1rem">
+                            <label>Analysis Log</label>
+                            <div id="logBox" class="log-box">Waiting for analysis...</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Visualization -->
+                <div id="section-visualization" class="card" style="display:none">
+                    <div class="card-header"><i class="fa fa-image"></i><h3>Visualization</h3></div>
+                    <div class="card-body">
+                        <div id="vizNoFile" style="text-align:center;padding:2rem;color:#94a3b8">
+                            <i class="fa fa-upload" style="font-size:2rem"></i><p>Please upload data in Analysis tab first.</p>
+                        </div>
+                        <div id="vizContent" style="display:none">
+                            <div class="tabs">
+                                <div class="tab active" onclick="switchVizTab('volcano',this)">Volcano</div>
+                                <div class="tab" onclick="switchVizTab('umap',this)">UMAP</div>
+                                <div class="tab" onclick="switchVizTab('heatmap',this)">Heatmap</div>
+                            </div>
+                            <div id="viz-volcano">
+                                <button class="btn btn-primary" onclick="generateVolcano()"><i class="fa fa-fire"></i> Generate Volcano Plot</button>
+                                <div id="volcanoStats"></div>
+                                <div id="volcanoChart" class="chart-box" style="margin-top:1rem"></div>
+                            </div>
+                            <div id="viz-umap" style="display:none">
+                                <button class="btn btn-primary" onclick="generateUMAP()"><i class="fa fa-circle-nodes"></i> Generate UMAP</button>
+                                <div id="umapStats"></div>
+                                <div id="umapChart" class="chart-box" style="margin-top:1rem"></div>
+                            </div>
+                            <div id="viz-heatmap" style="display:none">
+                                <button class="btn btn-primary" onclick="generateHeatmap()"><i class="fa fa-th"></i> Generate Heatmap</button>
+                                <div id="heatmapChart" class="chart-box" style="margin-top:1rem"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chat -->
+                <div id="section-chat" class="card" style="display:none">
+                    <div class="card-header"><i class="fa fa-comments"></i><h3>AI Assistant</h3></div>
+                    <div class="card-body">
+                        <div class="chat-container">
+                            <div id="chatMessages" class="chat-messages">
+                                <div class="chat-message assistant"><div class="content">Hello! I'm the AI assistant for Multi-Omics Analysis. Ask me anything about RNA-seq, scRNA-seq, proteomics, or bioinformatics!</div></div>
+                            </div>
+                            <div class="chat-input">
+                                <input type="text" id="chatInput" placeholder="Ask about bioinformatics..." onkeypress="if(event.key==='Enter')sendMessage()">
+                                <button class="btn btn-primary" onclick="sendMessage()"><i class="fa fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pipelines -->
+                <div id="section-pipelines" class="card" style="display:none">
+                    <div class="card-header"><i class="fa fa-cogs"></i><h3>Pipelines</h3></div>
+                    <div class="card-body">
+                    {% for pid, p in pipelines.items() %}
+                        <div style="border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:1rem">
+                            <h4 style="margin:0 0 .5rem;color:var(--primary)"><i class="fa {{ p.icon }}"></i> {{ p.name }}</h4>
+                            <p style="font-size:.85rem;color:#64748b;margin:0 0 .5rem">{{ p.description }}</p>
+                            <div style="font-size:.75rem;color:#94a3b8"><strong>Input:</strong> {{ p.accepts }}<br><strong>Params:</strong> {{ p.params | join(', ') }}</div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+var selectedPipeline='rnaseq_diffexpr',uploadedFilePath=null,uploadedPreview=null;
+
+function showSection(name){
+    document.querySelectorAll('[id^="section-"]').forEach(function(s){s.style.display='none'});
+    document.getElementById('section-'+name).style.display='block';
+    document.querySelectorAll('.sidebar-item').forEach(function(item){item.classList.remove('active')});
+    event.target.closest('.sidebar-item').classList.add('active');
+    if(name==='visualization'){
+        document.getElementById('vizNoFile').style.display=uploadedFilePath?'none':'block';
+        document.getElementById('vizContent').style.display=uploadedFilePath?'block':'none';
+    }
+}
+function selectPipeline(pid,elem){
+    selectedPipeline=pid;
+    document.querySelectorAll('.pipeline-card').forEach(function(c){c.classList.remove('selected')});
+    elem.classList.add('selected');
+}
+function switchVizTab(tab,elem){
+    document.querySelectorAll('[id^="viz-"]').forEach(function(v){v.style.display='none'});
+    document.getElementById('viz-'+tab).style.display='block';
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+    elem.classList.add('active');
+}
+
+function uploadFile(input){
+    if(!input.files||!input.files[0])return;
+    var file=input.files[0],fd=new FormData();fd.append('file',file);
+    document.getElementById('fileText').innerHTML='<i class="fa fa-spinner fa-spin"></i> Uploading...';
+    fetch('/api/upload',{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(res){
+        if(res.success){
+            uploadedFilePath=res.filepath;uploadedPreview=res.preview;
+            document.getElementById('fileDrop').classList.add('has-file');
+            document.getElementById('fileIcon').className='fa fa-check-circle';
+            document.getElementById('fileText').innerHTML='<strong>'+file.name+'</strong> ('+res.preview.rows+' rows × '+res.preview.cols+' cols)';
+            var prev=res.preview,html='<div class="upload-preview"><strong>Columns:</strong> '+prev.columns.join(', ');
+            if(prev.head&&prev.head.length>0){
+                html+='<br><br><table><thead><tr>';
+                for(var k in prev.head[0])html+='<th>'+k+'</th>';
+                html+='</tr></thead><tbody>';
+                prev.head.forEach(function(row){html+='<tr>';for(var k in row)html+='<td>'+row[k]+'</td>';html+='</tr>';});
+                html+='</tbody></table>';
+            }
+            html+='</div>';document.getElementById('filePreview').innerHTML=html;
+        }else{document.getElementById('fileText').innerHTML='<span style="color:#ef4444">Failed: '+res.error+'</span>';}
+    }).catch(function(e){document.getElementById('fileText').innerHTML='<span style="color:#ef4444">Error: '+e.message+'</span>';});
+}
+
+function runAnalysis(){
+    if(!uploadedFilePath){alert('Please upload a data file first!');return;}
+    var data={pipeline:selectedPipeline,filepath:uploadedFilePath,advanced:document.getElementById('advancedParams').value};
+    document.getElementById('analysisStatus').style.display='flex';
+    document.getElementById('analysisStatus').className='status';
+    document.getElementById('analysisStatus').innerHTML='<i class="fa fa-spinner fa-spin"></i> Running '+(selectedPipeline==='deseq2'?'DESeq2 (R)...':selectedPipeline+'...');
+    document.getElementById('logBox').innerHTML='';document.getElementById('analysisStats').style.display='none';
+    var endpoint = selectedPipeline==='deseq2' ? '/api/run_deseq2' : '/api/run_analysis';
+    var postData = JSON.parse(JSON.stringify(data));
+    if(selectedPipeline==='deseq2' && data.advanced){try{var p=JSON.parse(data.advanced);Object.assign(postData,p);}catch(e){}}
+    fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(postData)})
+    .then(function(r){return r.json()}).then(function(res){
+        document.getElementById('logBox').innerHTML=res.logs.map(function(l){
+            if(l.indexOf('✅')>=0||l.indexOf('completed')>=0)return '<div class="success">'+l+'</div>';
+            if(l.indexOf('ERROR')>=0||l.indexOf('❌')>=0||l.indexOf('Error')>=0)return '<div class="error">'+l+'</div>';
+            return '<div class="info">'+l+'</div>';
+        }).join('\n');
+        if(res.status==='completed'){
+            document.getElementById('analysisStatus').className='status success';
+            document.getElementById('analysisStatus').innerHTML='<i class="fa fa-check-circle"></i> Analysis completed!';
+            if(res.stats){
+                var s=res.stats,h='<div class="stats-grid">';
+                for(var k in s)h+='<div class="stat-card"><div class="value">'+s[k]+'</div><div class="label">'+k+'</div></div>';
+                h+='</div>';document.getElementById('analysisStats').innerHTML=h;document.getElementById('analysisStats').style.display='block';
+            }
+            if((selectedPipeline==='rnaseq_diffexpr'||selectedPipeline==='volcano')&&res.data)renderVolcano(res.data);
+            if(selectedPipeline==='scrna_cluster'&&res.data)renderUMAP(res.data);
+            if(selectedPipeline==='deseq2'&&res.data)renderVolcano(res.data);
+            if(selectedPipeline==='deseq2'&&res.images)showDESeq2Plots(res.images);
+        }else{
+            document.getElementById('analysisStatus').className='status error';
+            document.getElementById('analysisStatus').innerHTML='<i class="fa fa-times-circle"></i> Failed';
+        }
+    }).catch(function(e){document.getElementById('analysisStatus').className='status error';document.getElementById('analysisStatus').innerHTML='<i class="fa fa-times-circle"></i> '+e.message;});
+}
+
+function generateVolcano(){
+    if(!uploadedFilePath){alert('Upload a file first!');return;}
+    document.getElementById('volcanoStats').innerHTML='<i class="fa fa-spinner fa-spin"></i> Computing...';
+    fetch('/api/generate_volcano',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filepath:uploadedFilePath})})
+    .then(function(r){return r.json()}).then(function(res){
+        if(res.error){document.getElementById('volcanoStats').innerHTML='<span style="color:#ef4444">'+res.error+'</span>';return;}
+        var s=res.stats;
+        document.getElementById('volcanoStats').innerHTML='<div class="stats-grid">'+
+            '<div class="stat-card"><div class="value">'+s.total_genes+'</div><div class="label">Total Genes</div></div>'+
+            '<div class="stat-card"><div class="value">'+s.significant+'</div><div class="label">Significant</div></div>'+
+            '<div class="stat-card"><div class="value" style="color:#ef4444">'+s.up_regulated+'</div><div class="label">Up-regulated</div></div>'+
+            '<div class="stat-card"><div class="value" style="color:#3b82f6">'+s.down_regulated+'</div><div class="label">Down-regulated</div></div></div>';
+        renderVolcano(res.data);
+    }).catch(function(e){document.getElementById('volcanoStats').innerHTML='<span style="color:#ef4444">'+e.message+'</span>';});
+}
+
+function renderVolcano(data){
+    var chart=echarts.init(document.getElementById('volcanoChart'));
+    var up=[],down=[],ns=[];
+    data.forEach(function(d){
+        var pt=[d.log2FC,d['-log10(p)'],d.gene];
+        if(d.significant===1&&d.log2FC>0)up.push(pt);
+        else if(d.significant===1&&d.log2FC<0)down.push(pt);
+        else ns.push(pt);
+    });
+    chart.setOption({
+        title:{text:'Volcano Plot',left:'center'},
+        xAxis:{name:'log2(Fold Change)',type:'value',nameLocation:'middle',nameGap:30},
+        yAxis:{name:'-log10(p-value)',type:'value',nameLocation:'middle',nameGap:40},
+        series:[
+            {name:'Up-regulated',type:'scatter',symbolSize:6,data:up,itemStyle:{color:'#ef4444'}},
+            {name:'Down-regulated',type:'scatter',symbolSize:6,data:down,itemStyle:{color:'#3b82f6'}},
+            {name:'Not significant',type:'scatter',symbolSize:4,data:ns,itemStyle:{color:'#94a3b8'}},
+        ],
+        legend:{top:30},
+        tooltip:{formatter:function(p){return p.data[2]+'<br/>log2FC: '+p.data[0].toFixed(3)+'<br/>-log10(p): '+p.data[1].toFixed(3);}}
+    });
+}
+
+function generateUMAP(){
+    if(!uploadedFilePath){alert('Upload a file first!');return;}
+    document.getElementById('umapStats').innerHTML='<i class="fa fa-spinner fa-spin"></i> Computing UMAP (this may take a minute)...';
+    fetch('/api/generate_umap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filepath:uploadedFilePath})})
+    .then(function(r){return r.json()}).then(function(res){
+        if(res.error){document.getElementById('umapStats').innerHTML='<span style="color:#ef4444">'+res.error+'</span>';return;}
+        var s=res.stats;
+        document.getElementById('umapStats').innerHTML='<div class="stats-grid">'+
+            '<div class="stat-card"><div class="value">'+s.n_cells+'</div><div class="label">Cells</div></div>'+
+            '<div class="stat-card"><div class="value">'+s.n_clusters+'</div><div class="label">Clusters</div></div>'+
+            '<div class="stat-card"><div class="value">'+s.n_genes_used+'</div><div class="label">Genes Used</div></div></div>';
+        renderUMAP(res.data);
+    }).catch(function(e){document.getElementById('umapStats').innerHTML='<span style="color:#ef4444">'+e.message+'</span>';});
+}
+
+function renderUMAP(data){
+    var chart=echarts.init(document.getElementById('umapChart'));
+    var clusters=[];data.forEach(function(d){if(clusters.indexOf(d.cluster)<0)clusters.push(d.cluster);});
+    var colors=['#8b5cf6','#06b6d4','#f59e0b','#10b981','#ef4444','#ec4899','#6366f1','#14b8a6','#f97316','#84cc16'];
+    var series=clusters.map(function(c,i){
+        return {name:'Cluster '+c,type:'scatter',symbolSize:5,
+            data:data.filter(function(d){return d.cluster===c}).map(function(d){return[d.UMAP1,d.UMAP2]}),
+            itemStyle:{color:colors[i%colors.length]}};
+    });
+    chart.setOption({title:{text:'UMAP Visualization',left:'center'},xAxis:{show:false},yAxis:{show:false},
+        series:series,legend:{data:clusters.map(function(c){return'Cluster '+c}),top:30},
+        tooltip:{formatter:'Cluster: {b}'}});
+}
+
+function generateHeatmap(){
+    if(!uploadedFilePath){alert('Upload a file first!');return;}
+    var el=document.getElementById('heatmapChart');el.innerHTML='<div style="text-align:center;padding:3rem;color:#64748b"><i class="fa fa-spinner fa-spin" style="font-size:2rem"></i><p>Computing correlation heatmap...</p></div>';
+    fetch('/api/analyze_correlation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filepath:uploadedFilePath,method:'pearson',top_n:30})})
+    .then(function(r){return r.json()}).then(function(res){
+        if(res.error){el.innerHTML='<div style="color:#ef4444;padding:2rem">'+res.error+'</div>';return;}
+        renderHeatmap(res.data,res.stats);
+    }).catch(function(e){el.innerHTML='<div style="color:#ef4444;padding:2rem">'+e.message+'</div>';});
+}
+
+function renderHeatmap(data,stats){
+    var genes=[];data.forEach(function(d){if(genes.indexOf(d.gene1)<0)genes.push(d.gene1);if(genes.indexOf(d.gene2)<0)genes.push(d.gene2);});
+    genes=genes.slice(0,50);
+    var chart=echarts.init(document.getElementById('heatmapChart'));
+    var heatData=[];data.forEach(function(d){
+        var i=genes.indexOf(d.gene1),j=genes.indexOf(d.gene2);
+        if(i>=0&&j>=0)heatData.push([i,j,d.corr],[j,i,d.corr]);
+    });
+    genes.forEach(function(g,i){heatData.push([i,i,1.0]);});
+    chart.setOption({
+        title:{text:'Gene Correlation Heatmap ('+stats.method+', top '+stats.n_genes+')',left:'center'},
+        xAxis:{type:'category',data:genes,axisLabel:{rotate:45,fontSize:9}},
+        yAxis:{type:'category',data:genes,axisLabel:{fontSize:9}},
+        visualMap:{min:-1,max:1,calculable:true,inRange:{color:['#3b82f6','#f8fafc','#ef4444']},orient:'horizontal',left:'center',bottom:0},
+        series:[{type:'heatmap',data:heatData,label:{show:genes.length<=15,fontSize:8,formatter:function(p){return p.data[2].toFixed(2)}}}]
+    });
+}
+
+function sendMessage(){
+    var input=document.getElementById('chatInput'),msg=input.value.trim();if(!msg)return;
+    var div=document.getElementById('chatMessages');
+    div.innerHTML+='<div class="chat-message user"><div class="content">'+msg+'</div></div>';
+    input.value='';
+    div.innerHTML+='<div class="chat-message assistant" id="chatLoading"><div class="content"><i class="fa fa-spinner fa-spin"></i> Thinking...</div></div>';
+    div.scrollTop=div.scrollHeight;
+    fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})})
+    .then(function(r){return r.json()}).then(function(res){
+        var el=document.getElementById('chatLoading');if(el)el.remove();
+        div.innerHTML+='<div class="chat-message assistant"><div class="content">'+marked.parse(res.response)+'</div></div>';
+        div.scrollTop=div.scrollHeight;
+    }).catch(function(e){
+        var el=document.getElementById('chatLoading');if(el)el.remove();
+        div.innerHTML+='<div class="chat-message assistant"><div class="content">Error: '+e.message+'</div></div>';
+    });
+}
+function showDESeq2Plots(images){
+    if(!images)return;
+    var html='<div style="margin-top:1rem"><h4 style="color:var(--primary);margin-bottom:.5rem">📄 DESeq2 Publication Plots</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">';
+    if(images['volcano_plot.png'])html+='<div style="text-align:center"><img src="'+images['volcano_plot.png']+'" style="max-width:100%;border:1px solid #e2e8f0;border-radius:8px"><p style="font-size:.75rem;color:#64748b;margin-top:.3rem">EnhancedVolcano</p></div>';
+    if(images['ma_plot.png'])html+='<div style="text-align:center"><img src="'+images['ma_plot.png']+'" style="max-width:100%;border:1px solid #e2e8f0;border-radius:8px"><p style="font-size:.75rem;color:#64748b;margin-top:.3rem">MA Plot</p></div>';
+    if(images['heatmap.png'])html+='<div style="text-align:center;grid-column:span 2"><img src="'+images['heatmap.png']+'" style="max-width:50%;border:1px solid #e2e8f0;border-radius:8px"><p style="font-size:.75rem;color:#64748b;margin-top:.3rem">Top DE Genes Heatmap</p></div>';
+    html+='</div></div>';
+    var s=document.getElementById('analysisStats');s.innerHTML+=html;s.style.display='block';
+}
+</script>
+</body>
+</html>

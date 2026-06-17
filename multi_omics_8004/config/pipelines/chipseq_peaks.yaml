@@ -1,0 +1,51 @@
+name: chipseq_peaks
+description: ChIP-seq峰值检测流程（MACS2）
+task_type: deterministic
+
+required_inputs:
+  - treatment_bam
+  - control_bam
+  - genome_size
+
+output_patterns:
+  - peaks.narrowPeak
+  - peaks.xls
+  - peaks.bed
+
+steps:
+  - step_id: 1
+    tool_name: macs2
+    tool_version: 2.2.7.1
+    command_template: macs2 callpeak -t {treatment_bam} -c {control_bam} -f BAM -g {genome_size} -n {sample_name} --outdir {output_dir} -q 0.05
+    input_files:
+      - {treatment_bam}
+      - {control_bam}
+    output_files:
+      - {output_dir}/{sample_name}_peaks.narrowPeak
+      - {output_dir}/{sample_name}_peaks.xls
+      - {output_dir}/{sample_name}_peaks.bed
+    parameters:
+      sample_name: chipseq_sample
+      genome_size: hs
+
+  - step_id: 2
+    tool_name: bedtools
+    tool_version: 2.30.0
+    command_template: bedtools sort -i {input_dir}/{sample_name}_peaks.narrowPeak > {output_dir}/{sample_name}_peaks_sorted.narrowPeak
+    input_files:
+      - {input_dir}/{sample_name}_peaks.narrowPeak
+    output_files:
+      - {output_dir}/{sample_name}_peaks_sorted.narrowPeak
+    parameters:
+      sample_name: chipseq_sample
+
+  - step_id: 3
+    tool_name: bedtools
+    tool_version: 2.30.0
+    command_template: bedtools merge -i {input_dir}/{sample_name}_peaks_sorted.narrowPeak > {output_dir}/{sample_name}_peaks_merged.bed
+    input_files:
+      - {input_dir}/{sample_name}_peaks_sorted.narrowPeak
+    output_files:
+      - {output_dir}/{sample_name}_peaks_merged.bed
+    parameters:
+      sample_name: chipseq_sample

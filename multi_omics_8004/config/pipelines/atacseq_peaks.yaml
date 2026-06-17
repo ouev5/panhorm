@@ -1,0 +1,36 @@
+name: atacseq_peaks
+description: ATAC-seq峰值检测流程
+task_type: deterministic
+
+required_inputs:
+  - bam_file
+  - genome_size
+
+output_patterns:
+  - peaks.narrowPeak
+  - peaks.xls
+  - peaks.bed
+
+steps:
+  - step_id: 1
+    tool_name: macs2
+    tool_version: 2.2.7.1
+    command_template: macs2 callpeak -t {bam_file} -f BAMPE -g {genome_size} -n {sample_name} --outdir {output_dir} -q 0.05
+    input_files:
+      - {bam_file}
+    output_files:
+      - {output_dir}/{sample_name}_peaks.narrowPeak
+    parameters:
+      sample_name: atacseq_sample
+      genome_size: hs
+
+  - step_id: 2
+    tool_name: bedtools
+    tool_version: 2.30.0
+    command_template: bedtools sort -i {input_dir}/{sample_name}_peaks.narrowPeak > {output_dir}/{sample_name}_peaks_sorted.narrowPeak
+    input_files:
+      - {input_dir}/{sample_name}_peaks.narrowPeak
+    output_files:
+      - {output_dir}/{sample_name}_peaks_sorted.narrowPeak
+    parameters:
+      sample_name: atacseq_sample

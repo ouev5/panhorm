@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ key }} | PanHorm Entity Detail{% endblock %}
+{% block content %}
+<style>
+  .ph-detail-page {
+    --ink:#172033; --muted:#607089; --line:#cfd8e3; --panel:#fff; --paper:#f4f7fb;
+    --blue:#235a97; --blue-dark:#173f72; --cyan:#3a8fb7; --gold:#b7791f;
+    background:
+      radial-gradient(circle at 88% 10%, rgba(35,90,151,.10), transparent 32rem),
+      linear-gradient(180deg,#f8fbff 0%,#eef3f9 45%,#f7f8fb 100%);
+    min-height: calc(100vh - 80px);
+    color: var(--ink);
+    font-family: "Source Sans 3", "IBM Plex Sans", system-ui, sans-serif;
+  }
+  .ph-shell { max-width:1280px; margin:0 auto; padding:0 18px; }
+  .ph-entity-hero {
+    background:
+      linear-gradient(135deg, rgba(15,45,86,.97), rgba(28,76,130,.96)),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.055) 0 1px, transparent 1px 14px);
+    color:white; border-bottom:4px solid #d7a642; box-shadow:0 18px 36px rgba(22,42,70,.18);
+  }
+  .ph-hero { margin-top: 24px; }
+  .ph-hero-inner { width:100%; margin:0 auto; padding:28px clamp(20px,4vw,64px) 32px; }
+  .ph-breadcrumb { color:rgba(255,255,255,.76); font-size:14px; margin-bottom:14px; }
+  .ph-breadcrumb a { color:#d7ecff; text-decoration:underline; text-underline-offset:3px; }
+  .ph-title-wrap { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; flex-wrap:wrap; }
+  .ph-label { display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.11); border-radius:999px; padding:6px 11px; text-transform:uppercase; letter-spacing:.06em; font-size:12px; font-weight:900; }
+  .ph-title { margin:12px 0 0; font-size:clamp(42px, 6.5vw, 92px); line-height:.9; font-weight:900; letter-spacing:-.055em; word-break:break-word; max-width:1180px; }
+  .ph-subtitle { color:rgba(255,255,255,.84); margin-top:14px; max-width:1060px; font-size:clamp(16px,1.35vw,21px); line-height:1.45; }
+  .ph-search-again { background:rgba(255,255,255,.96); border-radius:12px; padding:10px; display:flex; gap:8px; box-shadow:0 14px 30px rgba(0,0,0,.22); }
+  .ph-search-again input { height:42px; width:min(340px,58vw); border:1px solid #aebed0; border-radius:8px; padding:0 12px; color:#172033; }
+  .ph-search-again button { height:42px; border:0; border-radius:8px; padding:0 15px; color:white; background:linear-gradient(180deg,#2f6fad,#1d4f88); font-weight:800; }
+  .ph-content { padding:24px 0 38px; }
+  .ph-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+  .ph-stat { background:#fff; border:1px solid var(--line); border-radius:13px; padding:16px; box-shadow:0 8px 22px rgba(26,44,70,.07); position:relative; overflow:hidden; }
+  .ph-stat:before { content:""; position:absolute; inset:0 auto 0 0; width:5px; background:linear-gradient(180deg,var(--blue),var(--cyan)); }
+  .ph-stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; font-weight:800; }
+  .ph-stat-value { font-size:32px; line-height:1; font-weight:900; margin-top:7px; color:#102a43; }
+
+  /* NCBI-style info card */
+  .ph-info-card { background:#fff; border:1px solid var(--line); border-radius:13px; box-shadow:0 10px 26px rgba(26,44,70,.08); margin-bottom:20px; overflow:hidden; }
+  .ph-info-card-head { padding:15px 17px; background:linear-gradient(180deg,#f8fafc,#eef3f8); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:8px; }
+  .ph-info-card-head h3 { font-size:18px; font-weight:900; margin:0; }
+  .ph-info-card-body { padding:0; }
+  .ph-info-row { display:grid; grid-template-columns:220px minmax(0,1fr); border-bottom:1px solid #edf1f6; }
+  .ph-info-row:last-child { border-bottom:none; }
+  .ph-info-row:nth-child(even) { background:#fbfdff; }
+  .ph-info-row:hover { background:#eef7ff; }
+  .ph-info-label { padding:10px 16px; font-weight:900; font-size:13px; color:#3d5170; text-transform:uppercase; letter-spacing:.04em; border-right:1px solid #edf1f6; background:#f8fafc; }
+  .ph-info-value { padding:10px 16px; font-size:14px; color:#172033; line-height:1.5; word-break:break-all; }
+  .ph-info-value a { color:#174ea6; font-weight:700; text-decoration:none; }
+  .ph-info-value a:hover { text-decoration:underline; }
+
+  /* Sequence block */
+  .ph-seq-block { background:#f8fafc; border:1px solid #d8e4f0; border-radius:8px; margin-top:6px; padding:10px 14px; font-family:"JetBrains Mono","Fira Code",monospace; font-size:12px; line-height:1.65; color:#2d3748; max-height:280px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; }
+  .ph-seq-toggle { display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:4px 12px; border:1px solid #c8d4e2; border-radius:999px; background:#fff; color:#42526a; font-size:12px; font-weight:700; cursor:pointer; }
+  .ph-seq-toggle:hover { background:#eef7ff; }
+  .ph-seq-length { font-size:11px; color:var(--muted); margin-top:4px; }
+
+  .ph-section { background:#fff; border:1px solid var(--line); border-radius:13px; box-shadow:0 10px 26px rgba(26,44,70,.08); margin-bottom:20px; overflow:hidden; }
+  .ph-section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 17px; background:linear-gradient(180deg,#f8fafc,#eef3f8); border-bottom:1px solid var(--line); }
+  .ph-section-title { font-size:18px; font-weight:900; display:flex; align-items:center; gap:8px; }
+  .ph-section-note { color:var(--muted); font-size:13px; }
+  .ph-table-wrap { overflow:auto; max-height:720px; }
+  .ph-table { width:100%; border-collapse:separate; border-spacing:0; font-size:14px; }
+  .ph-table thead th { position:sticky; top:0; z-index:2; background:#eaf0f7; color:#26384f; text-align:left; padding:11px 12px; border-bottom:1px solid #c8d4e2; white-space:nowrap; font-weight:900; }
+  .ph-table tbody td { padding:10px 12px; border-bottom:1px solid #edf1f6; vertical-align:top; }
+  .ph-table tbody tr:nth-child(even) { background:#fbfdff; }
+  .ph-table tbody tr:hover { background:#eef7ff; }
+  .ph-link { color:#174ea6; font-weight:700; text-decoration:none; }
+  .ph-link:hover { text-decoration:underline; text-underline-offset:3px; }
+  .ph-pmid { display:inline-flex; align-items:center; gap:5px; border:1px solid #cbd7e4; border-radius:999px; padding:2px 8px; background:#fff; color:#174ea6; font-weight:800; }
+  .ph-footer-note { padding:10px 16px; color:var(--muted); background:#fbfcfe; border-top:1px solid #edf1f6; font-size:12px; }
+  .ph-empty { text-align:center; padding:42px 22px; }
+  .ph-empty h2 { font-size:24px; font-weight:900; margin:0 0 8px; }
+  @media(max-width:900px){ .ph-stats{grid-template-columns:repeat(2,minmax(0,1fr));} .ph-title-wrap{align-items:flex-start;} .ph-search-again{width:100%;} .ph-info-row{grid-template-columns:140px minmax(0,1fr);} }
+
+  .ph-case-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:16px; }
+  .ph-case-card { border:1px solid #d8e4f0; border-radius:14px; background:#fff; padding:15px; box-shadow:0 7px 18px rgba(26,44,70,.06); }
+  .ph-case-card h4 { margin:0 0 9px; font-size:15px; font-weight:900; color:#172033; display:flex; align-items:center; gap:8px; }
+  .ph-case-card p { margin:0; color:#56657a; line-height:1.55; font-size:13px; }
+  .ph-case-metric { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; padding:16px; }
+  .ph-case-metric > div { border:1px solid #d8e4f0; border-radius:12px; padding:12px; background:#f8fafc; }
+  .ph-case-label { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:#607089; font-weight:800; }
+  .ph-case-value { margin-top:5px; font-size:22px; font-weight:900; color:#174ea6; }
+  .ph-mini-bar { height:10px; border-radius:999px; background:#e8eef6; overflow:hidden; margin-top:7px; }
+  .ph-mini-bar span { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#2f6fad,#3a8fb7); }
+  .ph-target-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+  .ph-target-table th { background:#eef3f8; color:#26384f; text-align:left; padding:9px; font-weight:900; border-bottom:1px solid #cfd8e3; }
+  .ph-target-table td { padding:9px; border-bottom:1px solid #edf1f6; }
+  @media(max-width:900px){ .ph-case-grid,.ph-case-metric{grid-template-columns:1fr;} }
+  @media(max-width:560px){ .ph-stats{grid-template-columns:1fr;} .ph-search-again{flex-direction:column;} .ph-search-again input{width:100%;} .ph-info-row{grid-template-columns:1fr;} .ph-info-label{border-right:none;border-bottom:1px solid #edf1f6;} }
+</style>
+
+<div class="ph-detail-page">
+  <section class="ph-entity-hero">
+    <div class="ph-hero-inner">
+      <div class="ph-breadcrumb"><a href="{% url 'hormone_app:home' %}">Home</a> / <a href="{% url 'hormone_app:search' %}?query={{ key|urlencode }}&type={{ entity_type }}">Search</a> / {{ key }}</div>
+      <div class="ph-title-wrap">
+        <div>
+          <span class="ph-label"><i class="fa fa-book"></i> {{ entity_label }} record</span>
+          <h1 class="ph-title">{{ key }}</h1>
+          {% if gene_info and gene_info.description %}
+            <p class="ph-subtitle">{{ gene_info.description }}</p>
+          {% elif entity_info %}
+            <p class="ph-subtitle">{{ entity_label }} record in PanHorm — explore linked hormones, genes, diseases, organisms and evidence below.</p>
+          {% else %}
+            <p class="ph-subtitle">Entity-centered view of linked hormone, gene, disease, organism, publication and receptor records in PanHorm.</p>
+          {% endif %}
+        </div>
+        <form action="{% url 'hormone_app:search' %}" method="get" class="ph-search-again">
+          <input name="query" value="{{ key }}" aria-label="Search again">
+          <input type="hidden" name="type" value="{{ entity_type }}">
+          <button><i class="fa fa-search"></i> Search</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <main class="ph-shell ph-content">
+    {% if error %}
+      <div class="ph-section ph-empty"><h2>{{ error }}</h2><p>Please return to search and select a valid entity.</p></div>
+    {% else %}
+      <div class="ph-stats">
+        {% for name, value in stats.items %}
+          <div class="ph-stat"><div class="ph-stat-label">{{ name }}</div><div class="ph-stat-value">{{ value }}</div></div>
+        {% endfor %}
+      </div>
+
+      {% if gene_info %}
+        <div class="ph-info-card">
+          <div class="ph-info-card-head"><i class="fa fa-dna"></i> <h3>Gene Information</h3></div>
+          <div class="ph-info-card-body">
+            <div class="ph-info-row">
+              <div class="ph-info-label">Gene Name</div>
+              <div class="ph-info-value">{{ gene_info.gene_name|default:"N/A" }}</div>
+            </div>
+            {% if gene_info.description %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Description</div>
+                <div class="ph-info-value">{{ gene_info.description }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.synonyms %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Synonyms</div>
+                <div class="ph-info-value">{{ gene_info.synonyms }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.organism %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Organism</div>
+                <div class="ph-info-value">{{ gene_info.organism }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.chromosome %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Chromosome</div>
+                <div class="ph-info-value">{{ gene_info.chromosome }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.map_location %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Map Location</div>
+                <div class="ph-info-value">{{ gene_info.map_location }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.chr_accession %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Chromosome Accession</div>
+                <div class="ph-info-value"><a href="https://www.ncbi.nlm.nih.gov/nuccore/{{ gene_info.chr_accession }}" target="_blank">{{ gene_info.chr_accession }}</a></div>
+              </div>
+            {% endif %}
+            {% if gene_info.hormone_accession %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Hormone Accession</div>
+                <div class="ph-info-value"><a href="https://www.uniprot.org/uniprot/{{ gene_info.hormone_accession }}" target="_blank">{{ gene_info.hormone_accession }}</a></div>
+              </div>
+            {% endif %}
+            {% if gene_info.protein_accession %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Protein Accession</div>
+                <div class="ph-info-value"><a href="https://www.ncbi.nlm.nih.gov/protein/{{ gene_info.protein_accession }}" target="_blank">{{ gene_info.protein_accession }}</a></div>
+              </div>
+            {% endif %}
+            {% if gene_info.mrna_accession %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">mRNA Accession</div>
+                <div class="ph-info-value"><div class="ph-info-value"><a href="https://www.ncbi.nlm.nih.gov/nuccore/{{ gene_info.mrna_accession }}" target="_blank">{{ gene_info.mrna_accession }}</a></div></div>
+              </div>
+            {% endif %}
+            {% if gene_info.evidence_source %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Evidence Source</div>
+                <div class="ph-info-value">{{ gene_info.evidence_source }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.regulation_type %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Regulation Type</div>
+                <div class="ph-info-value">{{ gene_info.regulation_type }}</div>
+              </div>
+            {% endif %}
+            {% if gene_info.protein_sequence %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">Protein Sequence</div>
+                <div class="ph-info-value">
+                  <div class="ph-seq-length">{{ gene_info.protein_sequence|length }} aa</div>
+                  <details><summary class="ph-seq-toggle"><i class="fa fa-chevron-down"></i> Show sequence</summary><div class="ph-seq-block">{{ gene_info.protein_sequence }}</div></details>
+                </div>
+              </div>
+            {% endif %}
+            {% if gene_info.mrna_sequence %}
+              <div class="ph-info-row">
+                <div class="ph-info-label">mRNA Sequence</div>
+                <div class="ph-info-value">
+                  <div class="ph-seq-length">{{ gene_info.mrna_sequence|length }} nt</div>
+                  <details><summary class="ph-seq-toggle"><i class="fa fa-chevron-down"></i> Show sequence</summary><div class="ph-seq-block">{{ gene_info.mrna_sequence }}</div></details>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if entity_info %}
+        <div class="ph-info-card">
+          <div class="ph-info-card-head"><i class="fa fa-info-circle"></i> <h3>{{ entity_label }} Information</h3></div>
+          <div class="ph-info-card-body">
+            {% for label, value in entity_info.items %}
+              {% if value %}
+                <div class="ph-info-row">
+                  <div class="ph-info-label">{{ label|cut:"_" }}</div>
+                  <div class="ph-info-value">
+                    {% if "sequence" in label and value|length > 50 %}
+                      <div class="ph-seq-length">{{ value|length }} {% if "protein" in label or "coding" in label %}aa{% else %}nt{% endif %}</div>
+                      <details><summary class="ph-seq-toggle"><i class="fa fa-chevron-down"></i> Show sequence</summary><div class="ph-seq-block">{{ value }}</div></details>
+                    {% elif "accession" in label and value %}
+                      {% if value|length < 25 %}
+                        <a href="https://www.ncbi.nlm.nih.gov/nuccore/{{ value }}" target="_blank">{{ value }}</a>
+                      {% else %}
+                        {{ value }}
+                      {% endif %}
+                    {% elif "uniprot" in label and value %}
+                      <a href="https://www.uniprot.org/uniprot/{{ value }}" target="_blank">{{ value }}</a>
+                    {% elif "pubchem" in label and value %}
+                      <a href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ value }}" target="_blank">{{ value }}</a>
+                    {% elif "DO_ID" in label and value %}
+                      <a href="https://disease-ontology.org/id/{{ value }}" target="_blank">{{ value }}</a>
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+
+      <style>
+        .ph-link-list { display:flex; flex-wrap:wrap; gap:8px; padding:14px 17px; }
+        .ph-link-chip { display:inline-flex; align-items:center; gap:4px; padding:7px 14px; border:1px solid #c8d4e2; border-radius:999px; background:#fff; color:#174ea6; font-weight:700; font-size:13px; text-decoration:none; transition: all .15s ease; }
+        .ph-link-chip:hover { background:#eef7ff; border-color:#90b7dc; transform:translateY(-1px); box-shadow:0 4px 10px rgba(23,78,166,.12); }
+        .ph-link-chip i { font-size:11px; color:#607089; }
+      </style>
+
+
+
+      {% if key == 'GH' or key == 'gh1' or key == 'Gh' or key == 'growth hormone' or key == 'Growth hormone' or key == 'GHR' or key == 'acromegaly' or key == 'Acromegaly' %}
+        <section class="ph-section" id="gh-acromegaly-workflow">
+          <div class="ph-section-head">
+            <div class="ph-section-title"><i class="fa fa-flask"></i> GH–Acromegaly Case Workflow</div>
+            <div class="ph-section-note">Embedded in the existing entity detail page · matches Figure 7 case narrative</div>
+          </div>
+          <div class="ph-case-metric">
+            <div><div class="ph-case-label">Hormone</div><div class="ph-case-value">GH</div><p class="ph-section-note">UniProt: P01241</p></div>
+            <div><div class="ph-case-label">Receptor</div><div class="ph-case-value">GHR</div><p class="ph-section-note">UniProt: P10912</p></div>
+            <div><div class="ph-case-label">Disease</div><div class="ph-case-value">DOID:12074</div><p class="ph-section-note">Acromegaly</p></div>
+            <div><div class="ph-case-label">Species scope</div><div class="ph-case-value">646</div><p class="ph-section-note">case-level coverage</p></div>
+          </div>
+          <div class="ph-case-grid">
+            <div class="ph-case-card">
+              <h4><i class="fa fa-search text-blue-600"></i> Step 1 · Hormone and receptor retrieval</h4>
+              <p>Querying GH retrieves the homologous receptor GHR. The case summary displays GH–GHR conservation across the platform species scope and mammalian sequence identity ≥ 80%.</p>
+              <div class="ph-mini-bar"><span style="width:88%"></span></div>
+            </div>
+            <div class="ph-case-card">
+              <h4><i class="fa fa-project-diagram text-green-600"></i> Step 2 · Network exploration / Figure 7A</h4>
+              <p>The relationship network highlights downstream genes IGF1, STAT5B and SOCS2, plus regulatory nodes including JAK2 and PI3K/AKT pathway components.</p>
+              <div class="ph-mini-bar"><span style="width:92%"></span></div>
+            </div>
+            <div class="ph-case-card">
+              <h4><i class="fa fa-chart-bar text-emerald-600"></i> Step 3 · Pathway enrichment</h4>
+              <p>JAK-STAT signaling pathway (FDR = 2.3 × 10⁻¹²) and PI3K-Akt signaling pathway (FDR = 4.5 × 10⁻⁹) are shown as the top enriched case pathways.</p>
+              <div class="ph-mini-bar"><span style="width:96%"></span></div>
+            </div>
+            <div class="ph-case-card">
+              <h4><i class="fa fa-bullseye text-amber-600"></i> Step 4 · GeneReg target prediction</h4>
+              <table class="ph-target-table">
+                <thead><tr><th>Target</th><th>Weighted</th><th>ChIP-seq</th><th>Motif</th><th>Evidence</th></tr></thead>
+                <tbody>
+                  <tr><td><b>GHR</b></td><td>95.2</td><td>0.87</td><td>0.91</td><td>confirmed</td></tr>
+                  <tr><td><b>IGF1R</b></td><td>82.6</td><td>—</td><td>—</td><td>PMID:30443250</td></tr>
+                  <tr><td><b>SOCS2</b></td><td>78.3</td><td>—</td><td>—</td><td>candidate</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="ph-case-card">
+              <h4><i class="fa fa-robot text-cyan-600"></i> Step 5 · RAG-assisted synthesis / Figure 7B</h4>
+              <p>Query: “current treatment strategies for acromegaly”. The result summarizes somatostatin analogs, GH receptor antagonists, dopamine agonists, drug targets, clinical progress and future directions.</p>
+            </div>
+            <div class="ph-case-card">
+              <h4><i class="fa fa-file-pdf text-violet-600"></i> Step 6 · Report generation / Supplementary Fig. S8</h4>
+              <p>The report panel compiles the network view, enrichment results, target prediction table and literature synthesis into a structured PDF-style output.</p>
+            </div>
+          </div>
+        </section>
+      {% endif %}
+
+      {# ====== NETWORK GRAPH ====== #}
+      <section class="ph-section" style="margin-bottom:20px;">
+        <div class="ph-section-head">
+          <div class="ph-section-title"><i class="fa fa-project-diagram"></i> Relationship Network</div>
+          <div class="ph-section-note">Click a node to navigate · Drag to explore</div>
+        </div>
+        <div id="entityNetworkChart" style="height:480px; width:100%;"></div>
+      </section>
+
+      <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+      <script>
+      (function(){
+        var dom = document.getElementById('entityNetworkChart');
+        if(!dom || typeof echarts==='undefined') return;
+        var chart = echarts.init(dom);
+        var centerType = '{{ entity_type }}';
+        var centerKey = '{{ key|escapejs }}';
+
+        var catColors = {hormone:'#2f6fad', gene:'#2f855a', disease:'#b83232', receptor:'#b7791f'};
+        var catNames = ['Hormone','Gene','Disease','Receptor'];
+        var catMap = {hormone:0, gene:1, disease:2, receptor:3};
+        var cats = catNames.map(function(n,i){return {name:n, itemStyle:{color:Object.values(catColors)[i]}};});
+
+        var nodes = [];
+        var links = [];
+        var seen = {};
+        var cid = 'c_' + centerType;
+        nodes.push({id:cid, name:centerKey, symbolSize:50, category:catMap[centerType],
+          itemStyle:{color:catColors[centerType], borderColor:'#fff', borderWidth:2},
+          label:{show:true, fontSize:14, fontWeight:900, color:'#fff'},
+          textStyle:{color:'#fff'}});
+        seen[cid] = true;
+
+        function addNode(type, name){
+          var id = type + '_' + name;
+          if(seen[id]) return;
+          seen[id] = true;
+          nodes.push({id:id, name:name, symbolSize:24, category:catMap[type],
+            itemStyle:{color:catColors[type], opacity:0.85},
+            label:{show:true, fontSize:11, color:'#2d3748'},
+            url:'/hormone_app/entity/' + type + '/?key=' + encodeURIComponent(name)});
+        }
+        function addLink(src, tgt){ links.push({source:src, target:tgt, lineStyle:{color:'#c8d4e2', width:1.2, curveness:0.1}}); }
+
+        {% if linked_hormones %}
+          {% for item in linked_hormones %}{% if forloop.counter <= 40 %}
+            addNode('hormone', '{{ item|escapejs }}');
+            addLink(cid, 'hormone_' + '{{ item|escapejs }}');
+          {% endif %}{% endfor %}
+        {% endif %}
+        {% if linked_genes %}
+          {% for item in linked_genes %}{% if forloop.counter <= 40 %}
+            addNode('gene', '{{ item|escapejs }}');
+            addLink(cid, 'gene_' + '{{ item|escapejs }}');
+          {% endif %}{% endfor %}
+        {% endif %}
+        {% if linked_diseases %}
+          {% for item in linked_diseases %}{% if forloop.counter <= 40 %}
+            addNode('disease', '{{ item|truncatechars:40|escapejs }}');
+            addLink(cid, 'disease_' + '{{ item|truncatechars:40|escapejs }}');
+          {% endif %}{% endfor %}
+        {% endif %}
+        {% if linked_receptors %}
+          {% for item in linked_receptors %}{% if forloop.counter <= 40 %}
+            addNode('receptor', '{{ item|escapejs }}');
+            addLink(cid, 'receptor_' + '{{ item|escapejs }}');
+          {% endif %}{% endfor %}
+        {% endif %}
+
+        chart.setOption({
+          tooltip:{trigger:'item', formatter:function(p){return '<b>'+p.name+'</b><br>Category: '+catNames[p.data.category];}},
+          legend:{data:catNames, bottom:10, textStyle:{fontSize:12}},
+          series:[{
+            type:'graph', layout:'force', data:nodes, links:links, categories:cats,
+            roam:true, draggable:true,
+            force:{repulsion:350, gravity:0.12, edgeLength:[60,160], layoutAnimation:true},
+            label:{show:true, position:'right', fontSize:11},
+            lineStyle:{color:'#c8d4e2', curveness:0.1},
+            emphasis:{focus:'adjacency', lineStyle:{width:3}},
+          }]
+        });
+        chart.on('click', function(p){ if(p.data && p.data.url) window.open(p.data.url, '_self'); });
+        window.addEventListener('resize', function(){ chart.resize(); });
+      })();
+      </script>
+
+      {% if linked_hormones %}
+        <section class="ph-section">
+          <div class="ph-section-head">
+            <div class="ph-section-title"><i class="fa fa-flask"></i> Linked Hormones ({{ linked_hormones|length }})</div>
+          </div>
+          <div class="ph-link-list">
+            {% for item in linked_hormones %}
+              <a class="ph-link-chip" href="{% url 'hormone_app:entity_detail' 'hormone' %}?key={{ item|urlencode }}"><i class="fa fa-chevron-right"></i> {{ item }}</a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if linked_genes %}
+        <section class="ph-section">
+          <div class="ph-section-head">
+            <div class="ph-section-title"><i class="fa fa-dna"></i> Linked Genes ({{ linked_genes|length }})</div>
+          </div>
+          <div class="ph-link-list">
+            {% for item in linked_genes %}
+              <a class="ph-link-chip" href="{% url 'hormone_app:entity_detail' 'gene' %}?key={{ item|urlencode }}"><i class="fa fa-chevron-right"></i> {{ item }}</a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if linked_diseases %}
+        <section class="ph-section">
+          <div class="ph-section-head">
+            <div class="ph-section-title"><i class="fa fa-heartbeat"></i> Linked Diseases ({{ linked_diseases|length }})</div>
+          </div>
+          <div class="ph-link-list">
+            {% for item in linked_diseases %}
+              <a class="ph-link-chip" href="{% url 'hormone_app:entity_detail' 'disease' %}?key={{ item|urlencode }}"><i class="fa fa-chevron-right"></i> {{ item|truncatechars:60 }}</a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if linked_receptors %}
+        <section class="ph-section">
+          <div class="ph-section-head">
+            <div class="ph-section-title"><i class="fa fa-chain"></i> Linked Receptors ({{ linked_receptors|length }})</div>
+          </div>
+          <div class="ph-link-list">
+            {% for item in linked_receptors %}
+              <a class="ph-link-chip" href="{% url 'hormone_app:entity_detail' 'receptor' %}?key={{ item|urlencode }}"><i class="fa fa-chevron-right"></i> {{ item }}</a>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if not linked_hormones and not linked_genes and not linked_diseases and not linked_receptors %}
+        <div class="ph-section ph-empty"><h2>No linked entities found</h2><p>This entity may exist only as a partial match. Try returning to search.</p></div>
+      {% endif %}
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

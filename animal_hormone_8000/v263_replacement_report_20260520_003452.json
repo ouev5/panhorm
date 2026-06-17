@@ -1,0 +1,60 @@
+{
+  "timestamp": "20260520_003452",
+  "legacy_backup_table": "hormone_data_legacy_backup_20260520_003452",
+  "new_compat_table": "hormone_data_v263_compat_20260520_003452",
+  "old_count_before": 126199,
+  "v263_count": 7833,
+  "legacy_backup_count": 126199,
+  "new_compat_count": 7833,
+  "old_swapped_table": "hormone_data_pre_v263_swap_20260520_003452",
+  "live_count_after": 7833,
+  "live_leptin_count_after": 61,
+  "live_leptin_sample": [
+    [
+      249,
+      "Leptin",
+      "MMP2",
+      "Bovine",
+      "ovarian carcinoma",
+      "DOID:4001",
+      "PASS"
+    ],
+    [
+      415,
+      "Leptin",
+      "Vegfa",
+      "Mouse",
+      "hepatocellular carcinoma",
+      "DOID:684",
+      "NOT_MERGED"
+    ],
+    [
+      708,
+      "Leptin",
+      "MMP2",
+      "Bovine",
+      "hepatocellular carcinoma",
+      "DOID:684",
+      "PASS"
+    ],
+    [
+      735,
+      "Leptin",
+      "Bdnf",
+      "Mouse",
+      "type 2 diabetes mellitus",
+      "DOID:9352",
+      "NOT_MERGED"
+    ],
+    [
+      1071,
+      "Leptin",
+      "Pomc",
+      "Mouse",
+      "Bardet-Biedl syndrome",
+      "DOID:1935",
+      "NOT_MERGED"
+    ]
+  ],
+  "rag_index_backup_dir": "/www/wwwroot/default/animal_hormone/rag_legacy_index_backup_20260520_003452"
+}

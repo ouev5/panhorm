@@ -1,0 +1,8 @@
+{
+  "provider": "deepseek",
+  "api_key": "YOUR_VALUE_HERE",
+  "api_url": "https://api.deepseek.com/v1/chat/completions",
+  "model": "deepseek-chat",
+  "temperature": 0.7,
+  "max_tokens": 2000
+}

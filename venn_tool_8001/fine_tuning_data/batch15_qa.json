@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "富集分析中的Enrichment Score如何计算？",
+    "input": "",
+    "output": "Enrichment Score计算：\n\n**GSEA中的ES**：\n- 基因按表达差异排序\n- 遇到基因集中基因+1，否则-1\n- 累积求和的最大偏离值\n\n**传统富集中的富集比**：\n富集比 = (基因集中DEG数/基因集总数) / (背景DEG数/背景总数)\n\n**Combined Score (Enrichr)**：\n-log10(P-value) × Z-score"
+  },
+  {
+    "instruction": "如何理解基因表达数据的标准化？",
+    "input": "",
+    "output": "表达数据标准化：\n\n**目的**：\n消除技术差异，使样本间可比。\n\n**常用方法**：\n1. **RPKM/FPKM**：\n   - 考虑基因长度和测序深度\n   - FPKM = RPKM\n\n2. **TPM**：\n   - Transcripts Per Million\n   - 样本内总和相同\n\n3. **TMM**：\n   - edgeR方法\n   - 考虑组成差异\n\n4. **DESeq2标准化**：\n   - 中位数比值法\n   - 适合差异分析"
+  },
+  {
+    "instruction": "什么是批次效应？",
+    "input": "",
+    "output": "批次效应说明：\n\n**定义**：\n非生物学因素导致的样本间差异。\n\n**来源**：\n1. 不同测序批次\n2. 不同实验日期\n3. 不同操作人员\n4. 不同试剂批次\n\n**影响**：\n- 掩盖真实生物学差异\n- 产生假阳性/假阴性\n\n**处理方法**：\n1. ComBat\n2. limma removeBatchEffect\n3. Harmony\n4. 实验设计时平衡"
+  },
+  {
+    "instruction": "如何评估RNA-seq数据质量？",
+    "input": "",
+    "output": "RNA-seq质量评估：\n\n**基本指标**：\n1. **测序质量**：Q30 > 90%\n2. **比对率**：> 70%\n3. **基因检测数**：> 15000\n\n**样本质量**：\n1. PCA聚类：重复聚在一起\n2. 样本相关性：r > 0.9\n3. 表达分布：一致\n\n**问题样本**：\n- 离群样本\n- 低基因检测\n- 异常分布"
+  },
+  {
+    "instruction": "什么是FDR校正？",
+    "input": "",
+    "output": "FDR校正说明：\n\n**定义**：\nFalse Discovery Rate，错误发现率。\n\n**BH方法步骤**：\n1. P值从小到大排序\n2. 第i个校正P值 = P值 × 总检验数 / 排名\n3. 确保单调性\n\n**与Bonferroni比较**：\n- Bonferroni：P × n，最保守\n- BH：控制FDR < α，更实用\n\n**解读**：\nFDR < 0.05 表示假阳性率 < 5%"
+  },
+  {
+    "instruction": "如何选择差异表达分析的阈值？",
+    "input": "",
+    "output": "差异基因阈值选择：\n\n**常用标准**：\n1. |log2FC| > 1 且 FDR < 0.05\n2. |log2FC| > 1.5 且 FDR < 0.01\n\n**阈值调整建议**：\n- 结果太少：放宽FC或FDR\n- 结果太多：收紧阈值\n- 结合生物学意义\n\n**注意事项**：\n- 低表达基因FC不稳定\n- 考虑表达量绝对值\n- 文献中的标准参考"
+  },
+  {
+    "instruction": "单细胞数据为什么要去除双细胞？",
+    "input": "",
+    "output": "去除双细胞原因：\n\n**双细胞来源**：\n两个细胞被封装在同一液滴。\n\n**问题**：\n1. 表达谱混合\n2. 扰乱聚类分析\n3. 产生假细胞类型\n\n**识别特征**：\n- 基因数异常高\n- 表达谱混合\n- UMAP位于中间\n\n**去除方法**：\n1. Scrublet\n2. DoubletFinder\n3. 基因数过滤"
+  },
+  {
+    "instruction": "什么是基因集富集分析(GSEA)？",
+    "input": "",
+    "output": "GSEA说明：\n\n**与超几何检验区别**：\n- 超几何：需要阈值划分DEG\n- GSEA：使用全部排序基因\n\n**步骤**：\n1. 基因按差异排序\n2. 扫描基因集在排序列表中的位置\n3. 计算Enrichment Score\n4. 统计检验\n\n**优势**：\n- 无需设定阈值\n- 利用全部信息\n- 发现微弱但协调的变化"
+  },
+  {
+    "instruction": "如何选择聚类算法？",
+    "input": "",
+    "output": "聚类算法选择：\n\n**层次聚类**：\n- 适合：小数据集\n- 特点：树状图直观\n\n**K-means**：\n- 适合：大样本\n- 特点：快速\n\n**图聚类(Louvain/Leiden)**：\n- 适合：单细胞数据\n- 特点：自动确定聚类数\n\n**选择建议**：\n- 单细胞：Louvain\n- 一般数据：K-means\n- 小样本：层次聚类"
+  },
+  {
+    "instruction": "如何解读相关性热图？",
+    "input": "",
+    "output": "相关性热图解读：\n\n**颜色含义**：\n- 红色：正相关（r接近1）\n- 蓝色：负相关（r接近-1）\n- 白色：无相关（r接近0）\n\n**聚类信息**：\n- 相似模式的基因/样本聚在一起\n- 可识别功能模块\n\n**应用**：\n1. 样本质量控制\n2. 基因共表达分析\n3. 识别异常样本"
+  }
+]

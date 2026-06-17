@@ -1,0 +1,41 @@
+# secrets
+.env
+*.env
+*.key
+*.pem
+*.p12
+*.pfx
+*secret*
+*credential*
+
+# python/runtime
+venv/
+__pycache__/
+*.pyc
+*.db
+*.sqlite3
+*.log
+*.pid
+
+# backups/runtime data
+*.bak
+*.bak.*
+backups/
+staticfiles/
+static_coll/
+.DS_Store
+
+# large bioinformatics data
+blast/
+media/
+uploads/
+local_models/
+*.npz
+*.h5ad
+*.zarr
+*.zarr.zip
+encode_peaks/
+single_cell_data/
+single_cell_data_mouse/
+data/
+results/

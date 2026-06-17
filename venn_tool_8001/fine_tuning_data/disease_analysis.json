@@ -1,0 +1,42 @@
+[
+  {
+    "instruction": "如何分析乳腺癌相关基因？",
+    "input": "",
+    "output": "乳腺癌基因分析流程：\n\n**相关基因示例**：\n- BRCA1, BRCA2：遗传性乳腺癌主要基因\n- TP53：肿瘤抑制基因\n- HER2/ERBB2：治疗靶点\n- ESR1：雌激素受体\n- PIK3CA：PI3K通路基因\n\n**分析步骤**：\n\n1. **输入基因列表**\n```\nBRCA1\nBRCA2\nTP53\nERBB2\nESR1\nPIK3CA\n```\n\n2. **KEGG富集分析**\n预期富集到：\n- \"Breast cancer\" pathway\n- \"PI3K-Akt signaling pathway\"\n- \"p53 signaling pathway\"\n- \"Estrogen signaling pathway\"\n\n3. **GO功能分析**\n可能富集到：\n- DNA damage response\n- Cell cycle regulation\n- Apoptotic process\n\n4. **单细胞分析**\n查看基因在乳腺组织中的表达分布\n\n5. **STRING网络**\n分析蛋白互作，发现调控网络"
+  },
+  {
+    "instruction": "糖尿病相关基因分析",
+    "input": "",
+    "output": "糖尿病基因分析指南：\n\n**相关基因**：\n- INS：胰岛素基因\n- INSR：胰岛素受体\n- IGF1/IGF2：胰岛素样生长因子\n- TCF7L2：2型糖尿病风险基因\n- PPARγ：过氧化物酶体增殖物激活受体\n- KCNJ11：钾通道基因\n\n**分析重点**：\n\n1. **激素数据库搜索**\n搜索Insulin，获取相关基因和疾病信息\n\n2. **KEGG通路**\n重点关注：\n- Insulin signaling pathway\n- Type II diabetes mellitus pathway\n- AGE-RAGE signaling pathway\n\n3. **GO功能**\n可能富集：\n- Glucose metabolic process\n- Insulin receptor signaling\n- Regulation of blood glucose\n\n4. **单细胞分析**\n查看胰岛β细胞中基因表达\n\n**临床意义**：\n- 发现潜在药物靶点\n- 理解胰岛素抵抗机制\n- 识别生物标志物"
+  },
+  {
+    "instruction": "PCOS多囊卵巢综合征分析",
+    "input": "",
+    "output": "PCOS分析完整方案：\n\n**病理机制相关基因**：\n\n**雄激素相关**：\n- CYP17A1：17α-羟化酶\n- CYP19A1：芳香化酶\n- AR：雄激素受体\n- HSD17B：17β-羟基类固醇脱氢酶\n\n**胰岛素相关**：\n- INS, INSR\n- IGF1, IGF1R\n- IRS1, IRS2\n\n**促性腺激素相关**：\n- GNRH, GNRHR\n- LH, FSH\n\n**分析流程**：\n\n1. **分组分析**\n- List 1：雄激素合成基因\n- List 2：胰岛素信号基因\n- List 3：促性腺激素基因\n\n2. **维恩图分析**\n查看三组基因的交集和特异性\n\n3. **通路富集**\n重点通路：\n- PI3K-Akt signaling\n- Steroid hormone biosynthesis\n- Insulin signaling pathway\n- Ovarian steroidogenesis\n\n4. **单细胞验证**\n- 查看卵巢组织中基因表达\n- 肾上腺组织雄激素合成\n- 胰岛组织胰岛素表达\n\n**研究价值**：\n- 理解PCOS发病机制\n- 发现治疗靶点\n- 生物标志物筛选"
+  },
+  {
+    "instruction": "甲状腺疾病分析",
+    "input": "",
+    "output": "甲状腺疾病基因分析：\n\n**甲状腺功能相关基因**：\n\n**激素合成**：\n- TG：甲状腺球蛋白\n- TPO：甲状腺过氧化物酶\n- NIS/SLC5A5：钠碘同向转运体\n- DUOX2：双氧化酶\n\n**激素代谢**：\n- DIO1, DIO2, DIO3：脱碘酶\n\n**受体信号**：\n- THRA, THRB：甲状腺激素受体\n- TSHR：TSH受体\n\n**转录因子**：\n- PAX8\n- NKX2-1/TTF1\n- FOXE1/TTF2\n\n**分析策略**：\n\n1. **甲亢分析**\n- TSHR基因突变\n- 信号通路激活分析\n- GO富集：thyroid hormone metabolic process\n\n2. **甲减分析**\n- 合成酶基因变异\n- KEGG：Thyroid hormone synthesis pathway\n\n3. **甲状腺癌**\n- BRAF, RET, RAS基因\n- MAPK通路富集\n- 单细胞分析肿瘤微环境\n\n**单细胞应用**：\nTabula Sapiens包含甲状腺组织数据，可分析：\n- 甲状腺滤泡细胞\n- C细胞\n- 免疫细胞浸润"
+  },
+  {
+    "instruction": "心血管疾病激素分析",
+    "input": "",
+    "output": "心血管疾病激素相关分析：\n\n**相关激素系统**：\n\n**肾素-血管紧张素系统**：\n- REN：肾素\n- AGT：血管紧张素原\n- ACE：血管紧张素转换酶\n- AGTR1：血管紧张素受体\n\n**利钠肽系统**：\n- ANP/NPPA：心房利钠肽\n- BNP/NPPB：脑利钠肽\n- NPR1, NPR2：利钠肽受体\n\n**儿茶酚胺系统**：\n- TH：酪氨酸羟化酶\n- PNMT：苯乙醇胺N-甲基转移酶\n- ADRA/B：肾上腺素受体\n\n**分析要点**：\n\n1. **通路富集**\n重点KEGG通路：\n- Renin-angiotensin system\n- cGMP-PKG signaling\n- Adrenergic signaling\n- Vascular smooth muscle contraction\n\n2. **GO功能**\n- Regulation of blood pressure\n- Cardiac muscle contraction\n- Vascular process\n\n3. **单细胞分析**\nTabula Sapiens心脏数据：\n- 心肌细胞表达模式\n- 血管内皮细胞\n- 心脏成纤维细胞\n\n**临床应用**：\n- ACEI/ARB药物靶点\n- 心力衰竭标志物BNP\n- 高血压机制研究"
+  },
+  {
+    "instruction": "神经内分泌激素分析",
+    "input": "",
+    "output": "神经内分泌激素研究：\n\n**下丘脑-垂体轴激素**：\n\n**下丘脑激素**：\n- GNRH：促性腺激素释放激素\n- TRH：促甲状腺激素释放激素\n- CRH：促肾上腺皮质激素释放激素\n- GHRH：生长激素释放激素\n- Somatostatin：生长抑素\n\n**垂体激素**：\n- GH：生长激素\n- PRL：催乳素\n- ACTH：促肾上腺皮质激素\n- TSH：促甲状腺激素\n- LH/FSH：促性腺激素\n\n**分析应用**：\n\n1. **反馈调控分析**\n- 上游激素与下游激素关系\n- KEGG：Neuroactive ligand-receptor interaction\n\n2. **疾病分析**\n- 垂体瘤：GH, PRL异常\n- 肾上腺疾病：ACTH-Cortisol轴\n- 甲状腺疾病：TRH-TSH-T3/T4轴\n\n3. **单细胞研究**\nTabula Sapiens包含：\n- 下丘脑组织（部分）\n- 血液中激素靶细胞\n\n4. **STRING网络**\n分析激素受体信号网络\n\n**研究热点**：\n- 应激反应机制\n- 生长发育调控\n- 生殖功能"
+  },
+  {
+    "instruction": "骨质疏松症激素分析",
+    "input": "",
+    "output": "骨质疏松激素相关分析：\n\n**骨代谢调节激素**：\n\n**钙调节激素**：\n- PTH：甲状旁腺激素\n- Calcitonin/CT：降钙素\n- VDR：维生素D受体\n- CYP27B1, CYP24A1：维生素D代谢酶\n\n**性激素**：\n- Estrogen (ESR1, ESR2)\n- Testosterone (AR)\n- 绝经后骨质疏松相关\n\n**其他相关因子**：\n- OPG/RANKL/RANK系统\n- SOST/Sclerostin\n- LRP5/6\n\n**分析方案**：\n\n1. **激素数据库搜索**\n搜索Calcium, Estrogen, PTH相关基因\n\n2. **通路分析**\nKEGG重点：\n- Parathyroid hormone synthesis\n- Osteoclast differentiation\n- Calcium signaling pathway\n- Estrogen signaling pathway\n\n3. **GO功能**\n- Bone remodeling\n- Osteoblast differentiation\n- Osteoclast differentiation\n- Regulation of bone mineralization\n\n4. **单细胞分析**\n骨髓组织中：\n- 成骨细胞\n- 破骨细胞\n- 骨细胞\n\n**临床意义**：\n- 骨质疏松药物靶点\n- 骨折风险评估\n- 激素替代治疗研究"
+  },
+  {
+    "instruction": "炎症与激素相互作用分析",
+    "input": "",
+    "output": "炎症-激素相互作用研究：\n\n**促炎激素/因子**：\n- IL-6：白介素6（也具激素功能）\n- TNF-α：肿瘤坏死因子\n- Leptin：瘦素（脂肪激素）\n- Resistin：抵抗素\n\n**抗炎激素**：\n- Cortisol：皮质醇\n- Adiponectin：脂联素\n- Melatonin：褪黑素\n\n**炎症相关通路**：\n\n1. **NF-κB通路**\n- 炎症反应核心\n- 激素调控节点\n\n2. **JAK-STAT通路**\n- 细胞因子信号\n- 激素信号交叉\n\n**分析流程**：\n\n1. **基因列表准备**\n- 炎症因子基因\n- 激素相关基因\n- 信号通路基因\n\n2. **维恩图分析**\n查看炎症与激素基因交集\n\n3. **富集分析**\n重点通路：\n- Cytokine-cytokine receptor interaction\n- NF-kappa B signaling\n- JAK-STAT signaling\n- Inflammatory bowel disease\n\n4. **单细胞分析**\n- 免疫细胞类型\n- 脂肪组织细胞\n- 炎症微环境\n\n**研究价值**：\n- 慢性炎症疾病机制\n- 代谢综合征\n- 自身免疫病研究"
+  }
+]

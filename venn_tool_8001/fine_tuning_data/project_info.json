@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "name": "动物激素与基因分析平台客服微调数据",
+    "version": "1.0",
+    "created": "2026-04-19",
+    "description": "基于43服务器维恩图分析项目和动物激素数据库项目的客服问答数据集"
+  },
+  "projects": {
+    "venn_tool": {
+      "name": "Gene Insights Hub - 维恩图分析工具",
+      "url": "http://43.99.62.219:8001",
+      "description": "多维维恩图分析与基因富集平台",
+      "features": [
+        "UpSet图生成",
+        "经典维恩图",
+        "GO富集分析",
+        "KEGG富集分析",
+        "桑基气泡图",
+        "单细胞聚类分析(UMAP/t-SNE)",
+        "STRING蛋白互作网络",
+        "数据库搜索"
+      ]
+    },
+    "animal_hormone": {
+      "name": "动物激素调控数据库",
+      "url": "http://43.99.62.219:8000",
+      "description": "动物激素与基因调控综合分析平台",
+      "features": [
+        "激素数据查询",
+        "基因预测",
+        "BLAST比对",
+        "KEGG通路分析",
+        "单细胞分析",
+        "转录组分析",
+        "DNA甲基化分析"
+      ]
+    }
+  }
+}

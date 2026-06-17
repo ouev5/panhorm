@@ -1,0 +1,30 @@
+name: scrna_find_markers
+description: 单细胞RNA-seq Marker基因鉴定流程
+task_type: deterministic
+
+required_inputs:
+  - h5ad_file
+  - cluster_column
+
+output_patterns:
+  - marker_genes.csv
+  - marker_heatmap.png
+  - marker_volcano.png
+
+steps:
+  - step_id: 1
+    tool_name: scanpy
+    tool_version: 1.9.8
+    command_template: python {script_dir}/run_scrna_markers.py --input {h5ad_file} --cluster-column {cluster_column} --output {output_dir}/marker_genes.csv --plot-dir {output_dir}
+    input_files:
+      - {h5ad_file}
+    output_files:
+      - {output_dir}/marker_genes.csv
+      - {output_dir}/marker_heatmap.png
+      - {output_dir}/marker_volcano.png
+    parameters:
+      method: wilcoxon
+      n_genes: 50
+      min_logfc: 0.25
+      min_pvalue: 0.05
+      groupby: leiden

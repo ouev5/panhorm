@@ -1,0 +1,31 @@
+name: scrna_cluster
+description: 单细胞RNA-seq聚类分析流程（Scanpy）
+task_type: deterministic
+
+required_inputs:
+  - h5ad_file
+  - sample_info
+
+output_patterns:
+  - clustered_adata.h5ad
+  - umap_plot.png
+  - cluster_markers.csv
+
+steps:
+  - step_id: 1
+    tool_name: scanpy
+    tool_version: 1.9.8
+    command_template: python {script_dir}/run_scrna_cluster.py --input {h5ad_file} --sample-info {sample_info} --output {output_dir}/clustered_adata.h5ad --plot-dir {output_dir}
+    input_files:
+      - {h5ad_file}
+      - {sample_info}
+    output_files:
+      - {output_dir}/clustered_adata.h5ad
+      - {output_dir}/umap_plot.png
+      - {output_dir}/cluster_markers.csv
+    parameters:
+      n_top_genes: 2000
+      n_pcs: 50
+      resolution: 0.5
+      min_genes: 200
+      min_cells: 3

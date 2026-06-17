@@ -1,0 +1,610 @@
+<!-- Extend base template (remove this line if base.html does not exist) -->
+{% extends 'base.html' %}
+
+<!-- Custom Styles for Prediction Page -->
+{% block extra_css %}
+<style>
+    /* Prediction Page Layout */
+    .prediction-page {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    /* Prediction Type Tabs */
+    .prediction-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin: 2rem 0;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+    }
+
+    .prediction-tab {
+        padding: 0.8rem 2rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        font-weight: 600;
+        color: #475569;
+        transition: all 0.3s ease;
+    }
+
+    .prediction-tab.active {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+    }
+
+    /* Input Form Styles */
+    .prediction-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 1.1rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 48px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .sequence-input textarea {
+        min-height: 120px;
+        font-family: monospace;
+    }
+
+    /* Threshold Selector */
+    .threshold-selector {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .threshold-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .threshold-option input {
+        accent-color: #2563eb;
+    }
+
+    /* File Upload */
+    .file-upload {
+        border: 2px dashed #e2e8f0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.3s;
+        margin-bottom: 1.5rem;
+    }
+
+    .file-upload:hover {
+        border-color: #3b82f6;
+    }
+
+    .file-upload i {
+        font-size: 2rem;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+    }
+
+    .file-name {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Submit Button & Download Button */
+    .submit-btn, .download-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        text-decoration: none;
+    }
+
+    .download-btn {
+        background: #10b981;
+        margin-left: 1rem;
+        display: none; /* Hidden by default, shown when results exist */
+    }
+
+    .submit-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .download-btn:hover {
+        background: #059669;
+    }
+
+    /* Results Section */
+    .results-section {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        display: none; /* Hidden by default, shown after search */
+    }
+
+    .result-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 1rem;
+    }
+
+    .result-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .result-title {
+        font-weight: 600;
+        color: #1e40af;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .result-meta {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .similarity-score {
+        color: #d97706;
+        font-weight: 600;
+    }
+
+    .alignment-view {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        margin-top: 0.5rem;
+    }
+
+    .match {
+        color: #10b981;
+        font-weight: bold;
+    }
+
+    .mismatch {
+        color: #ef4444;
+        font-weight: bold;
+    }
+
+    .gap {
+        color: #94a3b8;
+    }
+
+    .no-results {
+        color: #64748b;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    /* Loading State */
+    .loading {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    /* Sequence Batch Result */
+    .batch-result-header {
+        font-weight: 600;
+        color: #0f172a;
+        margin: 1rem 0 0.5rem;
+    }
+</style>
+{% endblock %}
+
+<!-- Page content area -->
+{% block content %}
+<div class="prediction-page">
+    <h1>Gene Prediction Tool</h1>
+    <p>Advanced gene sequence analysis with Smith-Waterman alignment (supports FASTA batch upload).</p>
+
+    <!-- Prediction Type Tabs -->
+    <div class="prediction-tabs">
+        <div class="prediction-tab active" data-type="hormone">Hormone Prediction</div>
+        <div class="prediction-tab" data-type="disease">Disease Prediction</div>
+    </div>
+
+    <!-- Prediction Form -->
+    <form class="prediction-form" method="POST" id="predictionForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Hidden input to store selected prediction type -->
+        <input type="hidden" name="prediction_type" id="predictionType" value="hormone">
+        <!-- Hidden input to store matched results (for PDF generation) -->
+        <input type="hidden" name="matched_results" id="matchedResults" value="">
+        <!-- Hidden input for FASTA sequences -->
+        <input type="hidden" name="fasta_sequences" id="fastaSequences" value="">
+
+        <!-- Species Input (collected only, not used for database search) -->
+        <div class="form-group">
+            <label for="species">Species Name (e.g., Bos taurus, Mus musculus):</label>
+            <input type="text" id="species" name="species" class="form-input" 
+                   placeholder="Enter species name (not used for search)" required>
+        </div>
+
+        <!-- Similarity Threshold Selector -->
+        <div class="threshold-selector">
+            <label>Similarity Threshold:</label>
+            <div class="threshold-option">
+                <input type="radio" name="similarity_threshold" id="threshold50" value="50" checked>
+                <label for="threshold50">50%</label>
+            </div>
+            <div class="threshold-option">
+                <input type="radio" name="similarity_threshold" id="threshold60" value="60">
+                <label for="threshold60">60%</label>
+            </div>
+            <div class="threshold-option">
+                <input type="radio" name="similarity_threshold" id="threshold70" value="70">
+                <label for="threshold70">70%</label>
+            </div>
+        </div>
+
+        <!-- Sequence Input Options -->
+        <div class="form-group">
+            <label>Sequence Input (Single or Batch FASTA):</label>
+            
+            <!-- Single Sequence Input -->
+            <div class="sequence-input" id="singleSequenceInput">
+                <textarea id="geneSequence" name="geneSequence" class="form-input" 
+                          placeholder="Please enter ATCG sequence (e.g., ATCGATCGATCG...)"></textarea>
+            </div>
+
+            <!-- FASTA File Upload -->
+            <div class="file-upload" id="fileUploadArea" onclick="document.getElementById('fastaFile').click()">
+                <i class="fa fa-upload"></i>
+                <p>Click to upload FASTA file (batch sequences)</p>
+                <p class="text-sm text-gray-500">or drag and drop</p>
+                <div id="fileName" class="file-name"></div>
+                <input type="file" id="fastaFile" name="fastaFile" accept=".fasta,.fa,.txt" style="display: none;"
+                       onchange="handleFASTAUpload(this)">
+            </div>
+
+            <!-- Toggle between single/batch -->
+            <div class="mt-2">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" id="useFastaToggle" class="form-checkbox">
+                    <span class="ml-2 text-sm text-gray-600">Use FASTA batch upload</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Submit & Download Buttons -->
+        <button type="submit" class="submit-btn">
+            <i class="fa fa-search"></i> Analyze Sequences
+        </button>
+        <a href="#" class="download-btn" id="downloadPdfBtn" onclick="downloadPDF()">
+            <i class="fa fa-download"></i> Download PDF Report
+        </a>
+    </form>
+
+    <!-- Results Section -->
+    <div class="results-section" id="resultsSection">
+        <h2 id="resultsTitle">Prediction Results (Smith-Waterman Alignment)</h2>
+        <div id="resultsContent">
+            <!-- Results will be loaded here dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Interaction & Form Handling -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Toggle Single/FASTA Input
+        const useFastaToggle = document.getElementById('useFastaToggle');
+        const singleSequenceInput = document.getElementById('singleSequenceInput');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const geneSequenceInput = document.getElementById('geneSequence');
+
+        useFastaToggle.addEventListener('change', function() {
+            if (this.checked) {
+                singleSequenceInput.style.display = 'none';
+                fileUploadArea.style.display = 'block';
+                geneSequenceInput.required = false;
+            } else {
+                singleSequenceInput.style.display = 'block';
+                fileUploadArea.style.display = 'none';
+                geneSequenceInput.required = true;
+            }
+        });
+
+        // 2. Prediction Type Tab Switching
+        const tabs = document.querySelectorAll('.prediction-tab');
+        const predictionTypeInput = document.getElementById('predictionType');
+        const resultsTitle = document.getElementById('resultsTitle');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                // Update hidden input value
+                const type = this.getAttribute('data-type');
+                predictionTypeInput.value = type;
+                // Update results title
+                const threshold = document.querySelector('input[name="similarity_threshold"]:checked').value;
+                resultsTitle.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Prediction Results (Similarity ¡Ý ${threshold}%)`;
+            });
+        });
+
+        // 3. FASTA File Upload Handling
+        window.handleFASTAUpload = function(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Show file name
+            document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+
+            // Parse FASTA file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const fastaSequences = parseFASTA(content);
+                document.getElementById('fastaSequences').value = JSON.stringify(fastaSequences);
+            };
+            reader.readAsText(file);
+        };
+
+        // 4. FASTA Parser
+        function parseFASTA(content) {
+            const sequences = [];
+            const lines = content.split('\n');
+            let currentHeader = '';
+            let currentSequence = '';
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                if (line.startsWith('>')) {
+                    // New sequence
+                    if (currentHeader && currentSequence) {
+                        sequences.push({
+                            header: currentHeader,
+                            sequence: currentSequence.toUpperCase().replace(/[^ATCG]/g, '')
+                        });
+                    }
+                    currentHeader = line.substring(1);
+                    currentSequence = '';
+                } else {
+                    // Sequence line
+                    currentSequence += line.replace(/[^ATCG]/gi, '');
+                }
+            });
+
+            // Add last sequence
+            if (currentHeader && currentSequence) {
+                sequences.push({
+                    header: currentHeader,
+                    sequence: currentSequence.toUpperCase().replace(/[^ATCG]/g, '')
+                });
+            }
+
+            return sequences;
+        }
+
+        // 5. Form Submission
+        const form = document.getElementById('predictionForm');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsContent = document.getElementById('resultsContent');
+        const downloadBtn = document.getElementById('downloadPdfBtn');
+        const matchedResultsInput = document.getElementById('matchedResults');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Get form data
+            const formData = new FormData(form);
+            const predictionType = formData.get('prediction_type');
+            const threshold = parseInt(formData.get('similarity_threshold'));
+            const species = formData.get('species');
+            const singleSequence = formData.get('geneSequence')?.trim().toUpperCase() || '';
+            const fastaSequences = JSON.parse(formData.get('fasta_sequences') || '[]');
+
+            // Basic validation
+            if (!useFastaToggle.checked && !singleSequence.match(/^[ATCG]+$/)) {
+                alert('Error: Single sequence can only contain A, T, C, G!');
+                return;
+            }
+
+            if (useFastaToggle.checked && fastaSequences.length === 0) {
+                alert('Error: No valid sequences found in FASTA file!');
+                return;
+            }
+
+            // Prepare sequences for submission
+            let sequencesToAnalyze = [];
+            if (useFastaToggle.checked) {
+                sequencesToAnalyze = fastaSequences;
+            } else {
+                sequencesToAnalyze = [{
+                    header: 'Single Sequence',
+                    sequence: singleSequence
+                }];
+            }
+
+            // Show loading state
+            resultsContent.innerHTML = '<div class="loading"><i class="fa fa-spinner fa-spin fa-2x"></i><p>Performing Smith-Waterman alignment...</p></div>';
+            resultsSection.style.display = 'block';
+            downloadBtn.style.display = 'none'; // Hide download button
+
+            try {
+                // Send request to Django backend
+                const response = await fetch("{% url 'hormone_app:gene_prediction' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prediction_type: predictionType,
+                        sequences: sequencesToAnalyze,
+                        species: species,
+                        similarity_threshold: threshold
+                    })
+                });
+
+                const data = await response.json();
+
+                // Render results
+                if (data.total_matched === 0) {
+                    resultsContent.innerHTML = `<div class="no-results"><i class="fa fa-info-circle"></i> No matching records found (similarity < ${threshold}%).</div>`;
+                } else {
+                    // Store matched results for PDF download
+                    matchedResultsInput.value = JSON.stringify(data.results);
+                    downloadBtn.style.display = 'inline-flex'; // Show download button
+
+                    let html = '';
+                    // Group results by input sequence
+                    Object.keys(data.results).forEach(seqHeader => {
+                        const seqResults = data.results[seqHeader];
+                        html += `<div class="batch-result-header">Sequence: ${seqHeader}</div>`;
+                        
+                        seqResults.forEach(item => {
+                            html += `
+                                <div class="result-item">
+                                    <div class="result-title">${predictionType === 'hormone' ? item.hormone_name : 'Related Diseases'}</div>
+                                    <div class="result-meta"><strong>Similarity Score:</strong> <span class="similarity-score">${item.similarity}%</span></div>
+                                    ${predictionType === 'hormone' ? 
+                                        `<div class="result-meta">Related Genes: ${item.related_genes || 'N/A'}</div>` : 
+                                        `<div class="result-meta">Diseases: ${item.related_diseases || 'N/A'}</div>`
+                                    }
+                                    <div class="result-meta">PubMed ID: ${item.pmid || 'N/A'}</div>
+                                    <div class="result-meta"><strong>Sequence Alignment:</strong></div>
+                                    <div class="alignment-view">
+                                        ${item.alignment.input_seq}<br>
+                                        ${item.alignment.match_line}<br>
+                                        ${item.alignment.db_seq}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    });
+                    resultsContent.innerHTML = html;
+                }
+            } catch (error) {
+                resultsContent.innerHTML = '<div class="no-results"><i class="fa fa-exclamation-circle"></i> Error occurred during analysis.</div>';
+                console.error('Error:', error);
+            }
+        });
+
+        // 6. Update results title when threshold changes
+        const thresholdInputs = document.querySelectorAll('input[name="similarity_threshold"]');
+        thresholdInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const type = predictionTypeInput.value;
+                const threshold = this.value;
+                resultsTitle.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Prediction Results (Similarity ¡Ý ${threshold}%)`;
+            });
+        });
+    });
+
+    // 7. PDF Download Function
+    function downloadPDF() {
+        const form = document.getElementById('predictionForm');
+        const formData = new FormData(form);
+        
+        // Create hidden form for PDF download
+        const downloadForm = document.createElement('form');
+        downloadForm.method = 'POST';
+        downloadForm.action = "{% url 'hormone_app:download_pdf' %}";
+        downloadForm.style.display = 'none';
+
+        // Add all form data
+        for (let [key, value] of formData.entries()) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            downloadForm.appendChild(input);
+        }
+
+        // Add CSRF token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        downloadForm.appendChild(csrfInput);
+
+        // Submit form
+        document.body.appendChild(downloadForm);
+        downloadForm.submit();
+        document.body.removeChild(downloadForm);
+    }
+
+    // 8. Drag & Drop for FASTA
+    document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (document.getElementById('useFastaToggle').checked) {
+            document.getElementById('fileUploadArea').style.borderColor = '#3b82f6';
+        }
+    });
+
+    document.addEventListener('dragleave', function() {
+        document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
+    });
+
+    document.addEventListener('drop', function(e) {
+        e.preventDefault();
+        document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
+        
+        if (document.getElementById('useFastaToggle').checked && e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            if (file.name.endsWith('.fasta') || file.name.endsWith('.fa') || file.name.endsWith('.txt')) {
+                document.getElementById('fastaFile').files = e.dataTransfer.files;
+                handleFASTAUpload(document.getElementById('fastaFile'));
+            }
+        }
+    });
+</script>
+{% endblock %}

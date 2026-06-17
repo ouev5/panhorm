@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gene Ortholog Mapper - Animal Hormone Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --accent: #8b5cf6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #334155; }
+        nav { background: linear-gradient(135deg, #0f172a, #1e3a8a); padding: 1rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; padding: 2rem 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; box-shadow: 0 10px 40px rgba(102,126,234,0.3); }
+        .hero-icon { width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .hero-icon i { font-size: 2rem; color: #fff; }
+        .hero-text h1 { font-size: 2.2rem; font-weight: 700; color: #fff; margin: 0 0 0.3rem 0; }
+        .tagline { font-size: 1.1rem; color: rgba(255,255,255,0.9); font-weight: 500; letter-spacing: 2px; text-transform: uppercase; }
+        .hero-text .subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.75); margin-top: 0.3rem; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem; }
+        .card-header i { color: var(--primary); }
+        .card-header h3 { font-size: 1rem; font-weight: 600; }
+        .card-body { padding: 1.25rem; }
+        .grid { display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        textarea { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-family: monospace; font-size: 0.85rem; min-height: 200px; resize: vertical; outline: none; transition: border-color 0.2s; }
+        textarea:focus { border-color: var(--accent); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-block { width: 100%; }
+        select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; background: #fff; color: #1e293b; cursor: pointer; outline: none; transition: border-color 0.2s; }
+        select:focus { border-color: var(--accent); }
+        label { font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+        .stat { background: rgba(139,92,246,0.05); border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; text-align: center; }
+        .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { color: #64748b; background: #f8fafc; font-weight: 600; position: sticky; top: 0; z-index: 1; }
+        tr:hover { background: #f8fafc; }
+        .badge { padding: 2px 8px; border-radius: 100px; font-size: 0.7rem; font-weight: 600; }
+        .badge-success { background: rgba(16,185,129,0.1); color: #059669; }
+        .badge-warning { background: rgba(245,158,11,0.1); color: #d97706; }
+        .badge-error { background: rgba(239,68,68,0.1); color: #dc2626; }
+        .badge-info { background: rgba(37,99,235,0.1); color: #2563eb; }
+        .status-msg { display: none; align-items: center; gap: 0.4rem; padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem; }
+        .status-msg.success { display: flex; background: rgba(16,185,129,0.1); color: #059669; }
+        .status-msg.error { display: flex; background: rgba(239,68,68,0.1); color: #dc2626; }
+        .status-msg.info { display: flex; background: rgba(139,92,246,0.1); color: #7c3aed; }
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 999; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top: 4px solid #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { margin-top: 15px; color: #64748b; font-size: 14px; font-weight: 500; }
+        .mode-toggle { display: flex; gap: 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+        .mode-btn { flex: 1; padding: 0.6rem; text-align: center; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: #fff; color: #64748b; border: none; transition: all 0.2s; }
+        .mode-btn.active { background: var(--accent); color: white; }
+        .mode-content { display: none; }
+        .mode-content.active { display: block; }
+        .arrow-icon { font-size: 1.5rem; color: var(--accent); display: flex; align-items: center; justify-content: center; margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <nav><div class="nav-container"><a href="https://43.99.62.219/" class="back-btn"><i class="fa fa-arrow-left"></i> Back to Home</a></div></nav>
+
+    <div class="container">
+        <div class="hero">
+            <div class="hero-icon"><i class="fa fa-exchange"></i></div>
+            <div class="hero-text">
+                <h1>Gene Ortholog Mapper</h1>
+                <p class="tagline">Map. Convert. Discover.</p>
+                <p class="subtitle">Cross-species gene ortholog mapping powered by NCBI HomoloGene</p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Left Panel: Input -->
+            <aside>
+                <!-- Mode Toggle -->
+                <div class="card">
+                    <div class="card-header"><i class="fa fa-cog"></i><h3>Mapping Mode</h3></div>
+                    <div class="card-body">
+                        <div class="mode-toggle">
+                            <button class="mode-btn active" onclick="setMode('manual')" id="modeManual">
+                                <i class="fa fa-keyboard"></i> Manual Input
+                            </button>
+                            <button class="mode-btn" onclick="setMode('database')" id="modeDatabase">
+                                <i class="fa fa-database"></i> From Database
+                            </button>
+                        </div>
+
+                        <!-- Manual Input Mode -->
+                        <div class="mode-content active" id="manualMode">
+                            <div style="margin-bottom:0.75rem;">
+                                <label><i class="fa fa-dna" style="color:#8b5cf6;margin-right:4px;"></i>Source Species</label>
+                                <select id="sourceSpecies">
+                                    <option value="">Detect automatically</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom:0.75rem;">
+                                <label><i class="fa fa-list" style="color:#2563eb;margin-right:4px;"></i>Gene List (one per line)</label>
+                                <textarea id="geneInput" placeholder="TP53&#10;BRCA1&#10;EGFR&#10;MYC&#10;PTEN"></textarea>
+                            </div>
+
+                            <div style="margin-bottom:0.75rem;">
+                                <label><i class="fa fa-upload" style="color:#10b981;margin-right:4px;"></i>Upload Gene File</label>
+                                <input type="file" id="fileInput" accept=".txt,.csv,.tsv" onchange="handleFileUpload(event)" style="width:100%;font-size:0.8rem;color:#64748b;">
+                            </div>
+                        </div>
+
+                        <!-- Database Mode -->
+                        <div class="mode-content" id="databaseMode">
+                            <div style="margin-bottom:0.75rem;">
+                                <label><i class="fa fa-database" style="color:#f59e0b;margin-right:4px;"></i>Source Organism (from DB)</label>
+                                <select id="dbOrganism">
+                                    <option value="">Select organism...</option>
+                                </select>
+                            </div>
+                            <div style="padding:0.75rem;background:#f8fafc;border-radius:8px;font-size:0.8rem;color:#64748b;">
+                                <i class="fa fa-info-circle" style="color:#3b82f6;"></i>
+                                All genes from the selected organism in the Animal Hormone Database will be mapped.
+                            </div>
+                        </div>
+
+                        <div class="arrow-icon"><i class="fa fa-arrow-down"></i></div>
+
+                        <div style="margin-bottom:1rem;">
+                            <label><i class="fa fa-bullseye" style="color:#dc2626;margin-right:4px;"></i>Target Species</label>
+                            <select id="targetSpecies">
+                                <option value="9606">Human (Homo sapiens)</option>
+                                <option value="10090">Mouse (Mus musculus)</option>
+                                <option value="10116">Rat (Rattus norvegicus)</option>
+                                <option value="7955">Zebrafish (Danio rerio)</option>
+                                <option value="7227">Fruit fly (Drosophila)</option>
+                                <option value="9913">Bovine (Bos taurus)</option>
+                                <option value="9823">Pig (Sus scrofa)</option>
+                                <option value="9940">Sheep (Ovis aries)</option>
+                                <option value="9031">Chicken (Gallus gallus)</option>
+                                <option value="9615">Dog (Canis familiaris)</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-accent btn-block" onclick="startMapping()" id="mapBtn" style="padding:0.75rem;font-size:0.95rem;">
+                            <i class="fa fa-exchange"></i> Map Genes
+                        </button>
+
+                        <div id="statusMsg" class="status-msg"></div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="card">
+                    <div class="card-header"><i class="fa fa-bar-chart"></i><h3>Mapping Stats</h3></div>
+                    <div class="card-body">
+                        <div class="stats">
+                            <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Input</div></div>
+                            <div class="stat"><div class="stat-value" id="statMapped">0</div><div class="stat-label">Mapped</div></div>
+                            <div class="stat"><div class="stat-value" id="statFailed">0</div><div class="stat-label">Not Found</div></div>
+                            <div class="stat"><div class="stat-value" id="statRate">0%</div><div class="stat-label">Rate</div></div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Panel: Results -->
+            <main>
+                <!-- Result Table -->
+                <div class="card" id="resultCard" style="display:none;">
+                    <div class="card-header" style="justify-content:space-between;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <i class="fa fa-table"></i><h3>Mapping Results</h3>
+                        </div>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button class="btn btn-success" onclick="downloadResults('csv')" style="font-size:0.75rem;"><i class="fa fa-download"></i> CSV</button>
+                            <button class="btn btn-primary" onclick="downloadResults('txt')" style="font-size:0.75rem;"><i class="fa fa-file-text"></i> TXT</button>
+                            <button class="btn btn-accent" onclick="copyMappedGenes()" style="font-size:0.75rem;"><i class="fa fa-copy"></i> Copy Mapped</button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div style="max-height:600px;overflow-y:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Source Gene</th>
+                                        <th></th>
+                                        <th>Target Gene</th>
+                                        <th>Gene Name</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mapped Gene List -->
+                <div class="card" id="mappedListCard" style="display:none;">
+                    <div class="card-header"><i class="fa fa-list-alt"></i><h3>Mapped Gene List (Copy-Ready)</h3></div>
+                    <div class="card-body">
+                        <textarea id="mappedListText" readonly style="min-height:120px;background:#f8fafc;"></textarea>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Mapping genes...</div>
+    </div>
+
+    <script>
+    var currentMode = 'manual';
+    var mappingResults = [];
+
+    // Load species lists on page load
+    document.addEventListener('DOMContentLoaded', function(){
+        loadSourceSpecies();
+        loadDbOrganisms();
+    });
+
+    function setMode(mode){
+        currentMode = mode;
+        document.getElementById('modeManual').classList.toggle('active', mode==='manual');
+        document.getElementById('modeDatabase').classList.toggle('active', mode==='database');
+        document.getElementById('manualMode').classList.toggle('active', mode==='manual');
+        document.getElementById('databaseMode').classList.toggle('active', mode==='database');
+    }
+
+    function loadSourceSpecies(){
+        fetch('/api/species')
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                var sel = document.getElementById('sourceSpecies');
+                d.species.forEach(function(s){
+                    var opt = document.createElement('option');
+                    opt.value = s.taxid;
+                    opt.textContent = s.name;
+                    sel.appendChild(opt);
+                });
+            });
+    }
+
+    function loadDbOrganisms(){
+        fetch('/api/available_species')
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                var sel = document.getElementById('dbOrganism');
+                d.species.forEach(function(s){
+                    var opt = document.createElement('option');
+                    opt.value = s.name;
+                    opt.textContent = s.name + ' (' + s.count + ')';
+                    sel.appendChild(opt);
+                });
+            });
+    }
+
+    function handleFileUpload(e){
+        var file = e.target.files[0];
+        if(!file) return;
+        var reader = new FileReader();
+        reader.onload = function(ev){
+            var text = ev.target.result;
+            var genes = text.split(/[\n\r,;\t]+/).map(function(g){ return g.trim(); }).filter(function(g){ return g; });
+            document.getElementById('geneInput').value = genes.join('\n');
+            setStatus('Loaded ' + genes.length + ' genes from file', 'success');
+        };
+        reader.readAsText(file);
+    }
+
+    function startMapping(){
+        var targetTaxid = parseInt(document.getElementById('targetSpecies').value);
+
+        if(currentMode === 'manual'){
+            var text = document.getElementById('geneInput').value.trim();
+            if(!text){ setStatus('Please enter gene names', 'error'); return; }
+            var genes = text.split(/[\n\r,;\t]+/).map(function(g){ return g.trim(); }).filter(function(g){ return g; });
+            if(genes.length === 0){ setStatus('No valid genes found', 'error'); return; }
+            if(genes.length > 2000){ setStatus('Maximum 2000 genes per request', 'error'); return; }
+
+            var sourceSpecies = document.getElementById('sourceSpecies').value;
+            showLoading('Mapping ' + genes.length + ' genes...');
+            fetch('/api/map_genes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    genes: genes,
+                    source_species: sourceSpecies ? parseInt(sourceSpecies) : null,
+                    target_taxid: targetTaxid
+                })
+            }).then(function(r){ return r.json(); })
+              .then(function(d){ hideLoading(); handleResults(d); })
+              .catch(function(e){ hideLoading(); setStatus('Error: ' + e.message, 'error'); });
+
+        } else {
+            var organism = document.getElementById('dbOrganism').value;
+            if(!organism){ setStatus('Please select an organism', 'error'); return; }
+
+            showLoading('Loading genes from ' + organism + '...');
+            fetch('/api/map_from_db', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    source_organism: organism,
+                    target_taxid: targetTaxid
+                })
+            }).then(function(r){ return r.json(); })
+              .then(function(d){ hideLoading(); handleResults(d); })
+              .catch(function(e){ hideLoading(); setStatus('Error: ' + e.message, 'error'); });
+        }
+    }
+
+    function handleResults(d){
+        if(d.error){ setStatus(d.error, 'error'); return; }
+
+        mappingResults = d.results || [];
+        var mapped = mappingResults.filter(function(r){ return r.status === 'mapped'; });
+        var failed = mappingResults.filter(function(r){ return r.status !== 'mapped'; });
+        var total = mappingResults.length;
+        var rate = total > 0 ? Math.round(mapped.length / total * 100) : 0;
+
+        // Update stats
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statMapped').textContent = mapped.length;
+        document.getElementById('statFailed').textContent = failed.length;
+        document.getElementById('statRate').textContent = rate + '%';
+
+        // Render table
+        var tbody = document.getElementById('resultBody');
+        tbody.innerHTML = '';
+        mappingResults.forEach(function(r, i){
+            var tr = document.createElement('tr');
+            var arrowCell = r.status === 'mapped' ? '<i class="fa fa-arrow-right" style="color:#8b5cf6;"></i>' : '<i class="fa fa-times" style="color:#dc2626;"></i>';
+            var statusBadge = r.status === 'mapped'
+                ? '<span class="badge badge-success">Mapped</span>'
+                : '<span class="badge badge-error">Not Found</span>';
+            var methodBadge = r.method === 'homologene'
+                ? '<span class="badge badge-info">HomoloGene</span>'
+                : r.method === 'direct_match'
+                ? '<span class="badge badge-success">Direct</span>'
+                : '-';
+            var geneName = r.mapped_name || '';
+
+            tr.innerHTML = '<td>' + (i+1) + '</td>' +
+                '<td style="font-weight:600;font-family:monospace;">' + r.query + '</td>' +
+                '<td>' + arrowCell + '</td>' +
+                '<td style="font-weight:600;font-family:monospace;color:#8b5cf6;">' + (r.mapped_gene || '-') + '</td>' +
+                '<td style="font-size:0.75rem;color:#64748b;">' + geneName + '</td>' +
+                '<td>' + methodBadge + '</td>' +
+                '<td>' + statusBadge + '</td>';
+            tbody.appendChild(tr);
+        });
+
+        // Show mapped gene list
+        var mappedGenes = mapped.map(function(r){ return r.mapped_gene; }).filter(Boolean);
+        document.getElementById('mappedListText').value = mappedGenes.join('\n');
+
+        document.getElementById('resultCard').style.display = 'block';
+        document.getElementById('mappedListCard').style.display = 'block';
+
+        setStatus('Mapped ' + mapped.length + '/' + total + ' genes (' + rate + '%)', 'success');
+    }
+
+    function downloadResults(format){
+        if(!mappingResults.length){ setStatus('No results to download', 'error'); return; }
+        var timestamp = new Date().toISOString().slice(0,19).replace(/[T:]/g,'-');
+        var content, filename, mime;
+
+        if(format === 'csv'){
+            filename = 'gene_mapping_' + timestamp + '.csv';
+            var lines = ['Source Gene,Target Gene,Gene Name,Method,Status'];
+            mappingResults.forEach(function(r){
+                lines.push([
+                    r.query,
+                    r.mapped_gene || '',
+                    '"' + (r.mapped_name || '') + '"',
+                    r.method || '',
+                    r.status
+                ].join(','));
+            });
+            content = lines.join('\n');
+            mime = 'text/csv';
+        } else {
+            filename = 'gene_mapping_' + timestamp + '.txt';
+            var lines = ['Gene Mapping Report', 'Generated: ' + new Date().toLocaleString(), ''];
+            var mapped = mappingResults.filter(function(r){ return r.status === 'mapped'; });
+            lines.push('Total: ' + mappingResults.length + ' | Mapped: ' + mapped.length);
+            lines.push('');
+            lines.push('Source Gene\tTarget Gene\tGene Name\tMethod\tStatus');
+            lines.push('-'.repeat(80));
+            mappingResults.forEach(function(r){
+                lines.push([
+                    r.query,
+                    r.mapped_gene || '-',
+                    r.mapped_name || '-',
+                    r.method || '-',
+                    r.status
+                ].join('\t'));
+            });
+            content = lines.join('\n');
+            mime = 'text/plain';
+        }
+
+        var blob = new Blob([content], {type: mime + ';charset=utf-8'});
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        setStatus('Downloaded: ' + filename, 'success');
+    }
+
+    function copyMappedGenes(){
+        var text = document.getElementById('mappedListText').value;
+        if(!text){ setStatus('No mapped genes to copy', 'error'); return; }
+        navigator.clipboard.writeText(text).then(function(){
+            setStatus('Copied mapped genes to clipboard!', 'success');
+        }).catch(function(){
+            document.getElementById('mappedListText').select();
+            document.execCommand('copy');
+            setStatus('Copied!', 'success');
+        });
+    }
+
+    function setStatus(msg, type){
+        var el = document.getElementById('statusMsg');
+        el.className = 'status-msg ' + type;
+        el.innerHTML = '<i class="fa fa-' + (type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle') + '"></i> ' + msg;
+    }
+
+    function showLoading(text){
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('loadingText').textContent = text || 'Mapping genes...';
+    }
+
+    function hideLoading(){
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-05-31T08:08:22",
+  "n_total": 200,
+  "n_done": 200,
+  "overall_score": 0.07200000000000001,
+  "relevance": 0.1275,
+  "completeness": 0.035,
+  "accuracy": 0.035,
+  "pass_threshold": 0.75,
+  "pass_count": 7,
+  "pass_rate": 0.035,
+  "rag_hallucination_rate": 0.96,
+  "direct_hallucination_rate": 0.985,
+  "traceability": 0.7317500000000001,
+  "by_type": {
+    "association": {
+      "n": 50,
+      "f1": 0.008,
+      "overall": 0.084
+    },
+    "factual": {
+      "n": 50,
+      "f1": 0.04,
+      "overall": 0.128
+    },
+    "species_specific": {
+      "n": 50,
+      "f1": 0.02,
+      "overall": 0.055999999999999994
+    },
+    "synthesis": {
+      "n": 50,
+      "f1": 0.02,
+      "overall": 0.02
+    }
+  }
+}

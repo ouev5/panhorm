@@ -1,0 +1,52 @@
+[
+  {
+    "instruction": "这个平台是做什么的？",
+    "input": "",
+    "output": "这是一个生物信息学分析平台，包含两个主要模块：\n\n1. **Gene Insights Hub（维恩图分析工具）**：提供多维维恩图分析、GO/KEGG富集分析、单细胞聚类分析等功能。\n\n2. **动物激素调控数据库**：提供激素数据查询、基因预测、BLAST比对、KEGG通路分析、转录组分析等功能。\n\n平台使用真实科学数据，包括Tabula Sapiens单细胞数据（94,836细胞）、Enrichr富集分析API、STRING蛋白互作数据库等，可用于科研论文发表。"
+  },
+  {
+    "instruction": "什么是GO富集分析？",
+    "input": "",
+    "output": "GO富集分析（Gene Ontology Enrichment Analysis）是一种用于确定基因集合是否在某些生物学功能、细胞组分或分子功能上显著富集的统计方法。\n\n在Gene Insights Hub平台上，GO富集分析使用Enrichr API，基于GO_Biological_Process_2023基因库进行分析。分析结果包括：\n- 富集的生物学过程（如细胞信号传导、代谢过程等）\n- P值和校正P值\n- 相关基因列表\n- 组合得分\n\n结果可以以条形图、气泡图、饼图、表格形式展示，支持CSV格式下载全部数据。"
+  },
+  {
+    "instruction": "什么是KEGG富集分析？",
+    "input": "",
+    "output": "KEGG富集分析（KEGG Pathway Enrichment Analysis）是一种用于确定基因集合在KEGG通路数据库中哪些代谢或信号通路上显著富集的分析方法。\n\n在Gene Insights Hub平台上，KEGG分析使用Enrichr API，基于KEGG_2021_Human基因库。分析结果包括：\n- 富集的信号通路（如乳腺癌通路、PI3K-Akt信号通路等）\n- P值和校正P值\n- 参与该通路的基因\n- 可视化图表展示\n\nKEGG分析对于理解基因在生物学通路中的作用非常重要，广泛用于疾病机制研究和药物靶点发现。"
+  },
+  {
+    "instruction": "什么是桑基气泡图？",
+    "input": "",
+    "output": "桑基气泡图（Sankey-Bubble Plot）是一种组合可视化图表，结合了桑基图和气泡图的优点：\n\n**桑基图部分**：展示基因与富集通路之间的对应关系，左侧是基因节点，右侧是通路节点，连线表示基因在该通路中富集。\n\n**气泡图部分**：展示通路的富集程度，横轴是富集比例（Ratio），纵轴对应通路位置，气泡大小表示基因数量，颜色表示P值显著性。\n\n在Gene Insights Hub平台上，桑基气泡图使用R语言的ggplot2和ggalluvial包生成，显示最显著的25条通路，支持PNG/JPG/SVG格式下载。"
+  },
+  {
+    "instruction": "单细胞分析功能是什么？",
+    "input": "",
+    "output": "单细胞分析功能基于Tabula Sapiens数据集（人类全身单细胞图谱，发表在Science 2022），包含：\n\n**数据规模**：\n- 94,836个细胞\n- 34,562个基因\n- 24种组织类型\n- 161种细胞类型\n\n**降维方法**：\n- **UMAP**：使用预计算的UMAP坐标，展示细胞的聚类结构\n- **t-SNE**：使用sklearn实时计算，适合发现局部结构\n\n**着色方式**：\n- **Cell Type**：按细胞类型着色（如T细胞、B细胞、肝细胞等）\n- **Tissue**：按组织着色（如血液、肝脏、肺等）\n- **Gene Expr**：按查询基因的表达量着色\n\n所有数据均为真实测序数据，可用于科研论文发表。"
+  },
+  {
+    "instruction": "如何使用维恩图分析功能？",
+    "input": "",
+    "output": "使用维恩图分析功能的步骤：\n\n**1. 输入基因列表**\n- 在左侧\"Gene Lists\"卡片中输入基因名称（每行一个）\n- 支持添加多个基因列表（至少需要2个）\n- 可通过Upload按钮上传文件，或通过Database按钮从数据库搜索\n\n**2. 分析**\n- 点击\"Analyze\"按钮进行交集分析\n- 系统会计算各列表之间的交集关系\n\n**3. 查看结果**\n- **UpSet Plot**：矩阵式维恩图，清晰展示多集合关系\n- **Classic Venn**：传统维恩图样式\n- 点击图中区域可选择对应的基因\n\n**4. 后续分析**\n- **GO**：进行GO富集分析\n- **KEGG**：进行KEGG通路富集\n- **STRING**：跳转蛋白互作网络\n- **Single-Cell Map**：查看基因在单细胞中的表达\n- **Sankey-Dot Enrichment**：生成桑基气泡图"
+  },
+  {
+    "instruction": "如何从数据库搜索基因？",
+    "input": "",
+    "output": "平台提供动物激素数据库搜索功能：\n\n**数据库内容**：\n- 4,096条激素相关记录\n- 898种唯一激素\n- 激素相关基因、序列、疾病信息\n\n**使用方法**：\n1. 点击基因列表下方的\"Database\"按钮\n2. 在弹出窗口中输入搜索关键词（如\"insulin\"）\n3. 选择搜索类型（Hormone/Genes/All）\n4. 点击搜索，查看结果\n5. 选择需要的基因添加到列表\n\n**搜索范围**：\n- 激素名称\n- 相关基因\n- 疾病关联\n\n搜索结果最多返回200条记录。"
+  },
+  {
+    "instruction": "STRING网络跳转是什么？",
+    "input": "",
+    "output": "STRING（Search Tool for the Retrieval of Interacting Genes/Proteins）是一个蛋白质-蛋白质相互作用数据库。\n\n在Gene Insights Hub平台上：\n1. 选择基因后点击\"STRING\"按钮\n2. 系统自动构建查询URL\n3. 跳转到STRING数据库网站\n4. 可视化蛋白质相互作用网络\n\nSTRING数据库包含：\n- 已知的蛋白质相互作用\n- 预测的相互作用\n- 相互作用置信度评分\n- 多种可视化选项\n\n这对于理解基因功能、发现调控网络非常有帮助。"
+  },
+  {
+    "instruction": "支持哪些下载格式？",
+    "input": "",
+    "output": "平台支持多种下载格式：\n\n**图表下载**：\n- **PNG**：高质量位图格式，适合论文插图\n- **JPG**：压缩位图格式，文件较小\n- **SVG**：矢量图格式，可无损缩放，适合编辑\n\n**数据下载**：\n- **CSV**：表格数据，包含全部富集结果\n- 包含Term、P-value、Adj P-value、Gene Count、Combined Score等字段\n\n**单细胞数据下载**：\n- 支持PNG/JPG/SVG格式\n- 可选择UMAP或t-SNE降维结果\n\n所有图表和数据均可直接用于科研论文。"
+  },
+  {
+    "instruction": "数据来源可靠吗？",
+    "input": "",
+    "output": "所有数据均来自权威科学数据库，可靠且可用于论文发表：\n\n**单细胞数据**：\n- Tabula Sapiens（Science, 2022）\n- 94,836细胞，34,562基因\n- 真实测序表达矩阵\n\n**富集分析**：\n- Enrichr API（BMC Bioinformatics, 2013）\n- GO_Biological_Process_2023\n- KEGG_2021_Human\n\n**蛋白互作**：\n- STRING Database（Nucleic Acids Research, 2023）\n\n**激素数据库**：\n- MySQL本地数据库\n- 4,096条记录\n- 738条KEGG通路\n\n平台不使用模拟数据，所有分析结果均有真实科学依据。"
+  }
+]

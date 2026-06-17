@@ -1,0 +1,6 @@
+gene,log2FoldChange,pvalue
+TP53,2.5,0.001
+BRCA1,1.8,0.005
+EGFR,-1.2,0.01
+KRAS,0.5,0.1
+PTEN,-0.8,0.05
