@@ -1,0 +1,135 @@
+[
+  {
+    "bytes": 827,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/README",
+    "retrieved_at_utc": "2026-07-15T16:38:14.842971+00:00",
+    "sha256": "7333a3a6f787566f80c4391234c04eea5039088f920e4cb1253f22f8a8bb6644",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/README"
+  },
+  {
+    "bytes": 9148544,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/metadata/ChIP-seq.metadata.txt",
+    "retrieved_at_utc": "2026-07-15T16:38:14.843129+00:00",
+    "sha256": "036b58913509a55b7a8663348eb55d3d4b8e706f11589a568c339166d9a898c5",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/metadata/ChIP-seq.metadata.txt"
+  },
+  {
+    "bytes": 4241233,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/metadata/external_references.metadata.txt",
+    "retrieved_at_utc": "2026-07-15T16:38:14.852450+00:00",
+    "sha256": "6b2bf7708853d5159023716440f75e1296ec21ef59476c1b297940e071bd4022",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/metadata/external_references.metadata.txt"
+  },
+  {
+    "bytes": 1195795,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/AR_P10275.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:14.856038+00:00",
+    "sha256": "2c8306c02ea06aa36cee3e226e6392b818334af8708863487e4733dcbe723fe6",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P10275.txt"
+  },
+  {
+    "bytes": 36111505,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/AR_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:15.138578+00:00",
+    "sha256": "dccfbc1be9be2c9d01f2f4b0111e339d00d07ee54d74d4c6bc35b681ecef2fdd",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/AR.1.tsv"
+  },
+  {
+    "bytes": 1369593,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/ESR1_P03372.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:17.726035+00:00",
+    "sha256": "59b3a03f9f00ae947eae1ba9371ce38b791b1e60eed15f28a550d5f206ddce21",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P03372.txt"
+  },
+  {
+    "bytes": 45455041,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/ESR1_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:17.850338+00:00",
+    "sha256": "2309d8786fdf25828ce0d6670048ca51a62ead70848d5630a9bddd52af74cdd7",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/ESR1.1.tsv"
+  },
+  {
+    "bytes": 972426,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/PGR_P06401.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:20.858056+00:00",
+    "sha256": "b709c215ce16b49945adc5fddcfe5acf1b5b8579fa7f638e977decb3fff5b49d",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P06401.txt"
+  },
+  {
+    "bytes": 5477893,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/PGR_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:20.963831+00:00",
+    "sha256": "c83bf80e6c517ceeb769a7189fc9c204a2b112c9739cd4fae5febec76a8d1be0",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/PGR.1.tsv"
+  },
+  {
+    "bytes": 770501,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/NR3C1_P04150.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:21.524574+00:00",
+    "sha256": "4907ed4f9fd564018c5d6394f21e91e02ab6c1b45f779962a0b9901cd67efb81",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P04150.txt"
+  },
+  {
+    "bytes": 15389057,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/NR3C1_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:21.619188+00:00",
+    "sha256": "75298b24560c506dfad1ab674e18192da6abf055c3c0608838ef2bf7a8f0659b",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/NR3C1.1.tsv"
+  },
+  {
+    "bytes": 813518,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/PPARG_P37231.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.182308+00:00",
+    "sha256": "69e6de06886a361b84cc5b299bd2377ab0888fc958c493eebea57865e7d18bcc",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P37231.txt"
+  },
+  {
+    "bytes": 1326895,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/PPARG_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.288679+00:00",
+    "sha256": "3cc89e332763b551f5e6f039836206d0e6b4ed6c45ec430a67a10e3723f09191",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/PPARG.1.tsv"
+  },
+  {
+    "bytes": 591682,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/HNF4A_P41235.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.413375+00:00",
+    "sha256": "748989bb666d753f20e879bbb11363ca70ed111fa56d626f0ccf3da476bf8d9f",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P41235.txt"
+  },
+  {
+    "bytes": 1956162,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/HNF4A_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.501168+00:00",
+    "sha256": "a2d9485a35295a9c05442d47fb084f1263f6905c8f893a4aa3527e5a419ca764",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/HNF4A.1.tsv"
+  },
+  {
+    "bytes": 562499,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/RARA_P10276.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.676695+00:00",
+    "sha256": "e74b7da4f65215022b4d90b0af2f8a2fe6d86a94484447520846e3f09ac56740",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P10276.txt"
+  },
+  {
+    "bytes": 1850871,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/RARA_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.763265+00:00",
+    "sha256": "afb6fa6468cc0fde1c27983c1fd7578f3e29b9bddb0f37debd08f69c2a1fb3dc",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/RARA.1.tsv"
+  },
+  {
+    "bytes": 613985,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/gtrd/target_genes/GATA3_P23771.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:23.940341+00:00",
+    "sha256": "691a2de15117cd3ebfaa65ca933d2fa8d8936879260eef6f390d4aaef63e89d4",
+    "url": "http://gtrd.biouml.org:8888/downloads/current/intervals/target_genes/Homo%20sapiens/genes%20promoter%5B-1000,+100%5D/P23771.txt"
+  },
+  {
+    "bytes": 6790855,
+    "path": "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal/raw/chip_atlas/GATA3_hg38_tss1kb.tsv",
+    "retrieved_at_utc": "2026-07-15T16:38:24.028311+00:00",
+    "sha256": "608938540331dbf959f3f0f7076f19d2c3baa91e6552ca630e7b6e0d43de1b48",
+    "url": "https://chip-atlas.dbcls.jp/data/hg38/target/GATA3.1.tsv"
+  }
+]

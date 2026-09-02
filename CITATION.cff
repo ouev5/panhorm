@@ -1,5 +1,6 @@
 cff-version: 1.2.0
 title: "PanHorm Bioinformatics Platform"
+version: "2.6"
 message: "If you use this software, please cite it using the metadata from this file."
 type: software
 authors:
@@ -15,4 +16,4 @@ keywords:
   - literature mining
   - visualization
 license: MIT
-date-released: "2026-06-18"
+date-released: "2026-09-02"

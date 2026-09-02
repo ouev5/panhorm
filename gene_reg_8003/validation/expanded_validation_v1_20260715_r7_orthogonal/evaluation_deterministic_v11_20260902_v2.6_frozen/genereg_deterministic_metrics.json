@@ -1,0 +1,50 @@
+{
+  "created_at_utc": "2026-09-02T12:29:51.226082+00:00",
+  "test_set": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/combined_test_set_178_positive_192_negative.csv",
+  "test_set_sha256": "2f0e8cb737d5e91eda6393bf0432e059e290a41b6069af2bc192a5ee8b02fac2",
+  "app_path": "/www/wwwroot/gene_reg/app.py",
+  "app_sha256": "c0f98646487737319bf5d29c3d8b1eb6560ae6c8a3ed71a933174baa69735a30",
+  "n_total": 370,
+  "n_successful": 370,
+  "positive_count": 178,
+  "negative_count": 192,
+  "decision_rule": "raw_score >= 37.0 (v2.6 fixed release threshold; logistic regression + ChIP-Atlas); AI explanation disabled and contributes zero points",
+  "bootstrap": {
+    "replicates": 1000,
+    "seed": 20260716,
+    "ci_method": "percentile 2.5th\u201397.5th"
+  },
+  "metrics": {
+    "TP": 158,
+    "TN": 191,
+    "FP": 1,
+    "FN": 20,
+    "sensitivity": 0.8876404494382022,
+    "specificity": 0.9947916666666666,
+    "precision": 0.9937106918238994,
+    "f1": 0.9376854599406528,
+    "accuracy": 0.9432432432432433
+  },
+  "bootstrap_95ci": {
+    "sensitivity": [
+      0.838509,
+      0.931937
+    ],
+    "specificity": [
+      0.98324,
+      1.0
+    ],
+    "precision": [
+      0.97973,
+      1.0
+    ],
+    "f1": [
+      0.909621,
+      0.962099
+    ],
+    "accuracy": [
+      0.918919,
+      0.964865
+    ]
+  }
+}

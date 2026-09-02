@@ -1,0 +1,14 @@
+{
+  "release_id": "AHormoneDB-GeneReg-v2.6-20260902",
+  "app_sha256": "c0f98646487737319bf5d29c3d8b1eb6560ae6c8a3ed71a933174baa69735a30",
+  "gene": "PTPN1",
+  "decision_threshold": 37.0,
+  "ai_bonus": 0,
+  "edges": [
+    {"receptor": "AR", "chip_score": 100, "motif_score": 60, "literature_score": 75, "raw_score": 83.2, "classification": "Strong Evidence"},
+    {"receptor": "STAT5B", "chip_score": 100, "motif_score": 60, "literature_score": 60, "raw_score": 52.8, "classification": "Moderate Evidence"},
+    {"receptor": "FOXO1", "chip_score": 2, "motif_score": 60, "literature_score": 75, "raw_score": 64.2, "classification": "Moderate Evidence"},
+    {"receptor": "SP1", "chip_score": 100, "motif_score": 60, "literature_score": 60, "raw_score": 55.0, "classification": "Moderate Evidence"}
+  ],
+  "interpretation": "The 83.2 score belongs to AR-PTPN1. The three other edges are separate scores and do not establish a convergent three-factor mechanism."
+}

@@ -1,0 +1,47 @@
+{
+  "created_at_utc": "2026-07-15T16:50:12.563776+00:00",
+  "jaspar_relative_pwm_threshold": 0.95,
+  "model_data_isolation": "The GeneReg rule-based score is not trained on this validation directory. No labels from this directory are read by app.py.",
+  "negative_count": 192,
+  "negative_rule": "Absent from TF-specific GTRD promoter targets, ChIP-Atlas target score=0, zero high-stringency JASPAR PWM promoter hits, and zero PubMed title/abstract co-occurrence.",
+  "positive_count": 178,
+  "positive_gtrd_independent_count": 160,
+  "positive_recent_literature_manual_count": 18,
+  "positive_rule": "GTRD subset: >=2 promoter meta-clusters plus >=2 non-zero ChIP-Atlas SRX experiments whose accessions are absent from the live GeneReg peak corpus. Recent-literature subset: manual 2024–2025 curation with reported binding/occupancy and expression, perturbation, or functional evidence.",
+  "run_id": "expanded_validation_v1_20260715_r7_orthogonal",
+  "tf_distribution": {
+    "AR": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "ESR1": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "GATA3": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "HNF4A": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "NR3C1": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "PGR": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "PPARG": {
+      "gtrd_positive": 20,
+      "negative": 24
+    },
+    "RARA": {
+      "gtrd_positive": 20,
+      "negative": 24
+    }
+  },
+  "total_count": 370
+}

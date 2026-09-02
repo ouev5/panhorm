@@ -22,6 +22,10 @@ PanHorm brings together several research-oriented web services used in hormone b
 
 The repository is arranged as a multi-service codebase. Each subdirectory corresponds to one original service/module.
 
+## GeneReg v2.6 manuscript release
+
+The `gene_reg_8003/` directory now includes the manuscript-matched GeneReg v2.6 snapshot and its frozen internal-benchmark materials. The release is identified as `AHormoneDB-GeneReg-v2.6-20260902`; see the module release README and manifest for checksums and audit files. Large runtime datasets and secrets remain excluded.
+
 ---
 
 ## Modules
@@ -31,7 +35,7 @@ The repository is arranged as a multi-service codebase. Each subdirectory corres
 | `animal_hormone_8000/` | 8000 | AHormoneDB / Animal Hormone Platform | Animal hormone database, hormone-gene-disease analysis, RAG-assisted Q&A, and hormone-related web interfaces |
 | `venn_tool_8001/` | 8001 | Gene Insights / Venn Tool | Venn/UpSet visualization, enrichment analysis, and selected single-cell visualization utilities |
 | `customer_service_8002/` | 8002 | Bioinformatics Assistant | AI-assisted bioinformatics chatbot/customer-service style module |
-| `gene_reg_8003/` | 8003 | GeneReg | Transcription factor-target gene regulation prediction and evidence scoring platform |
+| `gene_reg_8003/` | 8003 | GeneReg v2.6 | Manuscript-matched transcription factor-target prediction with deterministic evidence scoring and frozen benchmark materials |
 | `multi_omics_8004/` | 8004 | Multi-omics Platform | Multi-omics workflow interface and AI-assisted interpretation utilities |
 | `literature_search_8005/` | 8005 | Literature Search | Biomedical literature search, evidence extraction, and RAG-style support utilities |
 | `gene_mapper_8006/` | 8006 | Gene Mapper | Gene mapping and related analysis service |

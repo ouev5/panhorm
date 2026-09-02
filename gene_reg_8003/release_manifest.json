@@ -1,0 +1,104 @@
+{
+  "release_id": "AHormoneDB-GeneReg-v2.6-20260902",
+  "app_sha256": "c0f98646487737319bf5d29c3d8b1eb6560ae6c8a3ed71a933174baa69735a30",
+  "benchmark_sha256": "2f0e8cb737d5e91eda6393bf0432e059e290a41b6069af2bc192a5ee8b02fac2",
+  "validation_output_sha256": "5f09ccc13a3a2f888c9e7c7eee362d836540063a56e79b2c7d709b736b94b737",
+  "ptpn1_per_edge_sha256": "aacb3fa1e03c90b5661fc84cfc8898f57c76a6061a028895f5fd2d844e3f4901",
+  "files": [
+    {
+      "path": ".env.example",
+      "bytes": 241,
+      "sha256": "49123703aabf31d0203e2f66f3f23fc35076910dc1db54f4eaa53a39051a38f4"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 101,
+      "sha256": "96f1f57db4f035973209ffc0ffa9d20fe111701c97cda40a1c8cc85dfc7b77fb"
+    },
+    {
+      "path": "app.py",
+      "bytes": 73494,
+      "sha256": "c0f98646487737319bf5d29c3d8b1eb6560ae6c8a3ed71a933174baa69735a30"
+    },
+    {
+      "path": "app_v2.6.py",
+      "bytes": 73494,
+      "sha256": "c0f98646487737319bf5d29c3d8b1eb6560ae6c8a3ed71a933174baa69735a30"
+    },
+    {
+      "path": "PTPN1_per_edge_frozen.json",
+      "bytes": 961,
+      "sha256": "aacb3fa1e03c90b5661fc84cfc8898f57c76a6061a028895f5fd2d844e3f4901"
+    },
+    {
+      "path": "rebuild_index.py",
+      "bytes": 2209,
+      "sha256": "71a80284eaf00201bf114cd7b48970c53e65fd3d34ddad889bf1fafcd98cc60f"
+    },
+    {
+      "path": "RELEASE_README.md",
+      "bytes": 1326,
+      "sha256": "74778d44f7bd3e1336affecd42b3053e93557ac0ca0e246b10d48e2c02f74983"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/ablation_zeroout_results_20260718.json",
+      "bytes": 1205,
+      "sha256": "80a4b7b062a703251ac7da4f709d72cfb9d69ae60b27f31b0abd25d7e576917e"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/checksums.sha256",
+      "bytes": 1569,
+      "sha256": "8efa159eb1f571df4ee9d78b658741b5dee058a34931406244309d19f5c877ab"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/combined_test_set_178_positive_192_negative.csv",
+      "bytes": 166279,
+      "sha256": "2f0e8cb737d5e91eda6393bf0432e059e290a41b6069af2bc192a5ee8b02fac2"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/local_chipatlas_accessions_excluded.json",
+      "bytes": 28302,
+      "sha256": "94d76d41e93f30d475d088f9278719f912ecdad65ede34169f2bf9b66705b1d3"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/negative_screening_audit.csv",
+      "bytes": 93126,
+      "sha256": "7fceb517704a1a40ecd6a5786ef3f6865e32dfea9ed831d342443df901c6be87"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/source_manifest.json",
+      "bytes": 7731,
+      "sha256": "5a4ddfa978719e5befd0aed7907d1993b08e385f31aa89f81d08f8eaea9adcd5"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/derived/validation_summary.json",
+      "bytes": 1556,
+      "sha256": "836a516e0a5babe75215929711e9533c7a52b85e3eb3555be88c7dac4f76c861"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/evaluation_deterministic_v11_20260902_v2.6_frozen/genereg_deterministic_metrics.json",
+      "bytes": 1325,
+      "sha256": "5f09ccc13a3a2f888c9e7c7eee362d836540063a56e79b2c7d709b736b94b737"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/evaluation_deterministic_v11_20260902_v2.6_frozen/genereg_deterministic_predictions.csv",
+      "bytes": 49087,
+      "sha256": "d4895811217c7a778864105318a4fd21d6b58635342521ce3debc3c1b40c6bf4"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/README.md",
+      "bytes": 866,
+      "sha256": "fece51c84d8def909e3d1ada60009c3224411c6ec87711f8cc54026a604c32fe"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/scripts/build_expanded_genereg_validation.py",
+      "bytes": 39206,
+      "sha256": "31e9a5f5f8c432f01d02e2e2682219a985462ab1d2dd949ecc2c9495291fa7c7"
+    },
+    {
+      "path": "validation/expanded_validation_v1_20260715_r7_orthogonal/VALIDATION_PROTOCOL.md",
+      "bytes": 3216,
+      "sha256": "5a5a92a79062e17ad8eb2a20fe47a618291d93b2a06c0a2da77855de4fa28663"
+    }
+  ]
+}
