@@ -1,0 +1,63 @@
+# TLS Certificate Verification Log — panhorm.cn
+# Generated: 2026-09-15 20:42 CST (UTC+8)
+# Server: 43.99.62.219 (iZj6ccvom41bari6lg0ql0Z)
+# Verification method: openssl s_client + curl -vI (certificate validation enabled)
+
+## 1. Certificate Details (retrieved via openssl s_client)
+
+  Subject:    CN=panhorm.cn
+  Issuer:     C=US, O=Let's Encrypt, CN=YE1
+  Serial:     054962F85C291E93551695EFF802ACDFA2AF
+  Algorithm:  ECDSA with SHA-384 (P-256)
+  Not Before: Sep  2 11:52:51 2026 GMT
+  Not After:  Dec  1 11:52:50 2026 GMT
+  SHA-256 FP: 59:D7:05:EF:7A:27:FA:08:C8:B7:C9:DF:E4:E6:13:34:7B:DC:4E:61:CD:82:8E:DC:CF:33:53:FB:1D:20:74:7C
+
+## 2. curl Verification (TLS 1.3, certificate validation enabled)
+
+  Command:  curl -vI https://panhorm.cn
+  Result:   HTTP/2 200 (server: nginx)
+  Protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384
+  Certificate chain verified: Let's Encrypt YE1 -> panhorm.cn (ECDSA P-256)
+
+## 3. Server-side Certificate File
+
+  Path:       /etc/letsencrypt/archive/panhorm.cn/fullchain2.pem
+  Size:       4821 bytes
+  Created:    2026-09-02 20:51:24 +0800 (Birth timestamp)
+  Modified:   2026-09-02 20:51:24 +0800
+  Deployment: certbot (Let's Encrypt ACME)
+
+## 4. Nginx Status
+
+  Config test:  syntax is ok / test is successful
+  Service:      active
+
+## 5. Certbot Certificate List
+
+  Certificate Name: panhorm.cn
+    Domains:       panhorm.cn, www.panhorm.cn
+    Key Type:      ECDSA
+    Expiry:        2026-12-01 11:52:50+00:00 (VALID: 76 days)
+    Certificate Path: /etc/letsencrypt/live/panhorm.cn/fullchain.pem
+
+  Certificate Name: panhorm-tools
+    Domains:       insights.panhorm.cn, assistant.panhorm.cn, genelit.panhorm.cn,
+                   genereg.panhorm.cn, hrpredict.panhorm.cn, omics.panhorm.cn,
+                   ortholog.panhorm.cn
+    Key Type:      ECDSA
+    Expiry:        2026-10-30 16:29:05+00:00 (VALID: 45 days)
+
+## 6. Conclusion
+
+The TLS certificate for panhorm.cn was renewed and deployed on
+September 2, 2026 (UTC/GMT) / September 2, 2026 20:51 CST.
+The certificate is valid through December 1, 2026.
+Independent client verification (curl with certificate validation
+enabled, TLS 1.3 handshake) confirms the site is accessible via
+HTTPS with a valid Let's Encrypt certificate.
+
+---
+This log was generated on the production server (43.99.62.219)
+using standard openssl and curl tools with certificate validation
+enabled, as requested by the reviewer.
