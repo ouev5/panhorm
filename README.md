@@ -1,6 +1,6 @@
 # PanHorm Bioinformatics Platform
 
-**PanHorm** is an integrated bioinformatics platform collection for hormone-related data mining, gene regulation analysis, multi-omics exploration, biomedical literature-assisted discovery, and interactive visualization.
+**AHormoneDB (PanHorm)** is a cross-species hormone knowledge base integrating hormone–receptor–gene associations, ontology-standardized disease annotations, multi-omics analysis, GeneReg target prediction, and a retrieval-augmented natural-language query assistant.
 
 This repository contains a **sanitized code-only export** of multiple web services originally deployed on a research server. It is designed for project demonstration, code review, academic sharing, and future reproducible development.
 
@@ -24,7 +24,15 @@ The repository is arranged as a multi-service codebase. Each subdirectory corres
 
 ## GeneReg v2.6 manuscript release
 
-The `gene_reg_8003/` directory now includes the manuscript-matched GeneReg v2.6 snapshot and its frozen internal-benchmark materials. The release is identified as `AHormoneDB-GeneReg-v2.6-20260902`; see the module release README and manifest for checksums and audit files. Large runtime datasets and secrets remain excluded.
+[`gene_reg_8003/`](./gene_reg_8003/README_v2.6.md) implements the manuscript's **GeneReg v2.6 weighted-evidence model**:
+
+- ChIP-seq / JASPAR 2024 motif / PubMed literature weights: **0.10 / 0.70 / 0.20**.
+- Development-frozen min–max normalization: **24.50–67.00**; normalized decision threshold **0.41** (raw weighted score **41.925**).
+- **415 unique TF–gene pairs**: 332 development pairs and 83 non-overlapping internal test pairs. Five-fold development-only CV evaluated 231 combinations, of which 171 satisfied the non-zero-weight constraint.
+- Internal test: **F1 0.894** (95% CI 0.818–0.955), precision 0.844, recall 0.950, accuracy 0.892, AUC 0.923, AUPRC 0.924; TP/TN/FP/FN = **38/36/7/2**.
+- Optional AI explanations contribute **zero points**. Predictions prioritize testable hypotheses rather than establish regulatory mechanisms.
+
+The operational evidence-absent labels are not experimentally validated biological negatives; the reported TN proportion of 0.837 applies to this internal benchmark. Portable row-level data, a scoring configuration, and an offline reproduction script are included. See the [module documentation](./gene_reg_8003/README_v2.6.md) and [release manifest](./gene_reg_8003/release_manifest.json).
 
 ---
 
@@ -35,7 +43,7 @@ The `gene_reg_8003/` directory now includes the manuscript-matched GeneReg v2.6 
 | `animal_hormone_8000/` | 8000 | AHormoneDB / Animal Hormone Platform | Animal hormone database, hormone-gene-disease analysis, RAG-assisted Q&A, and hormone-related web interfaces |
 | `venn_tool_8001/` | 8001 | Gene Insights / Venn Tool | Venn/UpSet visualization, enrichment analysis, and selected single-cell visualization utilities |
 | `customer_service_8002/` | 8002 | Bioinformatics Assistant | AI-assisted bioinformatics chatbot/customer-service style module |
-| `gene_reg_8003/` | 8003 | GeneReg v2.6 | Manuscript-matched transcription factor-target prediction with deterministic evidence scoring and frozen benchmark materials |
+| `gene_reg_8003/` | 8003 | GeneReg v2.6 | TF–target prioritization; weights 0.10/0.70/0.20, normalized threshold 0.41, internal-test F1 0.894 |
 | `multi_omics_8004/` | 8004 | Multi-omics Platform | Multi-omics workflow interface and AI-assisted interpretation utilities |
 | `literature_search_8005/` | 8005 | Literature Search | Biomedical literature search, evidence extraction, and RAG-style support utilities |
 | `gene_mapper_8006/` | 8006 | Gene Mapper | Gene mapping and related analysis service |

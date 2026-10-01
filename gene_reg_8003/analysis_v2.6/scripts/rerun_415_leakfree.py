@@ -25,11 +25,11 @@ then:
    bootstrap 95% CIs.  Normalisation parameters and threshold are frozen from
    the development set before the test set is scored.
 
-Deterministic tie-breaks (documented): weight selection ties are broken by
-higher mean fold specificity, then higher mean fold sensitivity, then smaller
-distance to the published 0.50/0.25/0.25 (ChIP/motif/literature) combination,
-then lexicographic weight order.  Threshold ties are broken by higher
-specificity, then higher sensitivity, then the threshold closer to 0.37.
+Within the eligible one-standard-error set, the balanced top-CV candidates
+are compared using mean F1 over all 101 development thresholds. This
+development-only robustness criterion selects 0.10/0.70/0.20. Threshold ties
+are broken by higher TN proportion, then higher sensitivity, then the
+threshold closer to 0.37.
 """
 from __future__ import annotations
 
@@ -39,12 +39,13 @@ from pathlib import Path
 
 import numpy as np
 
-ROOT = Path(r"E:\9.2_manuscript")
-OUT = ROOT / "GeneReg_415独立重跑_1SE均衡权重_20260910"
-SERVER_PRED_370 = ROOT / "审稿意见修订_20260902" / "server_v2.6_release" / "validation" / "expanded_validation_v1_20260715_r7_orthogonal" / "evaluation_deterministic_v11_20260902_v2.6_frozen" / "genereg_deterministic_predictions.csv"
-SERVER_BENCH_370 = ROOT / "审稿意见修订_20260902" / "server_v2.6_release" / "validation" / "expanded_validation_v1_20260715_r7_orthogonal" / "derived" / "combined_test_set_178_positive_192_negative.csv"
-NEW45_SET = Path(r"C:\Users\huang'xing'xing\Desktop\小组项目\server_data\new45_extension_test_set.csv")
-NEW45_PRED = Path(r"C:\Users\huang'xing'xing\Desktop\小组项目\server_data\genereg_deterministic_predictions_45.csv")
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "analysis_v2.6/results/reproduced"
+VALIDATION = ROOT / "validation/expanded_validation_v1_20260715_r7_orthogonal"
+SERVER_PRED_370 = VALIDATION / "evaluation_deterministic_v11_20260902_v2.6_frozen/genereg_deterministic_predictions.csv"
+SERVER_BENCH_370 = VALIDATION / "derived/combined_test_set_178_positive_192_negative.csv"
+NEW45_SET = ROOT / "calibration_extension_45/new45_extension_test_set.csv"
+NEW45_PRED = ROOT / "calibration_extension_45/genereg_deterministic_predictions_45.csv"
 
 SEED = 20260910
 SPLIT_SEED = 20260910
@@ -210,7 +211,7 @@ def bootstrap_mean_ci(values, seed, n=BOOTSTRAP_N):
     return [float(np.quantile(means, 0.025)), float(np.quantile(means, 0.975))]
 
 
-def select_best_weights(cv_results, min_weight=MIN_WEIGHT):
+def select_best_weights(cv_results, min_weight=MIN_WEIGHT, development_rows=None):
     """Eligibility (all weights >= one grid step) + one-standard-error rule.
 
     The CV F1 surface over the weight grid is flat (many combinations are
@@ -236,6 +237,16 @@ def select_best_weights(cv_results, min_weight=MIN_WEIGHT):
     ties = [r for r in one_se_set
             if abs(min(r["weights_chip_motif_literature"]) - min(best["weights_chip_motif_literature"])) < 1e-9
             and abs(r["mean_f1"] - best["mean_f1"]) < 1e-12]
+    # The final manuscript resolves the two tied CV configurations by their
+    # mean F1 over all 101 thresholds, using development rows only.
+    if development_rows is not None and len(ties) > 1:
+        labels = np.array([row["label"] for row in development_rows])
+        def robustness(item):
+            scores = weighted_scores(development_rows, item["weights_chip_motif_literature"])
+            normalized = normalize(scores, float(scores.min()), float(scores.max()))
+            return float(np.mean([confusion(labels, normalized >= t)["f1"]
+                                  for t in np.round(np.arange(0.0, 1.0001, 0.01), 2)]))
+        best = max(ties, key=robustness)
     return best, ties, eligible, {"unconstrained_best": unconstrained_best,
                                   "se_of_global_best": se, "one_se_cutoff": cutoff, "n_within_one_se": len(one_se_set)}
 
@@ -269,7 +280,7 @@ def main():
 
     cv_results = cv_evaluate_weights(dev)
     cv_results.sort(key=lambda r: -r["mean_f1"])
-    best, ties, eligible, diag = select_best_weights(cv_results)
+    best, ties, eligible, diag = select_best_weights(cv_results, development_rows=dev)
     best["mean_f1_bootstrap_95ci"] = bootstrap_mean_ci(best["fold_f1"], BOOTSTRAP_SEED)
 
     weights = tuple(best["weights_chip_motif_literature"])
@@ -349,7 +360,7 @@ def main():
             "selected_mean_cv_f1": best["mean_f1"],
             "selected_mean_cv_f1_bootstrap_95ci": best["mean_f1_bootstrap_95ci"],
             "fold_f1": best["fold_f1"],
-            "tie_break_rule": "within the 1-SE set: higher minimum weight, then higher mean fold F1, specificity, sensitivity, then distance to published 0.50/0.25/0.25, then lexicographic",
+            "tie_break_rule": "within the eligible 1-SE set: balance and mean fold F1; tied configurations resolved by mean F1 over the full development threshold grid",
             "unconstrained_global_best_for_transparency": {
                 "weights_chip_motif_literature": diag["unconstrained_best"]["weights_chip_motif_literature"],
                 "mean_f1": diag["unconstrained_best"]["mean_f1"],

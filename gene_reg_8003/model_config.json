@@ -1,0 +1,11 @@
+{
+  "model_id": "GeneReg-v2.6-weighted-evidence",
+  "version": "2.6",
+  "weights": {"chip": 0.10, "motif": 0.70, "literature": 0.20},
+  "normalization": {"method": "min-max", "fit_partition": "development", "min": 24.5, "max": 67.0},
+  "threshold_normalized": 0.41,
+  "threshold_raw": 41.925,
+  "development_pairs": 332,
+  "internal_test_pairs": 83,
+  "ai_score_contribution": 0
+}

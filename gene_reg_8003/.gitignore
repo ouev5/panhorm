@@ -39,3 +39,8 @@ single_cell_data/
 single_cell_data_mouse/
 data/
 results/
+promoter_cache/
+!analysis_v2.6/results/
+!analysis_v2.6/results/*.csv
+!analysis_v2.6/results/*.json
+analysis_v2.6/results/reproduced/

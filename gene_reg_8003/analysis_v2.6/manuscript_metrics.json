@@ -1,0 +1,90 @@
+{
+  "model": {
+    "model_id": "GeneReg-v2.6-weighted-evidence",
+    "version": "2.6",
+    "weights": {
+      "chip": 0.1,
+      "motif": 0.7,
+      "literature": 0.2
+    },
+    "normalization": {
+      "method": "min-max",
+      "fit_partition": "development",
+      "min": 24.5,
+      "max": 67.0
+    },
+    "threshold_normalized": 0.41,
+    "threshold_raw": 41.925,
+    "development_pairs": 332,
+    "internal_test_pairs": 83,
+    "ai_score_contribution": 0
+  },
+  "scope": "Internal benchmark; evidence-absent labels are not experimentally validated biological negatives.",
+  "decision_rule": "(0.10 * ChIP-seq + 0.70 * motif + 0.20 * literature - 24.50) / (67.00 - 24.50) >= 0.41",
+  "corpus": {
+    "path": "analysis_v2.6/manuscript_benchmark_415.csv",
+    "sha256": "315cc0f29d10bf832e4543e30e12499f1ae3b5d1d1efe638edd0067d0fe1dbb8",
+    "records": 415,
+    "positives": 200,
+    "evidence_absent": 215
+  },
+  "development_set": {
+    "records": 332,
+    "positives": 160,
+    "evidence_absent": 172
+  },
+  "test_set": {
+    "records": 83,
+    "positives": 40,
+    "evidence_absent": 43
+  },
+  "weight_selection": {
+    "candidate_combinations": 231,
+    "eligible_combinations": 171,
+    "folds": 5,
+    "one_se_cutoff": 0.9047631392051609,
+    "selected_mean_cv_f1": 0.9083148708088927,
+    "tie_break": "Equal development peak F1; higher mean F1 over the development threshold grid (0.6004 versus 0.5704)."
+  },
+  "metrics": {
+    "TP": 38,
+    "TN": 36,
+    "FP": 7,
+    "FN": 2,
+    "precision": 0.8444444444444444,
+    "f1": 0.8941176470588236,
+    "accuracy": 0.891566265060241,
+    "recall": 0.95,
+    "tn_proportion_evidence_absent": 0.8372093023255814,
+    "roc_auc": 0.9229651162790697,
+    "pr_auc": 0.9240180870185092
+  },
+  "bootstrap": {
+    "replicates": 1000,
+    "seed": 20260910,
+    "ci_method": "percentile 2.5th-97.5th"
+  },
+  "bootstrap_95ci": {
+    "precision": [
+      0.7346598639455783,
+      0.9388061224489797
+    ],
+    "f1": [
+      0.8181498079385404,
+      0.9552321724709786
+    ],
+    "accuracy": [
+      0.8192771084337349,
+      0.9518072289156626
+    ],
+    "recall": [
+      0.8709677419354839,
+      1.0
+    ],
+    "tn_proportion_evidence_absent": [
+      0.720906976744186,
+      0.9348172987974098
+    ]
+  },
+  "ai_score_contribution": 0
+}

@@ -13,11 +13,15 @@ import hashlib
 import importlib.util
 import json
 import random
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-THRESHOLD = 37.0
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from scoring import MODEL_CONFIG
+THRESHOLD = MODEL_CONFIG["threshold_normalized"]
 BOOTSTRAP_REPLICATES = 1000
 BOOTSTRAP_SEED = 20260716
 
@@ -57,6 +61,7 @@ def bootstrap(labels, predictions):
 
 
 def load_app(path: Path):
+    sys.path.insert(0, str(path.resolve().parent))
     spec = importlib.util.spec_from_file_location("genereg_app_for_extension_eval", path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Cannot import GeneReg application from {path}")
@@ -68,7 +73,7 @@ def load_app(path: Path):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--test-set", required=True, type=Path)
-    parser.add_argument("--app", default="/www/wwwroot/gene_reg/app.py", type=Path)
+    parser.add_argument("--app", default=ROOT / "app.py", type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     args = parser.parse_args()
 
@@ -105,7 +110,8 @@ def main() -> None:
             scores = result.get("scores", {})
             row.update({
                 "raw_score": raw_score,
-                "prediction": int(raw_score >= THRESHOLD),
+                "prediction": int(result["prediction"]),
+                "normalized_score": result["normalized_score"],
                 "classification": result.get("classification", ""),
                 "chip_score": scores.get("chip_seq", {}).get("score", ""),
                 "motif_score": scores.get("motif", {}).get("score", ""),
@@ -124,7 +130,7 @@ def main() -> None:
             "updated_at_utc": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n", encoding="utf-8")
         print(f"{index}/{total} {record['tf']}->{record['gene']} {row['status']} score={row['raw_score']}", flush=True)
 
-    fields = ["record_id", "label", "subset", "tf", "gene", "threshold", "raw_score", "prediction",
+    fields = ["record_id", "label", "subset", "tf", "gene", "threshold", "raw_score", "normalized_score", "prediction",
               "classification", "chip_score", "motif_score", "literature_score", "ai_bonus", "status", "error", "runtime_seconds"]
     with (args.output_dir / "genereg_deterministic_predictions_45.csv").open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
@@ -142,7 +148,7 @@ def main() -> None:
         "app_path": str(args.app), "app_sha256": sha256(args.app),
         "n_total": total, "n_successful": len(successful),
         "positive_count": sum(labels), "negative_count": total - sum(labels),
-        "decision_rule": "raw_score >= 37.0 (v2.6 frozen rule, reported for reference only)",
+        "decision_rule": "weighted evidence (0.10/0.70/0.20), development min-max 24.50/67.00, normalized threshold >= 0.41",
         "metrics": metric_values(labels, predictions),
         "bootstrap_95ci": bootstrap(labels, predictions),
     }

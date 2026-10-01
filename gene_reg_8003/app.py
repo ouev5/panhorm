@@ -1,38 +1,11 @@
-"""
-GeneReg - Gene Regulation Predictor v2.6
-Accuracy improvements:
-1. Promoter-centric scoring: promoter peaks >> distal peaks
-2. Signal value weighting: high-signal peaks score more
-3. Cross-cell-type validation: peaks found in multiple files = stronger evidence
-4. Wider enhancer search (500kb) but with distance decay
-5. Gene expression context: housekeeping genes get penalized
+"""GeneReg v2.6: manuscript weighted-evidence TF-target prioritization.
 
-v2.6 calibration (logistic regression with ChIP-Atlas integration):
-6. Integrated ChIP-Atlas TSS+/-1kb binding statistics as an INDEPENDENT
-   evidence channel alongside the local ENCODE peaks. This was the single
-   biggest accuracy driver: ChIP-Atlas covers TFs with zero local ENCODE
-   files (PGR had 0 local bed files but 175 ChIP-Atlas experiments).
-7. 12-feature logistic regression trained on TRRUST literature-curated
-   functional-regulation labels (the only label source that does NOT create
-   circular leakage with ChIP-based features). Leave-one-TF-out CV:
-   AUC 0.923 (+/-0.048), F1 0.837 (+/-0.087).
-8. Benchmarked on FOUR frozen internal reference sets at threshold 0.37:
-     truly_random  F1 0.787 (sens 0.74, spec 0.78)
-     random304     F1 0.790 (sens 0.84, spec 0.71)
-     indep304      F1 0.796 (sens 0.82, spec 0.76)
-     orig370       F1 0.941 (sens 0.89, spec 0.99)
-   Mean F1 0.83, mean specificity 0.81 -- a substantial improvement over
-   v2.5 (mean F1 0.77, mean specificity 0.67) with both precision AND recall.
-9. Learned feature importances (interpretable):
-     literature      +2.45  (dominant on TRRUST labels)
-     ca_max          +0.94  (ChIP-Atlas peak signal -- key new feature)
-     ca_avg          +0.60
-     ca_nonzero      +0.36
-     local chip      -0.33  (local ENCODE corpus is noisier than ChIP-Atlas)
-     motif           -0.02  (confirmed uninformative in combination)
+ChIP-seq / motif / literature weights are 0.10 / 0.70 / 0.20. The
+development-frozen min-max range is 24.50-67.00; the normalized decision
+threshold is 0.41. Optional AI explanations contribute zero points.
 """
 
-import os, re, json, math, requests, hashlib
+import os, re, json, requests, hashlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple
@@ -42,6 +15,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+from scoring import MODEL_CONFIG, score_evidence
+from evidence import promoter_region, scan_pwm, RELATIVE_THRESHOLD
 
 # ==================== Config ====================
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
@@ -56,15 +31,14 @@ ENSEMBL_API = "https://rest.ensembl.org"
 PUBMED_EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 NCBI_EMAIL = "bioinfo@example.com"
 
-PEAK_DIR = "/www/wwwroot/gene_reg/encode_peaks"
+MODULE_DIR = Path(__file__).resolve().parent
+PEAK_DIR = os.environ.get("GENEREG_PEAK_DIR", str(MODULE_DIR / "encode_peaks"))
 # A local, sequence-only cache reduces dependence on transient Ensembl network
 # calls.  It contains no labels and is safe for ordinary prediction requests.
-PROMOTER_CACHE_DIR = Path(os.environ.get("GENEREG_PROMOTER_CACHE", "/www/wwwroot/gene_reg/promoter_cache"))
-# ChIP-Atlas pre-computed TSS+/-1kb binding stats per (TF, gene).  This is an
-# independent evidence channel from the local ENCODE peaks corpus and is the
-# single highest-AUC feature in reference benchmarking (AUC ~0.79).  Files are
-# compact JSON indices built by data/chip_atlas_index/<TF>.json.
-CHIP_ATLAS_INDEX_DIR = Path(os.environ.get("GENEREG_CHIP_ATLAS_INDEX", "/www/wwwroot/gene_reg/data/chip_atlas_index"))
+PROMOTER_CACHE_DIR = Path(os.environ.get("GENEREG_PROMOTER_CACHE", str(MODULE_DIR / "promoter_cache")))
+# ChIP-Atlas binding statistics are displayed as supporting evidence; they
+# are not a fourth weighted component or a learned prediction model.
+CHIP_ATLAS_INDEX_DIR = Path(os.environ.get("GENEREG_CHIP_ATLAS_INDEX", str(MODULE_DIR / "data/chip_atlas_index")))
 
 # Lazy-loaded ChIP-Atlas index cache: tf_name(str) -> {gene: {avg,max,nz,tot}}
 _chip_atlas_cache: Dict[str, Dict] = {}
@@ -522,6 +496,7 @@ class MotifAnalyzer:
         # requests while retaining the same deterministic scoring rule.
         self._motif_cache: Dict[str, Dict] = {}
         self._promoter_cache: Dict[str, str] = {}
+        self._pfm_cache: Dict[str, Dict] = {}
 
     def analyze(self, gene: str, receptor: str, gene_info: Optional[Dict] = None) -> Dict:
         motif_info = {}
@@ -534,13 +509,17 @@ class MotifAnalyzer:
         else:
             try:
                 resp = requests.get(f"{JASPAR_API}/matrix/", params={
-                    "search": receptor, "tax_group": "vertebrates", "collection": "CORE"
+                    "search": receptor, "tax_group": "vertebrates", "collection": "CORE", "release": "2024"
                 }, timeout=15)
                 resp.raise_for_status()
-                results = resp.json().get("results", [])
+                results = [entry for entry in resp.json().get("results", [])
+                           if entry.get("name", "").upper() == receptor_key]
                 if results:
                     best = results[0]
-                    mid = best.get("matrix_id","")
+                    matrices_2024 = {"AR": "MA0007.2", "ESR1": "MA0112.4", "PGR": "MA2327.1",
+                                     "NR3C1": "MA0113.4", "PPARG": "MA0066.2", "HNF4A": "MA0114.5",
+                                     "RARA": "MA0729.1", "GATA3": "MA0037.3"}
+                    mid = matrices_2024.get(receptor_key, best.get("matrix_id", ""))
                     motif_info = {"matrix_id":mid,"name":best.get("name",receptor),
                         "collection":best.get("collection",""),
                         "tf_family":best.get("tf_family",""),
@@ -549,6 +528,7 @@ class MotifAnalyzer:
                     pwm_resp = requests.get(f"{JASPAR_API}/matrix/{mid}", timeout=15)
                     if pwm_resp.status_code == 200:
                         pfm = pwm_resp.json().get("pfm",{})
+                        self._pfm_cache[receptor_key] = pfm
                         motif_info["motif_length"] = len(pfm.get("A",[])) if isinstance(pfm.get("A"),list) else 0
             except Exception as e:
                 print(f"JASPAR error: {e}")
@@ -560,14 +540,17 @@ class MotifAnalyzer:
             if ensembl_id in self._promoter_cache:
                 promoter_seq = self._promoter_cache[ensembl_id]
             else:
-                cache_path = PROMOTER_CACHE_DIR / f"{ensembl_id}.fa"
+                region, _ = promoter_region(gene_info)
+                # Include the region in cache identity, avoiding whole-gene or
+                # opposite-strand sequences from a different request.
+                cache_name = hashlib.sha256(region.encode()).hexdigest()[:16]
+                cache_path = PROMOTER_CACHE_DIR / f"{ensembl_id}_{cache_name}.fa"
                 if cache_path.is_file():
                     promoter_seq = cache_path.read_text(encoding="utf-8").strip().upper()
                 else:
                     try:
                         seq_resp = requests.get(
-                            f"{ENSEMBL_API}/sequence/id/{ensembl_id}",
-                            params={"type":"genomic","expand_5prime":2000,"expand_3prime":500},
+                            f"{ENSEMBL_API}/sequence/region/human/{region}",
                             headers={"Content-Type":"application/json"}, timeout=20)
                         if seq_resp.status_code == 200:
                             promoter_seq = seq_resp.json().get("seq","").upper()
@@ -579,77 +562,46 @@ class MotifAnalyzer:
                 self._promoter_cache[ensembl_id] = promoter_seq
 
         if promoter_seq:
-            for mname, mseq in self._get_known_re(receptor):
-                rev = self._revcomp(mseq)
-                fwd = [m.start() for m in re.finditer(f"(?={mseq})", promoter_seq)]
-                rev_matches = [m.start() for m in re.finditer(f"(?={rev})", promoter_seq)]
-                for pos in fwd:
-                    promoter_matches.append({"motif_name":mname,"motif_seq":mseq,"position":pos-2000,"strand":"+"})
-                for pos in rev_matches:
-                    promoter_matches.append({"motif_name":mname,"motif_seq":mseq,"position":pos-2000,"strand":"-"})
+            pfm = self._pfm_cache.get(receptor_key)
+            if pfm:
+                _, tss_offset = promoter_region(gene_info)
+                promoter_matches = scan_pwm(promoter_seq, pfm, motif_info["matrix_id"], tss_offset)
 
         if motif_info:
             has_score = 20
             quality = 15 if motif_info.get("collection")=="CORE" else 10 if motif_info.get("collection")=="PBM" else 5
             if promoter_matches:
-                matched_lens = set()
-                for pm in promoter_matches:
-                    matched_lens.add(len(pm.get("motif_seq", "")))
-                max_match_len = max(matched_lens) if matched_lens else 0
-                if max_match_len >= 12: match_score = min(65, len(promoter_matches) * 20)
-                elif max_match_len >= 8: match_score = min(55, len(promoter_matches) * 15)
-                else: match_score = min(25, len(promoter_matches) * 6)
+                match_score = min(25, len(promoter_matches) * 6)
             else:
                 match_score = 0
             score = has_score + quality + match_score
 
         return {"score":min(100,score),"motif_found":bool(motif_info),"motif_info":motif_info,
-                "promoter_matches":promoter_matches,"promoter_length":len(promoter_seq),"source":"JASPAR + Ensembl"}
-
-    def _get_known_re(self, receptor: str) -> List[tuple]:
-        db = {
-            "ESR1":[("ERE","AGGTCA"),("ERE_half","AGGTCA")],
-            "ESR2":[("ERE","AGGTCA")],
-            "AR":[("ARE","AGAACA")],
-            "PGR":[("PRE","AGAACA")],
-            "GR":[("GRE","AGAACA")],
-            "NR3C1":[("GRE","AGAACA")],
-            "TR":[("TRE","AGGTCA")],
-            "THRA":[("TRE","AGGTCA")],
-            "THRB":[("TRE","AGGTCA")],
-            "RARA":[("RARE","AGGTCA")],
-            "RXRA":[("RXRE","AGGTCA")],
-            "PPARA":[("PPRE","AGGTCA")],
-            "PPARG":[("PPRE","AGGTCA")],
-            "VDR":[("VDRE","AGGTCA")],
-            "FXR":[("FXRE","AGGTCA")],
-            "LXR":[("LXRE","AGGTCA")],
-        }
-        for k,v in db.items():
-            if k.upper() == receptor.upper(): return v
-        return [("NR_half_site","AGGTCA")]
-
-    def _revcomp(self, seq: str) -> str:
-        c = {"A":"T","T":"A","G":"C","C":"G","N":"N"}
-        return "".join(c.get(b,"N") for b in reversed(seq.upper()))
+                "promoter_matches":promoter_matches,"promoter_length":len(promoter_seq),
+                "relative_threshold":RELATIVE_THRESHOLD,"source":"JASPAR 2024 PWM + Ensembl promoter (-2000/+500 bp)"}
 
 # ==================== Literature ====================
 class LiteratureAnalyzer:
     def analyze(self, gene: str, receptor: str) -> Dict:
         articles = []
         pmids = set()
-        for q in [f'"{gene}" AND "{receptor}" AND (regulation OR target OR binding)', f'"{gene}" AND "{receptor}"']:
+        query = f'"{gene}"[Title/Abstract] AND "{receptor}"[Title/Abstract] AND ("2010/01/01"[Date - Publication] : "2025/12/31"[Date - Publication])'
+        count = 0
+        for q in [query]:
             try:
                 resp = requests.get(f"{PUBMED_EUTILS}/esearch.fcgi", params={
                     "db":"pubmed","term":q,"retmax":10,"sort":"relevance","retmode":"json","email":NCBI_EMAIL
                 }, timeout=15)
-                pmids.update(resp.json().get("esearchresult",{}).get("idlist",[]))
+                resp.raise_for_status()
+                result = resp.json().get("esearchresult", {})
+                count = int(result.get("count", 0))
+                pmids.update(result.get("idlist", []))
             except: pass
 
         if pmids:
             try:
                 fr = requests.get(f"{PUBMED_EUTILS}/efetch.fcgi", params={
-                    "db":"pubmed","id":",".join(list(pmids)[:10]),"rettype":"xml","retmode":"xml","email":NCBI_EMAIL
+                    "db":"pubmed","id":",".join(sorted(pmids)[:10]),"rettype":"xml","retmode":"xml","email":NCBI_EMAIL
                 }, timeout=15)
                 root = ET.fromstring(fr.text)
                 for ae in root.findall(".//PubmedArticle")[:10]:
@@ -662,7 +614,7 @@ class LiteratureAnalyzer:
                     yr = ""
                     je = ad.find("Journal")
                     if je is not None:
-                        pd = je.find("PubDate")
+                        pd = je.find("JournalIssue/PubDate")
                         if pd is not None:
                             ye = pd.find("Year")
                             if ye is not None and ye.text: yr = ye.text
@@ -672,9 +624,9 @@ class LiteratureAnalyzer:
                     articles.append({"pmid":pm.text if pm is not None else "","title":(t.text if t is not None else "") or "","year":yr or "N/A"})
             except: pass
 
-        n = len(pmids)
+        n = count
         score = 90 if n>=20 else 75 if n>=10 else 60 if n>=5 else 50 if n>=3 else 35 if n>=1 else 0
-        return {"score":score,"articles_found":n,"articles":articles[:10],"source":"PubMed"}
+        return {"score":score,"articles_found":n,"articles":articles[:10],"source":"PubMed (2010-2025)","query":query}
 
 # ==================== AI ====================
 class AIRegulationAnalyzer:
@@ -745,8 +697,9 @@ ai_a = AIRegulationAnalyzer()
 class AnalysisRequest(BaseModel):
     gene: str
     receptor: str
+    include_ai: bool = False
 
-def _do_analysis(gene: str, receptor: str, *, include_ai: bool = True) -> dict:
+def _do_analysis(gene: str, receptor: str, *, include_ai: bool = False) -> dict:
     if not gene.strip() or not receptor.strip():
         raise HTTPException(400, "Gene and receptor are required")
     gi = gf.fetch(gene)
@@ -937,57 +890,15 @@ def _do_analysis(gene: str, receptor: str, *, include_ai: bool = True) -> dict:
         cr["cofactor_bonus"] = 0
         cr["cofactors"] = {}
     
-    # === v2.6 calibrated logistic-regression scorer (12 features) ===
-    # Trained on TRRUST literature-curated functional-regulation labels (198
-    # records) with leave-one-TF-out CV: AUC 0.923 (+/-0.048), F1 0.837
-    # (+/-0.087).  Benchmarked on FOUR frozen internal reference sets at threshold 0.37:
-    #   truly_random F1 0.787, random304 F1 0.790, indep304 F1 0.796,
-    #   orig370 F1 0.941 (mean F1 0.83, mean specificity 0.81).
-    # Key additions over v2.5:
-    #   * ChIP-Atlas TSS+/-1kb binding stats (independent of local ENCODE
-    #     peaks) are the strongest novel channel: ca_max weight +0.94,
-    #     ca_avg +0.60, ca_nonzero +0.36. This rescues TFs with poor local
-    #     ENCODE coverage (e.g. PGR had 0 local bed files but ChIP-Atlas
-    #     has 175 experiments).
-    #   * Local ChIP score weight is now NEGATIVE (-0.33): the local ENCODE
-    #     peak corpus is noisier than ChIP-Atlas and adds little once the
-    #     ChIP-Atlas channel is available.
-    #   * literature remains the dominant channel (+2.45) on TRRUST labels.
-    # Threshold 0.37 maximises min-F1 across the four reference sets.
-    w_legacy = {"chip":0.55,"motif":0.15,"literature":0.30}  # legacy audit field
-    promoter_motif_matches = len(mr.get("promoter_matches", []))
-    cr["promoter_motif_matches"] = promoter_motif_matches
-
-    _det = cr.get("detail", {}) or {}
-    # ChIP-Atlas independent evidence (the key v2.6 addition)
+    # Freeze the three-component combination and normalization from the
+    # development set. Penalties/bonuses above belong to the ChIP component;
+    # no post-combination penalty or AI adjustment changes the decision rule.
+    cr["promoter_motif_matches"] = len(mr.get("promoter_matches", []))
     _ca = _chip_atlas_stats(receptor, gene)
     _ca_avg = float(_ca.get("avg", 0.0))
     _ca_max = float(_ca.get("max", 0.0))
     _ca_nz = int(_ca.get("nz", 0))
     _ca_tot = max(int(_ca.get("tot", 1)), 1)
-
-    _lr_features = [
-        cr["score"] / 100.0,                                  # 0 local ChIP score
-        min(mr["score"], 60) / 60.0,                          # 1 capped motif
-        min(lr["score"], 90) / 90.0,                          # 2 literature (capped 90)
-        min(_det.get("enhancer_peaks_50kb", 0), 50) / 50.0,   # 3 enhancer 50kb
-        min(_det.get("proximal_peaks", 0), 20) / 20.0,        # 4 proximal 5kb
-        min(_det.get("promoter_peaks", 0), 10) / 10.0,        # 5 promoter peaks
-        min(_det.get("gene_body_peaks", 0), 50) / 50.0,       # 6 gene body
-        math.log1p(_det.get("max_signal", 0)),                # 7 log1p signal
-        # === ChIP-Atlas independent features (new in v2.6) ===
-        min(_ca_avg, 50) / 50.0,                              # 8 ChIP-Atlas avg
-        math.log1p(_ca_max) / 10.0,                           # 9 log ChIP-Atlas max
-        min(_ca_nz, 100) / 100.0,                             # 10 ChIP-Atlas nonzero exps
-        _ca_nz / _ca_tot,                                     # 11 fraction of exps with binding
-    ]
-    _lr_bias = -1.432
-    _lr_weights = [-0.333, -0.018, 2.450, -0.443, 0.070, -0.004, 0.216, 0.076,
-                   0.597, 0.942, 0.360, 0.130]
-    _lr_z = _lr_bias + sum(wi * xi for wi, xi in zip(_lr_weights, _lr_features))
-    _lr_prob = 1.0 / (1.0 + math.exp(-_lr_z)) if _lr_z > -50 else 0.0
-    _DECISION_THRESHOLD = 0.37   # fixed release threshold from the reference benchmark
-    fs = _lr_prob * 100.0         # evidence score on 0-100 scale
 
     cr["chip_atlas_evidence"] = {
         "avg": _ca_avg, "max": _ca_max,
@@ -995,37 +906,8 @@ def _do_analysis(gene: str, receptor: str, *, include_ai: bool = True) -> dict:
         "binding_fraction": round(_ca_nz / _ca_tot, 3),
         "available": _ca_tot > 1 or _ca_avg > 0,
     }
-    cr["v26_model"] = {
-        "probability": round(_lr_prob, 4),
-        "logit": round(_lr_z, 3),
-        "features": {
-            "chip_norm": round(_lr_features[0], 3),
-            "motif_capped": round(_lr_features[1], 3),
-            "lit_norm": round(_lr_features[2], 3),
-            "enh50_capped": round(_lr_features[3], 3),
-            "prox5_capped": round(_lr_features[4], 3),
-            "promo_capped": round(_lr_features[5], 3),
-            "gb_capped": round(_lr_features[6], 3),
-            "log1p_signal": round(_lr_features[7], 3),
-            "ca_avg_capped": round(_lr_features[8], 3),
-            "ca_max_log": round(_lr_features[9], 3),
-            "ca_nonzero_norm": round(_lr_features[10], 3),
-            "ca_fraction": round(_lr_features[11], 3),
-        },
-        "decision_threshold": _DECISION_THRESHOLD,
-        "training_cv_auc": 0.923,
-    }
-
-    # Housekeeping gene penalty: reduce confidence for genes with open chromatin
-    # where many TFs bind passively.  Kept at 0.5 so that genuine regulation of
-    # a housekeeping gene is still detectable when ChIP + literature aligns.
-    if gene.upper() in HOUSEKEEPING_GENES:
-        fs = fs * 0.5  # 50% penalty on total score
-    
-    if fs>=70: cl,lvl = "Strong Evidence","strong"
-    elif fs>=40: cl,lvl = "Moderate Evidence","moderate"
-    elif fs>=20: cl,lvl = "Weak Evidence","weak"
-    else: cl,lvl = "Insufficient Evidence","none"
+    model = score_evidence(cr["score"], mr["score"], lr["score"])
+    fs = model["weighted_score"]
     
     # The LLM may provide a qualitative explanation for an interactive user,
     # but it is not a validated scoring component.  Keeping it outside the
@@ -1035,7 +917,7 @@ def _do_analysis(gene: str, receptor: str, *, include_ai: bool = True) -> dict:
         ar = ai_a.analyze(gene, receptor, cr, mr, lr)
     else:
         ar = {
-            "mechanism": "AI explanation disabled for deterministic validation.",
+            "mechanism": "Optional AI explanation not requested.",
             "evidence_summary": "Score is computed only from ChIP-seq, motif, and literature components.",
             "confidence": "Not evaluated",
             "recommendations": [],
@@ -1043,30 +925,30 @@ def _do_analysis(gene: str, receptor: str, *, include_ai: bool = True) -> dict:
     ai_bonus = 0
     adjusted = max(0, min(100, fs))
 
-    if adjusted>=70: cl,lvl = "Strong Evidence","strong"
-    elif adjusted>=40: cl,lvl = "Moderate Evidence","moderate"
-    elif adjusted>=20: cl,lvl = "Weak Evidence","weak"
-    else: cl,lvl = "Insufficient Evidence","none"
+    if model["prediction"]:
+        cl, lvl = "Above prioritization threshold", "strong"
+    else:
+        cl, lvl = "Below prioritization threshold", "none"
 
     return {"gene":gene,"receptor":receptor,"gene_info":gi,"scores":{"chip_seq":cr,"motif":mr,"literature":lr},
-            "weights":w_legacy,"raw_score":round(fs,1),"ai_bonus":ai_bonus,"final_score":round(adjusted,1),
+            "weights":model["weights"],"raw_score":round(fs,3),"ai_bonus":ai_bonus,"final_score":round(adjusted,3),
+            "normalized_score":model["normalized_score"],"prediction":model["prediction"],
+            "threshold_normalized":model["threshold_normalized"],"threshold_raw":model["threshold_raw"],
+            "model":MODEL_CONFIG,
             "classification":cl,"level":lvl,"ai_analysis":ar}
 
 @app.post("/api/analyze")
-def analyze_post(req: AnalysisRequest): return _do_analysis(req.gene, req.receptor)
+def analyze_post(req: AnalysisRequest): return _do_analysis(req.gene, req.receptor, include_ai=req.include_ai)
 
 @app.get("/api/analyze")
-def analyze_get(gene: str = Query(...), receptor: str = Query(...)): return _do_analysis(gene, receptor)
+def analyze_get(gene: str = Query(...), receptor: str = Query(...), include_ai: bool = False):
+    return _do_analysis(gene, receptor, include_ai=include_ai)
 
 @app.get("/api/health")
-def health(): return {"status":"ok","service":"GeneReg","version":"2.6","tf_count":len(ca.tf_dirs)}
+def health(): return {"status":"ok","service":"GeneReg","version":"2.6","tf_count":len(ca.tf_dirs),"model":MODEL_CONFIG}
 
 
-VALIDATION_ROOT = Path(os.environ.get(
-    "GENEREG_VALIDATION_ROOT",
-    "/www/wwwroot/gene_reg/validation/expanded_validation_v1_20260715_r7_orthogonal",
-))
-VALIDATION_METRICS_PATH = VALIDATION_ROOT / "evaluation_deterministic_v11_20260902_v2.6_frozen" / "genereg_deterministic_metrics.json"
+VALIDATION_METRICS_PATH = MODULE_DIR / "analysis_v2.6/manuscript_metrics.json"
 
 
 def _sha256_file(path: Path) -> str:
@@ -1084,25 +966,23 @@ def validation_summary():
         raise HTTPException(status_code=503, detail="Frozen validation material is not available on this deployment.")
     try:
         summary = json.loads(VALIDATION_METRICS_PATH.read_text(encoding="utf-8"))
-        test_set = Path(summary["test_set"])
+        test_set = MODULE_DIR / summary["corpus"]["path"]
         if not test_set.exists():
             raise RuntimeError("Frozen test-set file is unavailable.")
         observed_hash = _sha256_file(test_set)
         return {
             "status": "available",
-            "scope": "Frozen internal benchmark of the deterministic score only; optional LLM explanations contribute zero points.",
-            "test_set": {
-                "records": summary.get("n_total"),
-                "positives": summary.get("positive_count"),
-                "strict_negatives": summary.get("negative_count"),
-                "sha256": observed_hash,
-                "hash_matches_manifest": observed_hash == summary.get("test_set_sha256"),
-            },
+            "scope": summary["scope"],
+            "model": MODEL_CONFIG,
+            "corpus": {**summary["corpus"], "hash_matches_manifest": observed_hash == summary["corpus"]["sha256"]},
+            "development_set": summary["development_set"],
+            "test_set": summary["test_set"],
             "decision_rule": summary.get("decision_rule"),
             "metrics": summary.get("metrics"),
             "bootstrap": summary.get("bootstrap"),
             "bootstrap_95ci": summary.get("bootstrap_95ci"),
-            "created_at_utc": summary.get("created_at_utc"),
+            "weight_selection": summary["weight_selection"],
+            "ai_score_contribution": 0,
         }
     except Exception as exc:
         raise HTTPException(status_code=503, detail=f"Validation audit could not be loaded: {exc}")
@@ -1116,7 +996,7 @@ HTML_PAGE = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GeneReg - Gene Regulation Predictor</title>
+<title>GeneReg v2.6 - TF Target Gene Prediction</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -1141,22 +1021,27 @@ nav{background:linear-gradient(135deg,#0f172a,#1e3a8a);padding:1rem 1.5rem;box-s
 </style>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800">
-<nav><div class="nav-container"><a href="https://43.99.62.219/" class="back-btn"><i class="fa fa-arrow-left"></i> Back</a></div></nav>
+<nav><div class="nav-container"><a href="https://panhorm.cn/" class="back-btn"><i class="fa fa-arrow-left"></i> AHormoneDB</a></div></nav>
 <main class="max-w-6xl mx-auto px-6 py-8">
 <div class="text-center mb-8">
-<h1 class="text-3xl font-bold text-gray-800 mb-2">GeneReg <span class="text-violet-500">v2</span></h1>
+<h1 class="text-3xl font-bold text-gray-800 mb-2">GeneReg <span class="text-violet-500">v2.6</span></h1>
 <p class="text-gray-500">Prioritize transcription factor–target-gene relationships using ChIP-seq, motif, and literature evidence</p>
+<p class="text-sm text-violet-600 mt-3">ChIP-seq 0.10 · JASPAR 2024 motif 0.70 · PubMed literature 0.20</p>
+<p class="text-sm text-gray-500 mt-2">Development-frozen normalized threshold ≥ 0.41 (weighted score ≥ 41.925)</p>
+<p class="text-xs text-gray-500 mt-2">415 reference pairs · 332 development / 83 internal test · Test F1 0.894 (95% CI 0.818–0.955) · AUC 0.923 · AUPRC 0.924</p>
 <p class="text-xs text-gray-400 mt-2 max-w-3xl mx-auto">Scores are deterministic evidence-prioritization signals for follow-up, not experimental confirmation of a regulatory mechanism. Optional AI explanations do not alter the final score.</p>
+<p class="text-xs text-gray-400 mt-1">The internal evidence-absent set is not a set of experimentally validated biological negatives.</p>
 </div>
 <div class="card p-6 mb-8">
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 <div><label class="block text-sm font-medium text-gray-600 mb-1">Gene Symbol</label>
 <input id="geneInput" type="text" placeholder="e.g. TFF1, GREB1, PGR" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"></div>
 <div><label class="block text-sm font-medium text-gray-600 mb-1">Transcription factor (TF) name</label>
-<input id="receptorInput" type="text" placeholder="e.g. ESR1, AR, PGR, GR" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"></div>
+<input id="receptorInput" type="text" placeholder="e.g. ESR1, AR, PGR, NR3C1" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all"></div>
 </div>
 <div class="flex gap-3 items-center">
 <button onclick="doAnalyze()" id="analyzeBtn" class="bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white px-8 py-3 rounded-xl font-medium transition-all flex items-center gap-2"><i class="fa fa-search"></i> Analyze</button>
+<label class="text-xs text-gray-500"><input id="includeAi" type="checkbox"> Optional AI explanation (zero score contribution)</label>
 <div class="flex gap-2 flex-wrap"><span class="text-xs text-gray-400">Examples:</span>
 <button onclick="quickFill('TFF1','ESR1')" class="text-xs px-3 py-1 rounded-full border border-gray-200 bg-white hover:border-violet-300 text-gray-600 cursor-pointer transition-all">TFF1 + ESR1</button>
 <button onclick="quickFill('KLK3','AR')" class="text-xs px-3 py-1 rounded-full border border-gray-200 bg-white hover:border-violet-300 text-gray-600 cursor-pointer transition-all">KLK3 + AR</button>
@@ -1173,7 +1058,7 @@ nav{background:linear-gradient(135deg,#0f172a,#1e3a8a);padding:1rem 1.5rem;box-s
 </div>
 <div id="error" class="hidden card p-8 text-center"><p class="text-red-500 text-lg mb-2">Analysis Failed</p><p id="errorText" class="text-gray-500"></p></div>
 </main>
-<footer class="border-t border-gray-200 py-4 mt-12 bg-white"><div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-gray-400"><span>GeneReg v2.2 · Local ChIP-seq peaks + JASPAR + PubMed; optional AI explanation does not change the score</span><span>Inner Mongolia University of Science and Technology</span></div></footer>
+<footer class="border-t border-gray-200 py-4 mt-12 bg-white"><div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-gray-400"><span>GeneReg v2.6 · Weights 0.10/0.70/0.20 · Normalized threshold 0.41 · AI contributes zero points</span><span>Inner Mongolia University of Science and Technology</span></div></footer>
 <script>
 let lastData=null;
 function quickFill(g,r){document.getElementById('geneInput').value=g;document.getElementById('receptorInput').value=r;doAnalyze()}
@@ -1183,24 +1068,42 @@ async function doAnalyze(){
     const btn=document.getElementById('analyzeBtn'),loading=document.getElementById('loading'),results=document.getElementById('results'),error=document.getElementById('error');
     btn.disabled=true;btn.classList.add('opacity-50');loading.classList.remove('hidden');results.classList.add('hidden');error.classList.add('hidden');
     try{document.getElementById('loadingText').textContent='Searching local ChIP-seq peaks, motifs & literature...';
-        const resp=await fetch(`/api/analyze?gene=${encodeURIComponent(gene)}&receptor=${encodeURIComponent(receptor)}`);
+        const resp=await fetch(`/api/analyze?gene=${encodeURIComponent(gene)}&receptor=${encodeURIComponent(receptor)}&include_ai=${document.getElementById('includeAi').checked}`);
         const data=await resp.json();if(!resp.ok)throw new Error(data.detail||'Analysis failed');lastData=data;
         loading.classList.add('hidden');results.classList.remove('hidden');renderResults(data);
     }catch(e){loading.classList.add('hidden');error.classList.remove('hidden');document.getElementById('errorText').textContent=e.message;
     }finally{btn.disabled=false;btn.classList.remove('opacity-50')}}
 function renderResults(d){const s=d.scores;const ring=document.getElementById('scoreRing');ring.className='score-ring level-'+d.level;ring.textContent=d.final_score;
-document.getElementById('classLabel').textContent=d.classification;const descs={strong:'Strong multi-source evidence signal for prioritization; not experimental validation',moderate:'Moderate evidence signal for prioritization; requires follow-up validation',weak:'Possible evidence signal; requires validation',none:'Insufficient evidence for prioritization'};document.getElementById('classDesc').textContent=descs[d.level]||'';
+document.getElementById('classLabel').textContent=d.classification;document.getElementById('classDesc').textContent=`Weighted score ${d.final_score}/100 · normalized score ${d.normalized_score.toFixed(4)} · threshold ${d.threshold_normalized} · ${d.prediction?'Prioritized for experimental follow-up':'Not prioritized under this decision rule'}`;
 document.getElementById('chipBar').textContent=s.chip_seq.score;document.getElementById('motifBar').textContent=s.motif.score;document.getElementById('litBar').textContent=s.literature.score;
 const det=s.chip_seq.detail||{};
 const chipDetail=`${s.chip_seq.peaks_found} peaks near gene${s.chip_seq.total_peaks?', '+s.chip_seq.total_peaks+' total':''}${s.chip_seq.min_distance_to_tss!=null?', nearest '+s.chip_seq.min_distance_to_tss+'bp':''}${det.promoter_peaks!==undefined?' | promoter: '+det.promoter_peaks+', proximal: '+det.proximal_peaks:''}${det.cell_types_with_binding!==undefined?' | '+det.cell_types_with_binding+'/'+det.total_cell_types+' cell types':''}`;
-const bars=[{name:'ChIP-seq Binding',score:s.chip_seq.score,color:'#8b5cf6',detail:chipDetail},{name:'Motif Prediction',score:s.motif.score,color:'#3b82f6',detail:s.motif.motif_found?`JASPAR ${s.motif.motif_info.matrix_id}${s.motif.promoter_matches.length?', '+s.motif.promoter_matches.length+' promoter matches':''}`:'No motif found'},{name:'Literature Evidence',score:s.literature.score,color:'#f59e0b',detail:`${s.literature.articles_found} PubMed articles`}];
+const bars=[{name:'ChIP-seq Binding (weight 0.10)',score:s.chip_seq.score,color:'#8b5cf6',detail:chipDetail},{name:'Motif Prediction (weight 0.70)',score:s.motif.score,color:'#3b82f6',detail:s.motif.motif_found?`JASPAR 2024 ${s.motif.motif_info.matrix_id}${s.motif.promoter_matches.length?', '+s.motif.promoter_matches.length+' promoter matches':''}`:'No motif found'},{name:'Literature Evidence (weight 0.20)',score:s.literature.score,color:'#f59e0b',detail:`${s.literature.articles_found} exact PubMed title/abstract co-occurrences (2010–2025)`}];
 document.getElementById('barsContainer').innerHTML=bars.map(b=>`<div><div class="flex justify-between mb-1"><span class="text-sm font-medium text-gray-700">${b.name}</span><span class="text-sm font-bold" style="color:${b.color}">${b.score}/100</span></div><div class="bar-track"><div class="bar-fill" style="width:${b.score}%;background:${b.color}"></div></div><p class="text-xs text-gray-400 mt-1">${b.detail}</p></div>`).join('');
 const ai=d.ai_analysis;document.getElementById('aiContent').innerHTML=`<p class="text-gray-600 text-sm mb-2"><strong>Mechanism:</strong> ${ai.mechanism||'N/A'}</p><p class="text-gray-600 text-sm mb-2"><strong>Summary:</strong> ${ai.evidence_summary||'N/A'}</p><p class="text-sm mb-2"><strong>Confidence:</strong> <span class="font-semibold ${ai.confidence==='Strong'?'text-emerald-600':ai.confidence==='Moderate'?'text-amber-600':'text-gray-500'}">${ai.confidence||'N/A'}</span></p>${ai.recommendations&&ai.recommendations.length?`<p class="text-xs text-gray-400 mb-1">Recommendations:</p><ul class="text-sm text-gray-600 list-disc list-inside">${ai.recommendations.map(r=>'<li>'+r+'</li>').join('')}</ul>`:''}`;
 const cp=s.chip_seq;document.getElementById('chipContent').innerHTML=`<p class="text-sm text-gray-600 mb-2">Source: ${cp.source} | Peaks near gene: <strong>${cp.peaks_found}</strong>${cp.experiments_found?` | Experiments: <strong>${cp.experiments_found}</strong>`:''}${cp.min_distance_to_tss!=null?' | Nearest: <strong>'+cp.min_distance_to_tss+'bp</strong>':''}</p>${cp.experiments&&cp.experiments.length?`<p class="text-xs font-medium text-gray-700 mb-1">ENCODE ChIP-seq Experiments for ${d.receptor}:</p><div class="space-y-1 mb-3">${cp.experiments.map(e=>`<div class="text-xs bg-gray-50 rounded px-3 py-1.5"><a href="https://www.encodeproject.com/experiments/${e.accession}/" target="_blank" class="text-violet-600 hover:text-violet-800 font-medium">${e.accession}</a> <span class="text-gray-500">- ${e.biosample}</span></div>`).join('')}</div>`:''}${cp.peaks.length?`<p class="text-xs font-medium text-gray-700 mb-1">Binding Peaks near ${d.gene}:</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b border-gray-200"><th class="text-left py-1 px-2">Chr</th><th class="text-left py-1 px-2">Start</th><th class="text-left py-1 px-2">End</th><th class="text-left py-1 px-2">Distance</th><th class="text-left py-1 px-2">Signal</th><th class="text-left py-1 px-2">Location</th></tr></thead><tbody>${cp.peaks.map(p=>`<tr class="border-b border-gray-100 hover:bg-gray-50"><td class="py-1 px-2">${p.chr}</td><td class="py-1 px-2">${p.start.toLocaleString()}</td><td class="py-1 px-2">${p.end.toLocaleString()}</td><td class="py-1 px-2 font-medium ${p.distance_to_tss<5000?'text-emerald-600':p.distance_to_tss<50000?'text-amber-600':'text-gray-500'}">${p.distance_to_tss?p.distance_to_tss.toLocaleString()+'bp':''}</td><td class="py-1 px-2">${p.signal?p.signal.toFixed(1):'-'}</td><td class="py-1 px-2 text-xs ${p.location==='promoter'?'text-emerald-600':p.location==='gene_body'?'text-gray-400':'text-blue-500'}">${p.location||''}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-sm text-gray-400">No binding peaks found near this gene from this receptor.</p>'}`;
 const mt=s.motif;document.getElementById('motifContent').innerHTML=`<p class="text-sm text-gray-600 mb-2">Source: ${mt.source} | Motif found: <strong>${mt.motif_found?'Yes':'No'}</strong>${mt.promoter_length?' | Promoter scanned: '+mt.promoter_length+'bp':''}</p>${mt.motif_found?`<div class="bg-gray-50 rounded-lg p-4 mb-3"><p class="text-sm"><strong>Matrix ID:</strong> ${mt.motif_info.matrix_id} | <strong>Name:</strong> ${mt.motif_info.name}</p><p class="text-xs text-gray-500">Collection: ${mt.motif_info.collection} | Family: ${mt.motif_info.tf_family||'N/A'} | Length: ${mt.motif_info.motif_length||'?'}bp</p></div>`:''}${mt.promoter_matches.length?`<p class="text-sm font-medium text-gray-700 mb-1">Promoter Motif Matches (${mt.promoter_matches.length}):</p><div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b border-gray-200"><th class="text-left py-1 px-2">Motif</th><th class="text-left py-1 px-2">Sequence</th><th class="text-left py-1 px-2">Position</th><th class="text-left py-1 px-2">Strand</th></tr></thead><tbody>${mt.promoter_matches.map(m=>`<tr class="border-b border-gray-100"><td class="py-1 px-2 font-mono">${m.motif_name}</td><td class="py-1 px-2 font-mono text-violet-600">${m.motif_seq}</td><td class="py-1 px-2">${m.position>0?'+':''}${m.position}</td><td class="py-1 px-2">${m.strand}</td></tr>`).join('')}</tbody></table></div>`:'<p class="text-sm text-gray-400">No motif matches found in promoter region.</p>'}`;
 const lt=s.literature;document.getElementById('litContent').innerHTML=`<p class="text-sm text-gray-600 mb-3">Source: ${lt.source} | Articles: <strong>${lt.articles_found}</strong></p>${lt.articles.length?lt.articles.map(a=>`<div class="border-l-2 border-amber-300 pl-3 py-1 mb-2"><a href="https://pubmed.ncbi.nlm.nih.gov/${a.pmid}/" target="_blank" class="text-sm text-violet-600 hover:text-violet-800">${a.title}</a><p class="text-xs text-gray-400">PMID: ${a.pmid} | ${a.year}</p></div>`).join(''):'<p class="text-sm text-gray-400">No literature found.</p>'}`;
 }
-function downloadReport(){if(!lastData)return;const d=lastData,s=d.scores;let csv='\\uFEFF';csv+='Category,Score,Detail\\n';csv+=`ChIP-seq,${s.chip_seq.score},"${s.chip_seq.peaks_found} peaks"\\n`;csv+=`Motif,${s.motif.score},"${s.motif.motif_found?'Yes':'No'}"\\n`;csv+=`Literature,${s.literature.score},"${s.literature.articles_found} articles"\\n`;csv+=`\\nFinal,${d.final_score},"${d.classification}"\\n`;csv+=`Gene,${d.gene}\\nReceptor,${d.receptor}\\n`;if(d.ai_analysis){csv+=`AI Confidence,${d.ai_analysis.confidence||'N/A'}\\n`;}const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`GeneReg_${d.gene}_${d.receptor}_${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+function downloadReport(){
+    if(!lastData)return;
+    const d=lastData,s=d.scores;
+    const rows=[['Category','Score','Detail'],
+        ['ChIP-seq',s.chip_seq.score,'weight 0.10'],
+        ['Motif',s.motif.score,'weight 0.70'],
+        ['Literature',s.literature.score,'weight 0.20'],
+        ['Weighted score',d.raw_score,d.classification],
+        ['Normalized score',d.normalized_score,''],
+        ['Normalized threshold',d.threshold_normalized,''],
+        ['Raw threshold',d.threshold_raw,''],
+        ['Prediction',d.prediction,''],['Gene',d.gene,''],['TF',d.receptor,''],
+        ['AI score contribution',0,'']];
+    const csv='\\uFEFF'+rows.map(row=>row.map(value=>'"'+String(value).replaceAll('"','""')+'"').join(',')).join('\\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=`GeneReg_${d.gene}_${d.receptor}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
 </script>
 </body></html>
 """

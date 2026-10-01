@@ -84,7 +84,7 @@ def fig_weight_grid(cv):
     ax.scatter([r["w"][1] for r in inelig], [r["w"][0] for r in inelig], s=12, c="#CCCCCC", alpha=0.55, label="Ineligible (a zero weight)", linewidths=0)
     vals = [r["mean_f1"] for r in elig]
     sc = ax.scatter([r["w"][1] for r in elig], [r["w"][0] for r in elig], s=20, c=vals, cmap="Blues", vmin=min(vals), vmax=max(vals), label="Eligible (all weights \u2265 0.05)", linewidths=0.15, edgecolors="none")
-    ax.scatter([WINNER[1]], [WINNER[0]], s=110, facecolors="none", edgecolors=C_NEG, linewidths=1.8, zorder=5, clip_on=False, label="Selected 0.10/0.65/0.25")
+    ax.scatter([WINNER[1]], [WINNER[0]], s=110, facecolors="none", edgecolors=C_NEG, linewidths=1.8, zorder=5, clip_on=False, label="Selected 0.10/0.70/0.20")
     ax.scatter([PUBLISHED[1]], [PUBLISHED[0]], marker="X", s=55, c=C_NEG, zorder=5, clip_on=False, label="Original 0.50/0.25/0.25 (0.756)")
     ax.set_xlabel("Motif weight")
     ax.set_ylabel("ChIP-seq weight")
@@ -109,7 +109,7 @@ def fig_1se(cv):
     ax.text(0.985, CUTTOFF_1SE - 0.012, "1-SE cut-off (0.905)", color=C_GREY, ha="right", va="top")
     ax.axvline(WINNER[0], ls=":", lw=1, color=C_SEL)
     ax.scatter([WINNER[0]], [0.9083], s=80, facecolors="none", edgecolors=C_SEL, linewidths=1.6, zorder=5, clip_on=False)
-    ax.annotate("Selected 0.10/0.65/0.25 (0.908)", (WINNER[0], 0.9083), xytext=(0.42, 0.868), color=C_SEL,
+    ax.annotate("Selected 0.10/0.70/0.20 (0.908)", (WINNER[0], 0.9083), xytext=(0.42, 0.868), color=C_SEL,
                 arrowprops=dict(arrowstyle="-", color=C_SEL, lw=0.7))
     ax.scatter([0.0], [0.9225], marker="v", s=32, color=C_REF, zorder=5, clip_on=False)
     ax.annotate("Global best 0.00/0.60/0.40 (0.923)\nzero ChIP weight \u2014 excluded", (0.0, 0.9225), xytext=(0.13, 0.938), color=C_REF, va="top",
